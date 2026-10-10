@@ -7,13 +7,13 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - architecture, sensors and companion, build plan, privacy and rules.
 - Location data kept out of the repo.
 
-## Iteration 1: council fusion core (planned)
+## Iteration 1: council fusion core (done: 28 tests pass)
 
 - `Estimate`, `Reading`, and `fuse()` with a robust median gate and inverse-variance weighting.
 - `camera_estimate()` converts a person box to a body-frame estimate using the geometry in [sensors-and-companion.md](sensors-and-companion.md).
 - Tests for agreement, outlier rejection, total disagreement, zero reliability, and camera geometry.
 
-## Iteration 2: context and attention (planned)
+## Iteration 2: context and attention (in progress)
 
 - `Conditions`, `attention()` multipliers for weather, link and GNSS quality, and overrides from places.
 - `WeatherProvider` interface, an Open-Meteo adapter (fetch injected, so tests make no network calls), and a TTL cache.
