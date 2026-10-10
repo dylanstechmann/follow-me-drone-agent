@@ -13,12 +13,12 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - `camera_estimate()` converts a person box to a body-frame estimate using the geometry in [sensors-and-companion.md](sensors-and-companion.md).
 - Tests for agreement, outlier rejection, total disagreement, zero reliability, and camera geometry.
 
-## Iteration 2: context and attention (in progress)
+## Iteration 2: context and attention (done: 42 tests pass)
 
 - `Conditions`, `attention()` multipliers for weather, link and GNSS quality, and overrides from places.
 - `WeatherProvider` interface, an Open-Meteo adapter (fetch injected, so tests make no network calls), and a TTL cache.
 
-## Iteration 3: places (planned)
+## Iteration 3: places (in progress)
 
 - `geo.py` with haversine, local east/north offsets and bearing.
 - `places.py` with a `Place` model, JSON loading, and approach detection (inside the radius or ahead on heading).
