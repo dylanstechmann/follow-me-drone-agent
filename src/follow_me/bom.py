@@ -1,23 +1,27 @@
-"""Parts catalog, raw materials and cost passes.
+"""Parts catalog, raw materials, cost passes and price dates.
 
-Three files drive the numbers:
-  bom/materials.json  raw inputs: filament per kg, copper-clad board per cm2, wire per kg, ...
-  bom/catalog.json    every item and how it is obtained (its path): retail, bulk, used,
-                      fabrication service, made from materials, or owned
+Four files drive the numbers:
+  bom/materials.json  raw inputs and components: filament, board area, wire, chips, cells
+  bom/catalog.json    every item and how it is obtained (its path)
   bom/passes.json     build passes as deltas on the pass before, each with its reason and risk
+  price dates         every price carries a checked date, judged against AS_OF
 
 A made item (path "make") has no price of its own. Its cost is the sum of its
-material inputs. Every number keeps its status, so a guess is never mistaken for a quote.
+material inputs. Every number keeps its status and date, so a guess or an old
+price is never mistaken for a current quote.
 
 Usage:
   python -m follow_me.bom                    # cost report for every pass
-  python -m follow_me.bom --markdown         # parts catalog as a markdown table
   python -m follow_me.bom --passes-markdown  # pass summary as a markdown table
+  python -m follow_me.bom --markdown         # parts catalog as a markdown table
+  python -m follow_me.bom --audit            # price-date audit as a markdown table
 """
 
 import json
+import re
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -25,6 +29,11 @@ STATUSES = ("snapshot", "official", "estimate", "placeholder", "owned", "purchas
 PATHS = ("buy_retail", "buy_bulk", "buy_used", "buy_service", "make", "owned", "salvage")
 # Paths where the owner makes the part, or reclaims it. These count toward in-house share.
 MADE_PATHS = ("make", "salvage")
+SOURCED_STATUSES = ("snapshot", "official")
+
+AS_OF = date(2026, 10, 10)
+MAX_PRICE_AGE_DAYS = 365
+_DATE_RE = re.compile(r"^\d{4}(-\d{2}(-\d{2})?)?$")
 
 ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_MATERIALS = ROOT / "bom" / "materials.json"
@@ -39,6 +48,7 @@ class Material:
     low: float
     high: float
     status: str
+    checked: str = ""  # YYYY, YYYY-MM or YYYY-MM-DD; empty when the source shows no date
     source: str = ""
     note: str = ""
 
@@ -57,6 +67,7 @@ class Item:
     note: str = ""
     optional: bool = False
     make: dict | None = None  # {"inputs": {material_key: quantity}, "waste_high": 1.2}
+    checked: str = ""
 
 
 @dataclass(frozen=True)
@@ -89,6 +100,37 @@ class Tier:
     high: float
 
 
+@dataclass(frozen=True)
+class PriceRow:
+    kind: str  # "item" or "material"
+    key: str
+    used_by: str
+    status: str
+    low: float
+    high: float
+    checked: str
+    freshness: str
+
+
+def check_date_format(value: str) -> None:
+    if value and not _DATE_RE.match(value):
+        raise ValueError(f"checked date must be YYYY, YYYY-MM or YYYY-MM-DD, got {value!r}")
+
+
+def freshness(checked: str, as_of: date = AS_OF) -> str:
+    """fresh: month precision and seen within the last 12 months. Otherwise stale, year only, or undated."""
+    if not checked:
+        return "undated"
+    if len(checked) == 4:
+        return "year only"
+    parts = [int(p) for p in checked.split("-")]
+    seen = date(parts[0], parts[1], parts[2] if len(parts) == 3 else 1)
+    age = (as_of - seen).days
+    if age < 0:
+        return "future"
+    return "fresh" if age <= MAX_PRICE_AGE_DAYS else "stale"
+
+
 def _validate_material(m: Material) -> None:
     if m.status not in STATUSES:
         raise ValueError(f"material {m.key}: unknown status {m.status!r}")
@@ -96,6 +138,7 @@ def _validate_material(m: Material) -> None:
         raise ValueError(f"material {m.key}: need 0 <= low <= high")
     if m.status == "unpriced" and (m.low or m.high):
         raise ValueError(f"material {m.key}: unpriced materials must have zero prices")
+    check_date_format(m.checked)
 
 
 def load_materials(path: Path | str = DEFAULT_MATERIALS) -> dict[str, Material]:
@@ -115,6 +158,7 @@ def _validate_item(item: Item) -> None:
         raise ValueError(f"{item.id}: unknown path {item.path!r}")
     if item.qty < 1:
         raise ValueError(f"{item.id}: qty must be at least 1")
+    check_date_format(item.checked)
     if item.path == "make":
         if not item.make or not item.make.get("inputs"):
             raise ValueError(f"{item.id}: a made item needs make.inputs")
@@ -260,6 +304,41 @@ def made_share(t: Totals) -> float:
     return made / total if total else 0.0
 
 
+def price_rows(
+    catalog: dict[str, Item],
+    materials: dict[str, Material],
+    ids: tuple[str, ...] | list[str] | None = None,
+) -> list[PriceRow]:
+    """One row per priced input: each bought item, and each material used by a made item."""
+    rows: list[PriceRow] = []
+    users: dict[str, list[str]] = {}
+    for iid in ids if ids is not None else catalog:
+        item = catalog[iid]
+        if item.make:
+            for key in item.make["inputs"]:
+                users.setdefault(key, []).append(item.id)
+        elif item.status not in ("owned", "purchased"):
+            rows.append(
+                PriceRow("item", item.id, item.id, item.status, item.low, item.high,
+                         item.checked, freshness(item.checked))
+            )
+    for key, who in users.items():
+        m = materials[key]
+        rows.append(
+            PriceRow("material", key, ", ".join(sorted(set(who))), m.status, m.low, m.high,
+                     m.checked, freshness(m.checked))
+        )
+    return rows
+
+
+def date_summary(rows: list[PriceRow]) -> tuple[int, int, int]:
+    """(fresh, sourced, placeholders). Sourced means snapshot or official prices."""
+    sourced = [r for r in rows if r.status in SOURCED_STATUSES]
+    fresh = sum(1 for r in sourced if r.freshness == "fresh")
+    placeholders = sum(1 for r in rows if r.status == "placeholder")
+    return fresh, len(sourced), placeholders
+
+
 def supplier_hosts(source: str) -> set[str]:
     hosts = set()
     for url in (s.strip() for s in source.split(";")):
@@ -329,6 +408,7 @@ def report(
         t = totals(catalog, p.items, materials)
         by_id[p.id] = t
         mids = {path: (lo + hi) / 2 for path, (lo, hi) in t.by_path.items()}
+        fresh, sourced, _ = date_summary(price_rows(catalog, materials, p.items))
         lines.append(f"{p.id}  {p.title}")
         lines.append(
             f"    core ${t.core_low:,.2f} to ${t.core_high:,.2f}"
@@ -345,6 +425,7 @@ def report(
         change = _change(p, t, by_id)
         lines.append(
             f"    placeholders {t.placeholders}   unpriced {t.unpriced}"
+            f"   sourced prices dated in the last 12 months {fresh} of {sourced}"
             + (f"   {change}" if change else "")
         )
     return "\n".join(lines)
@@ -357,8 +438,8 @@ def passes_markdown(
     materials: dict[str, Material],
 ) -> str:
     rows = [
-        "| Pass | Based on | Core low | Core high | Change vs base (low to high) | Made in house (midpoint) | Budget | Placeholders |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Pass | Based on | Core low | Core high | Change vs base (low to high) | Made in house (midpoint) | Budget | Placeholders | Sourced prices dated in last 12 months |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     by_id: dict[str, Totals] = {}
     for p in passes:
@@ -370,9 +451,11 @@ def passes_markdown(
             change = (
                 f"{t.core_low - base.core_low:+,.2f} to {t.core_high - base.core_high:+,.2f}"
             )
+        fresh, sourced, _ = date_summary(price_rows(catalog, materials, p.items))
         rows.append(
             f"| {p.id} {p.title} | {p.based_on or 'none'} | {t.core_low:,.2f} | {t.core_high:,.2f} | "
-            f"{change} | {made_share(t):.0%} | {_budget_status(t, budget)} | {t.placeholders} |"
+            f"{change} | {made_share(t):.0%} | {_budget_status(t, budget)} | {t.placeholders} | "
+            f"{fresh} of {sourced} |"
         )
     return "\n".join(rows)
 
@@ -390,18 +473,39 @@ def _links(source: str) -> str:
 
 def catalog_markdown(catalog: dict[str, Item], materials: dict[str, Material]) -> str:
     rows = [
-        "| Item | Category | Path | Qty | USD each (low to high) | Status | Sources | Note |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Item | Category | Path | Qty | USD each (low to high) | Status | Checked | Sources | Note |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for item in catalog.values():
         lo, hi = unit_cost(item, materials)
         price = f"{lo:,.2f} to {hi:,.2f}" if hi != lo else f"{lo:,.2f}"
         name = item.name + (" (optional)" if item.optional else "")
+        checked = item.checked or ("from materials" if item.make else "undated")
         rows.append(
             f"| {name} | {item.category} | {item.path} | {item.qty} | {price} | {item.status} | "
-            f"{_links(item.source)} | {item.note} |"
+            f"{checked} | {_links(item.source)} | {item.note} |"
         )
     return "\n".join(rows)
+
+
+def audit_markdown(catalog: dict[str, Item], materials: dict[str, Material]) -> str:
+    rows = price_rows(catalog, materials)
+    lines = [
+        "| Kind | Key | Used by | Status | USD low | USD high | Checked | Freshness |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in sorted(rows, key=lambda r: (r.freshness != "fresh", r.kind, r.key)):
+        lines.append(
+            f"| {r.kind} | {r.key} | {r.used_by} | {r.status} | {r.low:,.3f} | {r.high:,.3f} | "
+            f"{r.checked or 'undated'} | {r.freshness} |"
+        )
+    fresh, sourced, placeholders = date_summary(rows)
+    lines.append("")
+    lines.append(
+        f"Sourced prices dated in the last 12 months: {fresh} of {sourced}. "
+        f"Placeholders (guesses): {placeholders}. Cutoff: {AS_OF.isoformat()}."
+    )
+    return "\n".join(lines)
 
 
 def main(argv: list[str]) -> int:
@@ -409,6 +513,9 @@ def main(argv: list[str]) -> int:
     catalog = load_catalog(DEFAULT_CATALOG, materials)
     if "--markdown" in argv:
         print(catalog_markdown(catalog, materials))
+        return 0
+    if "--audit" in argv:
+        print(audit_markdown(catalog, materials))
         return 0
     budget, raw = load_passes()
     passes = resolve(catalog, raw)

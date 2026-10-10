@@ -81,7 +81,7 @@ def small_catalog(tmp_path, extra=()):
 
 def test_shipped_materials_load_with_valid_statuses():
     materials = load_materials(DEFAULT_MATERIALS)
-    assert materials["pla_per_kg"].low == pytest.approx(10.99)
+    assert materials["pla_per_kg"].low == pytest.approx(8.55)
     assert {m.status for m in materials.values()} <= {
         "snapshot", "official", "estimate", "placeholder", "owned", "purchased", "unpriced",
     }
@@ -107,6 +107,8 @@ def test_shipped_passes_resolve_in_order():
         "pass5_made_tag",
         "pass6_diy_motor_rnd",
         "pass7_owned_pipeline",
+        "pass8_own_most",
+        "pass9_own_most_target_motors",
     ]
 
 
@@ -175,9 +177,33 @@ def test_bulk_esp32_chip_is_cheaper_than_the_retail_module_it_replaces():
     assert catalog["chip_esp32c3_mini1"].high < catalog["tag_ht_ct62"].low
 
 
-def test_shipped_passes_report_unpriced_steel_in_the_diy_motor():
+def test_diy_motor_pass_counts_the_laser_cut_placeholder():
     t, _ = shipped_totals()
-    assert t["pass6_diy_motor_rnd"].unpriced == 1
+    assert t["pass6_diy_motor_rnd"].unpriced == 0  # the steel core is priced now
+    assert t["pass6_diy_motor_rnd"].placeholders >= 1  # laser cutting is still a guess
+
+
+def test_pass8_replaces_bought_control_hardware_with_made_designs():
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    _, raw = load_passes(DEFAULT_PASSES)
+    p8 = {p.id: p for p in resolve(catalog, raw)}["pass8_own_most"]
+    for made in ("autopilot_board_own", "esc_4in1_own", "transmitter_own", "tag_battery_own"):
+        assert made in p8.items
+    for bought in ("fc_pix32_v5_used", "esc_4in1", "elrs_tx_radio", "tag_battery_board"):
+        assert bought not in p8.items
+
+
+def test_pass9_motor_target_is_cheaper_than_pass8():
+    t, _ = shipped_totals()
+    assert t["pass9_own_most_target_motors"].core_low < t["pass8_own_most"].core_low
+
+
+def test_made_autopilot_board_is_far_cheaper_than_the_bought_one():
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    low, high = unit_cost(catalog["autopilot_board_own"], materials)
+    assert 0 < low < high < 149  # the used Pix32 v5 price in the catalog
 
 
 # ---- made items and materials -----------------------------------------------
@@ -479,3 +505,64 @@ def test_cli_markdown_modes(capsys):
     out = capsys.readouterr().out
     assert out.startswith("| Pass | Based on")
     assert "pass7_owned_pipeline" in out
+
+
+# ---- price dates ------------------------------------------------------------
+
+def test_freshness_rules_use_month_precision_and_a_12_month_window():
+    from follow_me.bom import freshness
+
+    assert freshness("") == "undated"
+    assert freshness("2026") == "year only"
+    assert freshness("2026-10") == "fresh"
+    assert freshness("2026-10-10") == "fresh"
+    assert freshness("2025-11") == "fresh"  # 343 days before the cutoff
+    assert freshness("2025-09") == "stale"  # more than a year before the cutoff
+    assert freshness("2027-01") == "future"
+
+
+def test_bad_date_formats_are_rejected(tmp_path):
+    path = write_json(tmp_path, "m.json", {"materials": {"x": {"unit": "kg", "low": 1, "high": 2, "status": "snapshot", "checked": "10/2026"}}})
+    with pytest.raises(ValueError, match="checked date"):
+        load_materials(path)
+
+
+def test_esp32_price_is_dated_today_and_fresh():
+    from follow_me.bom import freshness
+
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    assert catalog["chip_esp32c3_mini1"].checked == "2026-10-10"
+    assert freshness(catalog["chip_esp32c3_mini1"].checked) == "fresh"
+
+
+def test_audit_lists_each_bought_item_and_each_material_once():
+    from follow_me.bom import price_rows
+
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    rows = price_rows(catalog, materials)
+    keys = [(r.kind, r.key) for r in rows]
+    assert len(keys) == len(set(keys))
+    assert ("material", "esp32c3_mini1_each") in keys
+    assert ("item", "fc_pix32_v5_used") in keys
+    assert ("item", "pixel_8a_purchased") not in keys  # owner's purchase, not a quote
+
+
+def test_date_summary_counts_sourced_fresh_and_placeholders(tmp_path):
+    from follow_me.bom import PriceRow, date_summary
+
+    rows = [
+        PriceRow("item", "a", "a", "snapshot", 1, 2, "2026-10-10", "fresh"),
+        PriceRow("item", "b", "b", "snapshot", 1, 2, "", "undated"),
+        PriceRow("item", "c", "c", "placeholder", 1, 2, "", "undated"),
+        PriceRow("material", "d", "a", "estimate", 1, 2, "", "undated"),
+    ]
+    assert date_summary(rows) == (1, 2, 1)
+
+
+def test_cli_audit_mode_prints_the_summary(capsys):
+    assert main(["--audit"]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("| Kind | Key")
+    assert "Sourced prices dated in the last 12 months" in out

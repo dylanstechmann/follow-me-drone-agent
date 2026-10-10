@@ -1,51 +1,136 @@
 {
   "searched_on": "2026-10-10",
-  "notes": "Raw inputs for made items. A made item's cost is the sum of quantity times these prices, with waste_high applied to the high end. Snapshot prices come from search results and may be undated or stale. Placeholders are guesses. Unpriced inputs count as $0 and make the item unpriced.",
+  "notes": "Raw inputs and components for made items. checked is the date the price was seen on its source: YYYY-MM-DD, YYYY-MM, or YYYY (year only). An empty checked value means the source shows no date. A price counts as fresh only when its checked date is within 12 months before 2026-10-10 and has month precision. Placeholders are guesses. Unpriced inputs count as $0 and make the item unpriced.",
   "materials": {
     "pla_per_kg": {
-      "unit": "kg", "low": 10.99, "high": 20.0, "status": "snapshot",
-      "source": "https://store.sunlu.com/products/pla-large-spool-3d-printer-filament-5kg; https://www.matterhackers.com/store/l/black-mh-build-series-pla-filament-175mm-5kg/sk/MN5R7RUS",
-      "note": "5 kg spools: SUNLU at $54.99 on sale is about $10.99 per kg. MatterHackers at $99.99 is about $20 per kg. Matter3D and Kingroon sit between, at about $13 to $14 per kg. Shipping extra."
+      "unit": "kg", "low": 8.55, "high": 18.0, "status": "snapshot", "checked": "2026",
+      "source": "https://sigmafilament.com/bulk-pla-filament/; https://sigmafilament.com/3d-filament-deals/",
+      "note": "2026 B2B guides: 5 to 20 kg lots $8.55 to $10.49 per kg; single spools $18 to $25 per kg (high end shown). The month is not stated, so this is year-only."
     },
     "petg_per_kg": {
-      "unit": "kg", "low": 15.0, "high": 30.0, "status": "placeholder",
+      "unit": "kg", "low": 15.0, "high": 30.0, "status": "placeholder", "checked": "",
       "source": "",
       "note": "Not searched. Guess only. Replace with a bulk PETG price before trusting printed frames."
     },
     "fr4_single_sided_per_cm2": {
-      "unit": "cm2", "low": 0.009, "high": 0.111, "status": "snapshot",
+      "unit": "cm2", "low": 0.009, "high": 0.111, "status": "snapshot", "checked": "",
       "source": "https://www.newark.com/fortex/ss100/fr4-1-side-copper-clad-100x160x1/dp/51AK9434; https://www.mouser.com/c/tools-supplies/prototyping-products/copper-clad-boards/?material=FR4",
-      "note": "Single-sided copper-clad FR4 only. Low: Newark's 100 x 160 mm board at $1.43. High: Mouser's 3 x 5 in board at $10.73. Other listings fall in between."
+      "note": "Single-sided copper-clad FR4 only. Low: Newark's 100 x 160 mm board at $1.43. High: Mouser's 3 x 5 in board at $10.73. Undated."
     },
     "etchant_ferric_per_l": {
-      "unit": "l", "low": 9.25, "high": 18.01, "status": "snapshot",
+      "unit": "l", "low": 9.25, "high": 18.01, "status": "snapshot", "checked": "",
       "source": "https://shop.takachpress.com/etching/acid-room-equipment/ferric-chloride/; https://www.circuitspecialists.com/ferric-chloride-photoresists",
-      "note": "Bulk gallons are about $9 to $12 per liter (Takach, 4 gallons for $140). A 1 liter bottle is about $18. Small bottles cost more, up to $47 per liter. Etchant can be reused, so the per-board use is conservative."
+      "note": "Bulk gallons about $9 to $12 per liter (Takach, 4 gallons for $140). A 1 liter bottle is about $18. Undated. Etchant can be reused, so per-board use is conservative."
     },
     "magnet_wire_per_kg": {
-      "unit": "kg", "low": 26.0, "high": 45.0, "status": "snapshot",
-      "source": "https://electronics.alibaba.com/buyingguides/1-kg-copper-enameled-wire-price-guide; https://www.elecify.com/products/enameled-copper-wire-0-3mm-magnet-wire",
-      "note": "Low: a UK per-kg guide, about $26 to $31. High: Elecify's 0.3 mm, 140 g spool at $6.24, about $45 per kg. A DigiKey listing at $136 per kg is about 12 years old and was left out. Low confidence: ask a supplier for a quote on 0.3 mm round wire."
+      "unit": "kg", "low": 11.85, "high": 44.57, "status": "snapshot", "checked": "2026-03",
+      "source": "https://www.alibaba.com/showroom/china-enameled-copper-wire-price.html; https://www.elecify.com/products/enameled-copper-wire-0-3mm-magnet-wire",
+      "note": "Low: a March 2026 showroom listing for solid enamelled wire, $11.85 to $13.85 (unit and minimum order unclear). High: Elecify's 0.3 mm, 140 g spool at $6.24, about $44.57 per kg (undated). Bulk asks of $7 to $10 per kg need 300 kg minimum orders. Salvaged wire from old motors and transformers is the cheapest route."
     },
     "ndfeb_n52_10x2_each": {
-      "unit": "each", "low": 0.26, "high": 0.78, "status": "snapshot",
+      "unit": "each", "low": 0.26, "high": 0.78, "status": "snapshot", "checked": "",
       "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm; https://www.jc-magnetics.com/Magnet-Discs",
-      "note": "JC-Magnetics: $0.26 each at 5,000 or more, $0.30 at 500, $0.46 at 50, and $0.78 at the 25-piece minimum. Small-quantity sellers charge several times more, so buy in bulk or salvage magnets."
+      "note": "JC-Magnetics: $0.26 each at 5,000 or more, $0.30 at 500, $0.46 at 50, and $0.78 at the 25-piece minimum. Undated. Per-disc prices are two to five times the material value, so buy by weight if a supplier will quote."
+    },
+    "ndfeb_n52_by_weight_kg": {
+      "unit": "kg", "low": 95.0, "high": 130.0, "status": "snapshot", "checked": "",
+      "source": "https://www.xinhuimagnet.com/best-neodymium-magnet-price-grade-guide-for/; https://rare-earth-mining.com/neodymium-price/",
+      "note": "Vendor range for N52 by weight (undated). Raw neodymium metal was about $130 to $141 per kg in September 2026 (metal, not magnets). This is the target price for a by-weight quote. One 10 x 2 mm disc weighs about 1.2 g."
     },
     "bearing_608_each": {
-      "unit": "each", "low": 0.5, "high": 2.0, "status": "placeholder",
-      "source": "",
-      "note": "Not searched. Guess only."
+      "unit": "each", "low": 1.25, "high": 1.55, "status": "snapshot", "checked": "2026-02",
+      "source": "https://www.ebay.com/itm/130830084526; https://vxb.com/products/8-pack-skateboard-bearings-double-shielded-608zz",
+      "note": "Skateboard 608 bearings sold in 8-packs. VXB lists $9.99 (eBay listing timestamp 2026-02-15). A second 8-pack is $12.40 plus shipping (undated). Per bearing: $1.25 to $1.55."
     },
     "steel_shaft_each": {
-      "unit": "each", "low": 1.0, "high": 3.0, "status": "placeholder",
+      "unit": "each", "low": 1.0, "high": 3.0, "status": "placeholder", "checked": "",
       "source": "",
-      "note": "Not searched. Guess only."
+      "note": "Not searched. Guess only. Salvage a steel rod, or check whether a skateboard axle fits."
     },
-    "stator_steel_core_each": {
-      "unit": "each", "low": 0.0, "high": 0.0, "status": "unpriced",
+    "electrical_steel_per_kg": {
+      "unit": "kg", "low": 1.44, "high": 2.09, "status": "snapshot", "checked": "2026-06",
+      "source": "https://www.expertmarketresearch.com/price-forecast/electrical-steel-price-trends",
+      "note": "Q2 2026 benchmarks: China $1.44, US $1.99, Germany $2.09 per kg. This is market research, not a store price. Small lots carry a premium, and grade and orientation change the price. Alibaba M19 lots show $0.85 to $1.70 per kg (undated, unit inferred)."
+    },
+    "laser_cut_stator_each": {
+      "unit": "each", "low": 0.5, "high": 2.0, "status": "placeholder", "checked": "",
       "source": "",
-      "note": "Not priced. Steel laminations for a stator core are still open. Options: salvage, a laser-cut lamination stack, or a coreless design. Until this is priced, DIY motor totals are incomplete."
+      "note": "Laser cutting of one stator lamination set. Not priced. Ask FAU or IEEE whether a laser cutter is available. An external cutting service is unknown."
+    },
+    "cell_18650_each": {
+      "unit": "each", "low": 1.0, "high": 3.2, "status": "snapshot", "checked": "",
+      "source": "https://18650batterypartners.com/pages/bulk-lithium-ion-battery-cells-bulk-only; https://www.made-in-china.com/products-search/hot-china-products/18650_Battery_Price.html",
+      "note": "Unprotected 18650 cells, undated. China wholesale $1 to $2 each, with quality varying. Panasonic-class cells about $3.09 to $3.19 on a bulk-only page. Protected cells cost $10 to $12. Salvaged cells from laptop packs are free but need testing."
+    },
+    "tp4056_module_each": {
+      "unit": "each", "low": 2.39, "high": 7.19, "status": "snapshot", "checked": "2026-08",
+      "source": "https://www.ebay.com/itm/191850072622; https://envistiamall.com/products/tp4056-dw01a-enhanced-usb-c-5v-1a-1s-lipo-battery-charger-module",
+      "note": "Single-cell charger with DW01A protection. eBay listings with August 2026 timestamps at $6.11 to $7.19. Envistia $2.39 (undated). Protection is from listing titles, not datasheets."
+    },
+    "at32f421_each": {
+      "unit": "each", "low": 0.43, "high": 1.37, "status": "snapshot", "checked": "",
+      "source": "https://www.lcsc.com/product-detail/C2687447.html; https://www.lcsc.com/product-detail/C2965611.html",
+      "note": "LCSC, undated. About $0.43 to $0.81 at the 1,000-piece tier, and $0.85 to $1.37 for single pieces. AM32 lists the AT32F421 as supported."
+    },
+    "stm32h743_each": {
+      "unit": "each", "low": 5.9, "high": 9.38, "status": "snapshot", "checked": "",
+      "source": "https://www.lcsc.com/product-detail/C114409.html; https://www.findchips.com/search/STM32H743VIT6",
+      "note": "Undated. Typical market $5.90 to $7.90 (a supplier guide). DigiKey 990-piece tier $9.38 (authorized channel). LCSC snapshots disagree ($6.62 to $11.49)."
+    },
+    "icm42688p_each": {
+      "unit": "each", "low": 3.07, "high": 6.5, "status": "snapshot", "checked": "2026-08",
+      "source": "https://www.digikey.com/en/products/detail/tdk-invensense/ICM-42688-P/10824934; https://xaipart.com/blog/icm-42688-p-guide-pinout-specs-and-alternatives",
+      "note": "Reel price from DigiKey's 5,000 tier (undated) to $6.50 for one piece (reseller guide dated 2026-08-23). Supply is tight: DigiKey quotes a 45-week lead time and Mouser 53 weeks. Plan for a long lead time or a second source."
+    },
+    "esp32c3_mini1_each": {
+      "unit": "each", "low": 2.01, "high": 3.06, "status": "snapshot", "checked": "2026-10-10",
+      "source": "https://www.lcsc.com/product-detail/C2838502.html",
+      "note": "LCSC page for ESP32-C3-MINI-1-N4, fetched 2026-10-10: $3.06 for one piece and $2.01 at 1,300 pieces, 3,563 in stock. The page shows no price date (footer reads 2025)."
+    },
+    "sx1262_module_each": {
+      "unit": "each", "low": 4.1, "high": 7.99, "status": "snapshot", "checked": "",
+      "source": "https://www.wifiblemodule.com/sale-13870995-semtech-lora-module-sx1262-long-range-rf-transceiver-module.html; https://www.waveshare.com/core1262-868m.htm",
+      "note": "LoRa module, not a bare chip. Wifiblemodule $4.10 per piece with a validity field to 27 August 2027. Waveshare $7.99. The bare SX1262 chip is $9.04 at DigiKey, probably a 2018 snapshot, so it is not verified for 2026."
+    },
+    "sx1280_module_each": {
+      "unit": "each", "low": 3.22, "high": 13.98, "status": "snapshot", "checked": "",
+      "source": "https://www.aliexpress.com/w/wholesale-sx1280.html; https://www.alibaba.com/showroom/sx1280-module.html",
+      "note": "2.4 GHz chip or module for an ELRS-style transmitter. AliExpress IC $3.22 and 27 dBm module $4.34 (page about 1,787 days old). Alibaba modules $9.80 to $13.98 (undated)."
+    },
+    "gnss_atgm336h_each": {
+      "unit": "each", "low": 1.82, "high": 3.24, "status": "snapshot", "checked": "",
+      "source": "https://www.lcsc.com/product-detail/GNSS-Modules_ZHONGKEWEI-ATGM336H-5N31_C90770.html; https://www.chipmall.com/products/detail/gnss-modules_zhongkewei-atgm336h-5nr32_c06771907",
+      "note": "Clone-family GNSS chip, lower performance than u-blox and untested here. LCSC $3.24 for one piece and $1.82 at 1,000 or more, undated. Test it against a u-blox reference before trusting it."
+    },
+    "mosfet_30v60a_each": {
+      "unit": "each", "low": 0.3, "high": 1.75, "status": "placeholder", "checked": "2026-06",
+      "source": "https://tinkersphere.com/power/434-n-channel-power-mosfet-30v-60a.html",
+      "note": "The high is a retail price: Tinkersphere $1.75, last updated 06/02/2026 (most likely 2 June), stock nearly gone. The low is a guess. No bulk LCSC price for a 30 V, 60 A MOSFET was found. Replace both before trusting the ESC total."
+    },
+    "gate_driver_each": {
+      "unit": "each", "low": 1.0, "high": 3.0, "status": "placeholder", "checked": "",
+      "source": "",
+      "note": "Not searched. Guess only. One three-phase gate driver per motor is assumed."
+    },
+    "passives_kit_each": {
+      "unit": "each", "low": 1.0, "high": 3.0, "status": "estimate", "checked": "",
+      "source": "",
+      "note": "Resistors, capacitors, connectors and current-sense parts bought in bulk. Estimate only; not searched."
+    },
+    "pcb_2layer_100cm2_each": {
+      "unit": "each", "low": 0.4, "high": 0.7, "status": "snapshot", "checked": "",
+      "source": "https://jlcpcb.com/",
+      "note": "10 x 10 cm, 2-layer, low-markup fab. The JLCPCB homepage lists 5 boards from $2.00 (undated). One user reported $3.50 for five including shipping. Prices are not on the static pages."
+    },
+    "pcb_4layer_100cm2_each": {
+      "unit": "each", "low": 2.0, "high": 6.0, "status": "placeholder", "checked": "",
+      "source": "",
+      "note": "4-layer 10 x 10 cm board. Not priced: JLCPCB's calculator is script-driven and no static price was found. Guess only."
+    },
+    "gimbal_pot_each": {
+      "unit": "each", "low": 0.5, "high": 2.0, "status": "placeholder", "checked": "",
+      "source": "",
+      "note": "Stick potentiometer or hall sensor per axis. Not searched. Guess only."
     }
   }
 }

@@ -92,11 +92,30 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Constraint: OpenSCAD and KiCad are not installed in this environment. CAD and PCB files cannot be rendered or checked here, so any design file is marked unverified until it is opened and rendered at the lab.
 - Stop point: none. Iteration 9 is complete.
 
-## Iteration 10: tag board in KiCad and the enclosure in OpenSCAD (planned)
+## Iteration 10: price audit and the make-own ladder (done: 146 tests pass)
 
-- The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here. Build them at home or at the lab, then mark each file as checked once it has been rendered or run through the design-rule check.
+- Results:
+  - Only 9 of 39 sourced prices are dated within 12 months. Sixteen inputs are placeholders. The earlier "searched 2026-10-10" label on the catalog was wrong, and is removed.
+  - Re-checked and dated: ESP32-C3-MINI-1 (LCSC page fetched 2026-10-10, $2.01 to $3.06), the ICM-42688-P (reseller guide dated 2026-08-23, $6.50; DigiKey and Mouser lead times of 45 to 53 weeks), the TP4056 module (August 2026 listings), electrical steel (Q2 2026 benchmark, $1.44 to $2.09 per kg), skate bearings (February 2026), magnet wire (March 2026 listing), and the RTL-SDR V4.
+  - Pass 8 (own most) is $267 to $594 core, 45 percent made in-house, still over budget. Its largest items are the DIY motors at retail magnet prices, the Holybro GPS, the ESC, and placeholders for the charger and LiPo bag.
+  - Pass 9 (by-weight magnets and salvage) is $253 to $524.
+- Code: each price has a `checked` date. Freshness needs month precision and a date within 12 months. `--audit` lists every input and its freshness. Made items now take a `checked` date from their materials. Pass 8 replaces the bought autopilot, ESC, transmitter and tag battery with four made designs. Pass 9 is the motor what-if.
+- Docs: [make-own-ladder.md](make-own-ladder.md) (each part on the list: buy, own, salvage, verdict), [price-audit.md](price-audit.md), and the updated cost, budget, pipeline and README docs.
+- Not done: no KiCad or OpenSCAD files (tools not installed). The MOSFET and gate-driver bulk prices, the magnet quote by weight, the laser cutter, and the clone GNSS field test are the next research items.
+- Licence claims for PX4, ArduPilot, ELRS, EdgeTX, AM32 and GNSS-SDR come from forum and index summaries. Read each LICENSE file before reuse.
 
-## Iteration 11: range-only sources, such as BLE RSSI (planned)
+- Correction: the catalog said "searched 2026-10-10", which made old listings look current. Many sources were years old (a DigiKey page flagged about 2,349 days old, a Sunlu page about 5 years, a review about 9.5 years). Each price will now carry its own checked date, or "undated". The report flags any price not seen in the last 12 months before 2026-10-10.
+- Re-search, with 2026 cues, the prices that decide the plan: MCU and radio chips (ESP32, SX1262 or similar), IMU and barometer, MOSFETs and gate drivers, 18650 and 21700 cells, electrical steel for laminations, N52 magnets, magnet wire, PLA and PETG, SDR hardware for GNSS and LoRa, PCB fabrication, and the cheapest GNSS chip. Record each source's date where the page shows one.
+- Make-own ladder for each named item: chips, lithium cells, autopilot, GNSS, ESC, transmitter, motors, steel core, ESP32 and LoRa. For each: buy in bulk, salvage, or make. Record the cost, effort, safety and what cannot be made at home.
+- Model: items for the owned routes (DIY ESC, DIY ELRS-style transmitter, own autopilot board, cells from bulk or salvage, GNSS software receiver, laminated steel cores). New pass for "own most" with the made share.
+- Docs: `docs/make-own-ladder.md`, `docs/price-audit.md` (generated), and updates to pipeline and cost docs.
+- Note: the Pixel 8a was an example of a cheap used phone. It is a parts source too (GNSS, IMU, camera, Wi-Fi and cells), not a decided drone computer.
+
+## Iteration 11: KiCad board and OpenSCAD enclosure (planned, needs tools)
+
+- The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here.
+
+## Iteration 12: range-only sources, such as BLE RSSI (planned)
 
 - A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 

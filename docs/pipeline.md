@@ -2,7 +2,7 @@
 
 The goal is to make the drone without depending on any one supplier, and to stop paying a markup on parts that can be made or bought more cheaply in bulk. This doc says what that can realistically mean, where the markup actually sits, and what the cost model shows so far.
 
-Numbers come from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). They are search snapshots from 2026-10-10, so check them at the seller before buying.
+Numbers come from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Each price shows the date it was seen on its source. Most are undated or older than 12 months, which [price-audit.md](price-audit.md) lists. For the route to make each part on the list, see [make-own-ladder.md](make-own-ladder.md).
 
 ## What "owning" means here
 

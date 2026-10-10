@@ -17,7 +17,7 @@ Working budget: **$100 total**. This is a hobby project, so the plan is built ar
 | 2026 (date not recorded) | Google Pixel 8a, used, from Swappa | $250 | Bought by the owner. This is outside the $100 budget and already exceeds it. See [pipeline.md](pipeline.md). |
 | — | Everything else | $0 | Nothing else purchased yet |
 
-The cost passes and what each one buys are in [cost-reduction.md](cost-reduction.md). Prices are from web searches on 2026-10-10 and need checking at the seller.
+The cost passes and what each one buys are in [cost-reduction.md](cost-reduction.md). Prices carry the date they were seen on their source. Most are undated or older than 12 months, so check each one at the seller before buying. See [price-audit.md](price-audit.md).
 
 ## Possible funding
 

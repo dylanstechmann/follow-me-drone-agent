@@ -45,11 +45,11 @@
     },
     {
       "id": "pass4_pixel_onboard",
-      "title": "Pixel 8a (bought used) replaces the Pi and camera on the drone",
+      "title": "Used feature-rich phone replaces the Pi and camera on the drone (example)",
       "based_on": "pass2_print_structure",
       "add": ["pixel_8a_purchased", "usb_serial_adapter"],
       "remove": ["pi_zero2w", "pi_camera3"],
-      "note": "The Pixel is a real purchase at $250, far more than the Pi and camera it replaces. It buys a better camera, GNSS, IMU and compute. Risk added: about 188 g of extra weight, a phone battery on a drone (fire and crash risk), and a MAVLink bridge to the autopilot that must be built and tested. Assumes the Pixel is for the drone. Only try it after bench tests."
+      "note": "An example of a used phone as the drone's computer and camera. The Pixel was bought for $250, far more than the Pi and camera it replaces. It buys GNSS, IMU, camera and compute. Risk added: about 188 g of extra weight, a phone battery on a drone (fire and crash risk), and a MAVLink bridge to the autopilot that must be built and tested."
     },
     {
       "id": "pass5_made_tag",
@@ -65,7 +65,7 @@
       "based_on": "pass2_print_structure",
       "add": ["motor_diy_outrunner", "thrust_stand_make", "load_cell_hx711_set"],
       "remove": ["motor_2207"],
-      "note": "Replaces the four retail motors with DIY outrunners, and adds a thrust stand to measure them. Risk added: DIY motors may be less efficient or less reliable than the retail motor. Measure thrust per watt before using them on a drone. The steel stator core is unpriced, so the total is incomplete."
+      "note": "Replaces the four retail motors with DIY outrunners, and adds a thrust stand to measure them. Risk added: DIY motors may be less efficient or less reliable than the retail motor. Measure thrust per watt before using them on a drone. Magnets bought per disc are the largest cost."
     },
     {
       "id": "pass7_owned_pipeline",
@@ -73,7 +73,23 @@
       "based_on": "pass6_diy_motor_rnd",
       "add": ["chip_esp32c3_mini1", "pcb_tag_outsourced", "passives_kit_bulk", "gnss_patch_antenna_pcb", "cnc_3018_mill"],
       "remove": ["tag_ht_ct62", "tag_gnss_antenna_board"],
-      "note": "Combines the printed structure, the made tag, DIY motor research and the thrust stand. Still bought: the autopilot, GPS, ESC, battery, charger, transmitter and props. The patch antenna is an unverified design on a bought board. The mill is optional capital, and FAU or IEEE may already have one."
+      "note": "Combines the printed structure, the made tag, DIY motor research and the thrust stand. Still bought: the autopilot, GPS, ESC, transmitter, battery, charger and props. The patch antenna is an unverified design on a bought board. The mill is optional capital, and FAU or IEEE may already have one."
+    },
+    {
+      "id": "pass8_own_most",
+      "title": "Own most: made autopilot board, ESC, transmitter and tag battery",
+      "based_on": "pass7_owned_pipeline",
+      "add": ["autopilot_board_own", "esc_4in1_own", "transmitter_own", "tag_battery_own"],
+      "remove": ["fc_pix32_v5_used", "esc_4in1", "elrs_tx_radio", "tag_battery_board"],
+      "note": "Replaces the bought autopilot board, ESC, transmitter and tag battery with designs made from chips and outsourced or printed parts. Not costed: the autopilot firmware port, the barometer, magnetometer and regulators, and the ESC MOSFET prices (placeholders). Each made design needs bench tests and a review before use. The receiver stays bought for now."
+    },
+    {
+      "id": "pass9_own_most_target_motors",
+      "title": "Own most, with the by-weight and salvage motor target",
+      "based_on": "pass8_own_most",
+      "add": ["motor_diy_target_2207"],
+      "remove": ["motor_diy_outrunner"],
+      "note": "What-if pass: the motors use magnets bought by weight, and wire and shaft salvaged. This is only real after a magnet quote and a salvage check. Compare it with pass 8 to see the value of those two routes."
     }
   ]
 }
