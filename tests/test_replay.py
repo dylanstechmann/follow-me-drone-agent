@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from follow_me.context import Conditions, WeatherReport
 from follow_me.council import Council
 from follow_me.fusion import Estimate, Reading, fuse
 from follow_me.mode import Mode, ModeMachine
@@ -15,7 +16,7 @@ def test_weighted_median_rejects_unreliable_source_when_only_two_sources():
     # Old median rejected both here. The trusted GNSS reading must survive.
     readings = [
         Reading("camera", Estimate(4.0, 0.0, 1.0), reliability=0.4),
-        Reading("companion_gnss", Estimate(10.2, 0.0, 1.0), reliability=1.0),
+        Reading("phone_gnss", Estimate(10.2, 0.0, 1.0), reliability=1.0),
     ]
     out = fuse(readings)
     assert out is not None
@@ -31,13 +32,10 @@ def test_two_equal_disagreeing_sources_still_have_no_consensus():
 
 
 def test_council_tracks_on_clear_agreement():
-    council = Council()
-    from follow_me.context import Conditions, WeatherReport
-
     clear = Conditions(weather=WeatherReport(0.0, 2.0, False))
-    result = council.tick(
+    result = Council().tick(
         [Reading("camera", Estimate(10.0, 0.0, 1.0)),
-         Reading("companion_gnss", Estimate(10.0, 0.0, 1.0))],
+         Reading("phone_gnss", Estimate(10.0, 0.0, 1.0))],
         clear,
     )
     assert result.mode is Mode.TRACKING
@@ -46,8 +44,6 @@ def test_council_tracks_on_clear_agreement():
 
 def test_council_scales_command_by_mode_gain():
     council = Council(machine=ModeMachine(degraded_variance=0.1))
-    from follow_me.context import Conditions
-
     result = council.tick([Reading("camera", Estimate(12.0, 3.0, 1.0))], Conditions())
     assert result.mode is Mode.DEGRADED
     assert result.gain_scale == 0.5
@@ -59,26 +55,36 @@ def test_council_scales_command_by_mode_gain():
 
 def test_replay_example_walks_through_expected_modes():
     log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
-    # Small thresholds so the 9-tick example reaches every rung of the ladder.
+    # Small thresholds so the 10-tick example reaches every rung of the ladder.
     council = Council(machine=ModeMachine(dead_reckon_ticks=2, hold_ticks=3))
     modes = [r.mode for _, r in replay(log, council)]
-    assert modes[0] is Mode.TRACKING
-    assert modes[1] is Mode.TRACKING
-    # Rain tick: camera is wrong but GNSS carries the estimate.
-    assert modes[2] is Mode.TRACKING
-    # Link lost and no readings: dead reckoning, then hold.
-    assert modes[4] is Mode.DEAD_RECKONING
-    assert modes[6] is Mode.HOLD
-    assert modes[7] is Mode.RETURN_HOME_REQUESTED
+    # Rain: camera is wrong, both companions agree, so tracking holds.
+    assert modes[:5] == [Mode.TRACKING] * 5
+    # Phone link dropped, tag still carries the estimate: still tracking.
+    assert modes[4] is Mode.TRACKING
+    # No readings at all: dead reckoning, hold, then return-home request.
+    assert modes[5:9] == [
+        Mode.DEAD_RECKONING,
+        Mode.DEAD_RECKONING,
+        Mode.HOLD,
+        Mode.RETURN_HOME_REQUESTED,
+    ]
     # Recovered at the end.
     assert modes[-1] is Mode.TRACKING
 
 
-def test_replay_example_rain_tick_estimate_follows_gnss():
+def test_rain_tick_estimate_follows_the_companions():
     log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
     results = replay(log)
     _, rain_tick = results[2]
     assert rain_tick.estimate.x == pytest.approx(10.0, abs=0.5)
+
+
+def test_phone_link_loss_leaves_tag_as_sole_source():
+    log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    _, link_loss = replay(log)[4]
+    assert link_loss.estimate is not None
+    assert link_loss.estimate.x == pytest.approx(10.0, abs=0.01)
 
 
 def test_replay_never_chases_while_lost():
@@ -91,7 +97,7 @@ def test_replay_never_chases_while_lost():
 def test_main_prints_one_line_per_tick(capsys):
     assert main(["replay", str(EXAMPLE)]) == 0
     lines = capsys.readouterr().out.strip().splitlines()
-    assert len(lines) == 9
+    assert len(lines) == 10
 
 
 def test_main_usage_error(capsys):

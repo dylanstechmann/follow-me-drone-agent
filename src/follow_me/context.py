@@ -8,17 +8,20 @@ import json
 import time
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from typing import Callable, Protocol
 
 from follow_me.fusion import Reading
 
 BASE_RELIABILITY = {
     "camera": 1.0,
-    "companion_gnss": 1.0,
+    "phone_gnss": 1.0,
+    "tag_gnss": 1.0,
     "companion_ble": 0.5,
     "tof": 0.8,
 }
+
+COMPANION_GNSS_SOURCES = ("phone_gnss", "tag_gnss")
 
 UNKNOWN_WEATHER_CAMERA_FACTOR = 0.8
 MAX_MULTIPLIER = 2.0
@@ -34,8 +37,9 @@ class WeatherReport:
 @dataclass(frozen=True)
 class Conditions:
     weather: WeatherReport | None = None  # None means unknown
-    link_quality: float = 1.0  # 0..1, companion radio or cellular link
-    gnss_quality: float = 1.0  # 0..1, rider device's own satellite fix
+    # Per companion source, 0..1. A missing source counts as 1.0.
+    link_quality: dict[str, float] = field(default_factory=dict)  # radio or cellular link
+    gnss_quality: dict[str, float] = field(default_factory=dict)  # the device's own fix
 
 
 def _clamp01(v: float) -> float:
@@ -58,8 +62,9 @@ def attention(
         if wx.wind_mps > 8.0:
             w["camera"] *= 0.7  # gimbal and frame vibration
 
-    w["companion_gnss"] *= _clamp01(conditions.link_quality)
-    w["companion_gnss"] *= _clamp01(conditions.gnss_quality)
+    for src in COMPANION_GNSS_SOURCES:
+        w[src] *= _clamp01(conditions.link_quality.get(src, 1.0))
+        w[src] *= _clamp01(conditions.gnss_quality.get(src, 1.0))
 
     for source, factor in (overrides or {}).items():
         if source in w:

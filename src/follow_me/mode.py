@@ -30,7 +30,9 @@ class Status:
 class ModeMachine:
     def __init__(
         self,
-        degraded_variance: float = 4.0,
+        # 9 m^2 is a 3 m one-sigma error. A 2 m GNSS fix at 10 m range is still tracking.
+        # Tune on real logs; the bench data should set this, not this guess.
+        degraded_variance: float = 9.0,
         dead_reckon_ticks: int = 10,
         hold_ticks: int = 100,
     ) -> None:

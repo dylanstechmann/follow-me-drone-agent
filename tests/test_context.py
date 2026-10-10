@@ -23,7 +23,7 @@ def test_rain_lowers_camera_weight():
     rain = WeatherReport(precipitation_mm=1.5, wind_mps=2.0, fog=False)
     w = attention(Conditions(weather=rain))
     assert w["camera"] < BASE_RELIABILITY["camera"]
-    assert w["companion_gnss"] == pytest.approx(BASE_RELIABILITY["companion_gnss"])
+    assert w["phone_gnss"] == pytest.approx(BASE_RELIABILITY["phone_gnss"])
 
 
 def test_fog_lowers_camera_weight():
@@ -41,15 +41,24 @@ def test_unknown_weather_is_conservative_for_camera():
     assert w["camera"] == pytest.approx(0.8)
 
 
-def test_weak_link_lowers_companion_gnss_only():
-    w = attention(Conditions(weather=CLEAR, link_quality=0.25))
-    assert w["companion_gnss"] == pytest.approx(0.25)
+def test_weak_link_lowers_only_that_companion():
+    w = attention(Conditions(weather=CLEAR, link_quality={"phone_gnss": 0.25}))
+    assert w["phone_gnss"] == pytest.approx(0.25)
+    assert w["tag_gnss"] == pytest.approx(1.0)
     assert w["camera"] == pytest.approx(1.0)
 
 
-def test_poor_gnss_fix_lowers_companion_gnss():
-    w = attention(Conditions(weather=CLEAR, gnss_quality=0.5))
-    assert w["companion_gnss"] == pytest.approx(0.5)
+def test_poor_gnss_fix_lowers_only_that_companion():
+    w = attention(Conditions(weather=CLEAR, gnss_quality={"tag_gnss": 0.5}))
+    assert w["tag_gnss"] == pytest.approx(0.5)
+    assert w["phone_gnss"] == pytest.approx(1.0)
+
+
+def test_link_and_gnss_quality_multiply():
+    w = attention(
+        Conditions(weather=CLEAR, link_quality={"tag_gnss": 0.5}, gnss_quality={"tag_gnss": 0.5})
+    )
+    assert w["tag_gnss"] == pytest.approx(0.25)
 
 
 def test_place_override_multiplies_a_source():

@@ -4,34 +4,43 @@
     {"t": 0.0, "weather": {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
      "readings": [
        {"source": "camera", "x": 10.0, "y": 0.0, "variance": 1.0},
-       {"source": "companion_gnss", "x": 10.2, "y": 0.0, "variance": 1.0}
+       {"source": "phone_gnss", "x": 10.2, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
      ]},
     {"t": 0.5, "weather": {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
      "readings": [
        {"source": "camera", "x": 9.9, "y": 0.1, "variance": 1.0},
-       {"source": "companion_gnss", "x": 10.1, "y": 0.0, "variance": 1.0}
+       {"source": "phone_gnss", "x": 10.1, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.05, "y": 0.0, "variance": 1.0}
      ]},
     {"t": 1.0, "weather": {"precipitation_mm": 2.0, "wind_mps": 3.0, "fog": false},
      "readings": [
        {"source": "camera", "x": 4.0, "y": 0.0, "variance": 1.0},
-       {"source": "companion_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
+       {"source": "phone_gnss", "x": 10.0, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
      ]},
     {"t": 1.5, "weather": {"precipitation_mm": 2.0, "wind_mps": 3.0, "fog": false},
      "overrides": {"camera": 0.0},
      "readings": [
        {"source": "camera", "x": 4.0, "y": 0.0, "variance": 1.0},
-       {"source": "companion_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
+       {"source": "phone_gnss", "x": 10.0, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
      ]},
     {"t": 2.0, "weather": {"precipitation_mm": 2.0, "wind_mps": 3.0, "fog": false},
-     "link_quality": 0.1,
-     "readings": []},
+     "link_quality": {"phone_gnss": 0.0},
+     "readings": [
+       {"source": "phone_gnss", "x": 10.0, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
+     ]},
     {"t": 2.5, "readings": []},
     {"t": 3.0, "readings": []},
     {"t": 3.5, "readings": []},
-    {"t": 4.0, "weather": {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
+    {"t": 4.0, "readings": []},
+    {"t": 4.5, "weather": {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
      "readings": [
        {"source": "camera", "x": 10.0, "y": 0.0, "variance": 1.0},
-       {"source": "companion_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
+       {"source": "phone_gnss", "x": 10.0, "y": 0.0, "variance": 1.0},
+       {"source": "tag_gnss", "x": 10.0, "y": 0.0, "variance": 1.0}
      ]}
   ]
 }

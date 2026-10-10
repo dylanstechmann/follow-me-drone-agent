@@ -42,7 +42,7 @@ def test_clear_day_both_sources_agree_and_tracks():
     clear = WeatherReport(0.0, 2.0, False)
     readings = [
         Reading("camera", camera_estimate(camera_box_at(10.0), HFOV, VFOV)),
-        Reading("companion_gnss", Estimate(10.3, 0.0, 1.0)),
+        Reading("phone_gnss", Estimate(10.3, 0.0, 1.0)),
     ]
     fused, status, cmd = run_tick(readings, Conditions(weather=clear))
     assert status.mode is Mode.TRACKING
@@ -56,7 +56,7 @@ def test_rain_plus_shed_place_lets_gnss_carry_the_estimate():
     # Camera sees a wrong box (a reflection placing the person 4 m away, not 10 m).
     readings = [
         Reading("camera", camera_estimate(camera_box_at(4.0), HFOV, VFOV)),
-        Reading("companion_gnss", Estimate(10.0, 0.0, 1.0)),
+        Reading("phone_gnss", Estimate(10.0, 0.0, 1.0)),
     ]
     fused, status, _ = run_tick(readings, Conditions(weather=rain), places=[shed])
     assert fused.x == pytest.approx(10.0, abs=0.01)  # camera fully discounted by the place
@@ -86,7 +86,7 @@ def test_sources_that_disagree_badly_leave_no_consensus():
     clear = WeatherReport(0.0, 0.0, False)
     readings = [
         Reading("camera", Estimate(10.0, 0.0, 0.5)),
-        Reading("companion_gnss", Estimate(-30.0, 0.0, 0.5)),
+        Reading("phone_gnss", Estimate(-30.0, 0.0, 0.5)),
     ]
     fused, status, _ = run_tick(readings, Conditions(weather=clear))
     assert fused is None

@@ -4,8 +4,8 @@ Log format (JSON): {"ticks": [ ... ]}, each tick:
   {
     "t": 0.0,
     "weather": null | {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
-    "link_quality": 1.0,
-    "gnss_quality": 1.0,
+    "link_quality": 1.0 | {"phone_gnss": 0.1},   # a number applies to all companions
+    "gnss_quality": 1.0 | {"tag_gnss": 0.5},
     "overrides": {"camera": 0.3},          # already-combined place attention
     "readings": [{"source": "camera", "x": 10.0, "y": 0.0, "variance": 1.0,
                   "reliability": 1.0}, ...]
@@ -19,9 +19,18 @@ import json
 import sys
 from pathlib import Path
 
-from follow_me.context import Conditions, WeatherReport
+from follow_me.context import COMPANION_GNSS_SOURCES, Conditions, WeatherReport
 from follow_me.council import Council, TickResult
 from follow_me.fusion import Estimate, Reading
+
+
+def _per_source(value) -> dict[str, float]:
+    """A number applies to every companion source. A dict names each source."""
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return {src: float(q) for src, q in value.items()}
+    return {src: float(value) for src in COMPANION_GNSS_SOURCES}
 
 
 def _parse_conditions(tick: dict) -> Conditions:
@@ -35,8 +44,8 @@ def _parse_conditions(tick: dict) -> Conditions:
         )
     return Conditions(
         weather=weather,
-        link_quality=float(tick.get("link_quality", 1.0)),
-        gnss_quality=float(tick.get("gnss_quality", 1.0)),
+        link_quality=_per_source(tick.get("link_quality")),
+        gnss_quality=_per_source(tick.get("gnss_quality")),
     )
 
 
