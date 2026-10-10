@@ -1,76 +1,84 @@
 # Cost reduction
 
-Budget: $100 (see [budget.md](budget.md)). Every price here comes from [bom/catalog.json](../bom/catalog.json), where each row has its own source links. Prices were searched on 2026-10-10. Most sources are undated snapshots or older listings, so check every price at the seller before buying.
+Budget: $100 for the bench and pipeline work (see [budget.md](budget.md)). The flight hardware for a drone is a separate budget and is not covered. Every price here comes from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Prices are search snapshots from 2026-10-10, so check each one at the seller before buying.
 
-Re-run the report after any change:
+Run the reports after any change:
 
 ```
-PYTHONPATH=src python3 -m follow_me.bom
+PYTHONPATH=src python3 -m follow_me.bom                    # cost report, every pass, plus dependency check
+PYTHONPATH=src python3 -m follow_me.bom --passes-markdown  # the pass table below
+PYTHONPATH=src python3 -m follow_me.bom --markdown         # the parts catalog
 ```
 
-## Status labels
+## Labels
 
-- **snapshot**: a price seen in a search result or a listing. Date unknown.
+Status (how sure the price is):
+
+- **snapshot**: seen in a search result or listing. Date unknown.
 - **official**: a manufacturer's list price.
-- **estimate**: my calculation from a stated assumption, such as grams of filament.
-- **placeholder**: a guess, counted in totals so the total is not too low. Replace it with a quote.
-- **owned**: already owned, counted at $0. A new purchase is not in the budget.
-- **unpriced**: not priced, counted as $0. Reported separately so it is not forgotten.
+- **estimate**: a calculation from a stated assumption, such as grams of filament.
+- **placeholder**: a guess, counted in totals so the total is not too low.
+- **owned** and **purchased**: already held, at $0, or at the exact price the owner paid.
+- **unpriced**: not priced, counted as $0 and reported separately.
 
-## The method
+Path (how the part is obtained):
 
-Each pass starts from the pass it is based on and makes one kind of change:
-
-1. Buy less of the same thing: drop the features the logs do not need yet.
-2. Buy used or refurbished, only for parts whose condition you can check before flight.
-3. Substitute a cheaper equivalent: a smaller computer, a nano receiver, a bare module instead of a finished board.
-4. Repurpose what you already own, such as a spare phone.
-5. Print instead of buy: structure, mounts, enclosures.
-6. Test on the bench before buying the parts that carry risk.
-
-A cheaper part is only a saving if its risk is tested. Each pass in [passes.json](../bom/passes.json) records the risk it adds.
+- **buy_retail**: a finished product or module at retail or marketplace prices.
+- **buy_bulk**: a distributor's bulk price for a chip, module or commodity.
+- **buy_used**: used or refurbished.
+- **buy_service**: a fabrication service, such as a PCB fab.
+- **make**: computed from raw materials in [materials.json](../bom/materials.json).
+- **owned** or **salvage**: already held, or reclaimed.
 
 ## Pass results
 
-Core costs in USD, low to high. Optional items are listed separately in the report.
+Core costs in USD, low to high. Optional items are excluded.
 
-| Pass | Based on | Core low | Core high | Change vs base (low to high) | Budget | Placeholders |
-|---|---|---|---|---|---|---|
-| pass0 retail autopilot | none | 570.60 | 1,003.75 | none (starting point) | over | 8 |
-| pass1 used autopilot, Pi Zero streams video | pass0 | 508.66 | 777.56 | -61.94 to -226.19 | over | 8 |
-| pass2 printed frame and guards | pass1 | 481.66 | 724.56 | -27.00 to -53.00 | over | 7 |
-| pass3 bench-first kit | pass2 | 78.18 | 129.54 | -403.48 to -595.02 | fits at low prices only | 2 |
-| pass4 owned phone as drone computer | pass2 | 446.66 | 684.56 | -35.00 to -40.00 | over | 8 |
+| Pass | Based on | Core low | Core high | Change vs base (low to high) | Made in house (midpoint) | Budget | Placeholders |
+|---|---|---|---|---|---|---|---|
+| pass0 Retail autopilot drone with tag and phone | none (starting point) | 560.08 | 976.35 | none | 0% | over budget | 8 |
+| pass1 Used autopilot, Pi Zero streams video, ground station runs detection | pass0 | 498.14 | 750.16 | -61.94 to -226.19 | 0% | over budget | 8 |
+| pass2 Printed frame and guards | pass1 | 471.17 | 697.36 | -26.97 to -52.80 | 1% | over budget | 9 |
+| pass3 Bench-first kit (no flying drone yet) | pass2 | 67.49 | 101.36 | -403.68 to -596.00 | 1% | fits at low prices only | 2 |
+| pass4 Pixel 8a (bought used) replaces the Pi and camera | pass2 | 686.17 | 907.36 | +215.00 to +210.00 | 1% | over budget | 10 |
+| pass5 Bench kit with a made tag | pass3 | 64.00 | 99.59 | -3.49 to -1.77 | 1% | fits at both ends | 2 |
+| pass6 Printed structure with DIY motor research and a thrust stand | pass2 | 462.89 | 759.15 | -8.28 to +61.79 | 12% | over budget | 10 |
+| pass7 Owned pipeline: printed structure, made tag, DIY motor research | pass6 | 454.80 | 743.08 | -8.09 to -16.07 | 12% | over budget | 9 |
 
-The optional Tello (refurbished, $79 to $139) is in pass 3 but not in the core totals.
+Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 has the optional CNC mill ($115 to $200) as well. Neither is in the core totals.
 
-### What each pass does and the risk it adds
+## What each pass does and the risk it adds
 
-- **Pass 0, retail autopilot.** Every part a first complete build would want, priced from retail. The flight controller alone is $147 to $263.
-- **Pass 1, used autopilot.** Replaces the new flight controller with a used v5 at $149, the Pi 5 with a Pi Zero 2 W, and drops the close-range ToF. The Pi Zero only streams video, so detection runs on a phone or laptop on the ground. Risk added: control now depends on the ground link, so the autopilot's own link-loss failsafe must be tested in simulation first.
-- **Pass 2, printed frame and guards.** Replaces the commercial frame placeholder with printed parts, estimated at $2 to $4 of filament. Risk added: printed parts fail differently from moulded ones, so each load-bearing part needs a bench stress test. See [3d-printing.md](3d-printing.md).
-- **Pass 3, bench-first kit.** Removes every flying part and keeps what the desk tests need: a Pi Zero, a camera, the tag, filament and a camera mount. This is the one pass that fits $100 at low prices. Flying waits until the logs justify it.
-- **Pass 4, owned phone as drone computer.** A spare Android phone replaces the Pi Zero and the camera. Risk added: the phone adds weight, needs its own battery and mounting, and its heat and power behaviour is untested.
+- **Pass 0, retail.** Every part a complete first build would want, at retail or marketplace prices. The commercial frame and retail motors are the big costs.
+- **Pass 1, used autopilot.** A used Pix32 v5 at $149 replaces the new board. Its low end is not cheaper than the new board ($146.99), so the saving comes from dropping the Pi 5 and the ToF sensor. Risk added: control depends on the ground link, so the autopilot's link-loss failsafe must be tested in simulation.
+- **Pass 2, printed structure.** Printed frame, guards and camera mount replace the commercial frame. Risk added: printed parts fail differently from moulded ones, so each load-bearing part needs a bench test. See [3d-printing.md](3d-printing.md).
+- **Pass 3, bench-first kit.** Drops every flying part and keeps what a desk needs: a Pi Zero, a camera, the tag and printed parts. This is the only pass that fits $100 at low prices.
+- **Pass 4, Pixel onboard.** The owner's Pixel 8a replaces the Pi and camera. It costs $210 to $215 more than pass 2. Risk added: about 188 g of extra weight, a phone battery on a drone, and a MAVLink bridge to build and test.
+- **Pass 5, made tag.** Replaces the retail HT-CT62 with a bulk ESP32-C3 and an outsourced 2-layer board. The ESP32's Wi-Fi replaces the LoRa chip. Risk added: Wi-Fi range and dropouts must be measured in the field. The saving is only $1.77 to $3.49.
+- **Pass 6, DIY motor research.** Replaces the four T-Motors with DIY outrunners and adds a thrust stand and load cell. Risk added: DIY motors may be less efficient or less reliable. The steel core is unpriced, so the total is incomplete.
+- **Pass 7, owned pipeline.** Combines the printed structure, made tag, DIY motor research and thrust stand. Still bought: the autopilot, GPS, ESC, battery, charger, transmitter and props. Adds an unverified patch antenna on a bought board.
 
 ## Findings
 
-- **The used autopilot does not save money at the low end.** A used Pix32 v5 is $149 from one listing. The new v6 starts at $146.99. The pass 1 saving comes from dropping the Pi 5 (about $55 at the low end) and the ToF, not from the used board.
-- **A flying drone does not fit in $100 with any pass so far.** The flight controller, the GPS, and the transmitter together cost more than $100 on their own. The $100 budget covers the bench kit and one tag.
-- **The transmitter is the largest placeholder.** Its placeholder is $60 to $120. Owning an ELRS-compatible transmitter removes it, which is why that question is in the progress log.
-- **Each tag costs $27 to $52.** The Heltec board and the bare GNSS module are snapshot prices. The antenna board and the battery are placeholders, so they are the least certain part of the tag cost.
-- **Printing the frame and mounts saves $27 to $53 net,** after the guards and camera mount are added. This is an estimate until real grams are measured.
+- **Printing and bulk chips save the most per part, but the flight hardware is most of the cost.** Pass 7 is 12 percent made in-house by cost. The remaining 88 percent is the autopilot, GPS, ESC, transmitter, battery, charger and props.
+- **The bench kit fits $100 at both ends with a made tag** (pass 5: $64.00 to $99.59). Without the made tag, it only fits at low prices (pass 3: $67.49 to $101.36).
+- **The made tag saves little.** The GNSS module and the antenna and battery placeholders dominate. The bulk ESP32 is a small saving on its own.
+- **Outsourcing a 2-layer board beats etching in-house.** $0.40 to $0.70 per board against $1.82 to $15.48 for a 100 cm2 single-sided board. Keep in-house etching for iteration.
+- **DIY motors are not yet a saving.** $7.01 to $26.42 each, excluding the steel core, against $10 to $13.50 for a retail motor. The steel core could change this either way.
+- **The Pixel is a purchase, not a free device.** It adds $210 to $215 over the Pi and camera it replaces. Whether it is worth that depends on the bench and replay results.
+- **The flying drone does not fit in $100 with any pass.** The autopilot alone is $147 to $263 new. The bench kit fits; the flying drone needs a separate funding source.
 
-## Ideas not yet priced
+## Gaps that change the numbers
 
-- A PX4-compatible autopilot cheaper than the current options. This is the biggest open question for a flying drone.
-- A 4-in-1 ESC and a 5-inch propeller set, both still placeholders.
-- A balance charger and a LiPo bag, both placeholders.
-- Access to a printer. If you have a printer, the printing rows stay as they are. If you use a print service, replace them with its quotes.
-- A lab or makerspace that lends tools or parts. Whether FAU or its IEEE chapter offers one is unconfirmed.
+- The PETG price is a placeholder ($15 to $30 per kg) until searched.
+- The steel stator core for the DIY motor is unpriced.
+- The tag battery, the ESC power stage, the transmitter, the propellers and the charger are placeholders or unpriced.
+- The GNSS patch antenna is an unverified design, and its connector is not priced.
 
 ## Repeating the loop
 
-1. Check a price at the seller and update its row in [catalog.json](../bom/catalog.json). Change its status to match the source.
-2. Add a new pass that is based on the latest one, and list its adds and removes with the reason and the risk.
-3. Run the report and check the numbers in this doc.
-4. Commit the catalog, the passes, and this doc together.
+1. Check a price at the seller. Update its row in [catalog.json](../bom/catalog.json), or its raw input in [materials.json](../bom/materials.json). Change its status to match the source.
+2. If a part's design changes, change its path and its make inputs together.
+3. Add a pass based on the latest one, with its adds and removes, reason and risk.
+4. Run the reports, regenerate [parts-catalog.md](parts-catalog.md), and update the table above.
+5. Commit the data, the passes, and the docs together.

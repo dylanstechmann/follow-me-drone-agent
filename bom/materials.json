@@ -1,0 +1,51 @@
+{
+  "searched_on": "2026-10-10",
+  "notes": "Raw inputs for made items. A made item's cost is the sum of quantity times these prices, with waste_high applied to the high end. Snapshot prices come from search results and may be undated or stale. Placeholders are guesses. Unpriced inputs count as $0 and make the item unpriced.",
+  "materials": {
+    "pla_per_kg": {
+      "unit": "kg", "low": 10.99, "high": 20.0, "status": "snapshot",
+      "source": "https://store.sunlu.com/products/pla-large-spool-3d-printer-filament-5kg; https://www.matterhackers.com/store/l/black-mh-build-series-pla-filament-175mm-5kg/sk/MN5R7RUS",
+      "note": "5 kg spools: SUNLU at $54.99 on sale is about $10.99 per kg. MatterHackers at $99.99 is about $20 per kg. Matter3D and Kingroon sit between, at about $13 to $14 per kg. Shipping extra."
+    },
+    "petg_per_kg": {
+      "unit": "kg", "low": 15.0, "high": 30.0, "status": "placeholder",
+      "source": "",
+      "note": "Not searched. Guess only. Replace with a bulk PETG price before trusting printed frames."
+    },
+    "fr4_single_sided_per_cm2": {
+      "unit": "cm2", "low": 0.009, "high": 0.111, "status": "snapshot",
+      "source": "https://www.newark.com/fortex/ss100/fr4-1-side-copper-clad-100x160x1/dp/51AK9434; https://www.mouser.com/c/tools-supplies/prototyping-products/copper-clad-boards/?material=FR4",
+      "note": "Single-sided copper-clad FR4 only. Low: Newark's 100 x 160 mm board at $1.43. High: Mouser's 3 x 5 in board at $10.73. Other listings fall in between."
+    },
+    "etchant_ferric_per_l": {
+      "unit": "l", "low": 9.25, "high": 18.01, "status": "snapshot",
+      "source": "https://shop.takachpress.com/etching/acid-room-equipment/ferric-chloride/; https://www.circuitspecialists.com/ferric-chloride-photoresists",
+      "note": "Bulk gallons are about $9 to $12 per liter (Takach, 4 gallons for $140). A 1 liter bottle is about $18. Small bottles cost more, up to $47 per liter. Etchant can be reused, so the per-board use is conservative."
+    },
+    "magnet_wire_per_kg": {
+      "unit": "kg", "low": 26.0, "high": 45.0, "status": "snapshot",
+      "source": "https://electronics.alibaba.com/buyingguides/1-kg-copper-enameled-wire-price-guide; https://www.elecify.com/products/enameled-copper-wire-0-3mm-magnet-wire",
+      "note": "Low: a UK per-kg guide, about $26 to $31. High: Elecify's 0.3 mm, 140 g spool at $6.24, about $45 per kg. A DigiKey listing at $136 per kg is about 12 years old and was left out. Low confidence: ask a supplier for a quote on 0.3 mm round wire."
+    },
+    "ndfeb_n52_10x2_each": {
+      "unit": "each", "low": 0.26, "high": 0.78, "status": "snapshot",
+      "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm; https://www.jc-magnetics.com/Magnet-Discs",
+      "note": "JC-Magnetics: $0.26 each at 5,000 or more, $0.30 at 500, $0.46 at 50, and $0.78 at the 25-piece minimum. Small-quantity sellers charge several times more, so buy in bulk or salvage magnets."
+    },
+    "bearing_608_each": {
+      "unit": "each", "low": 0.5, "high": 2.0, "status": "placeholder",
+      "source": "",
+      "note": "Not searched. Guess only."
+    },
+    "steel_shaft_each": {
+      "unit": "each", "low": 1.0, "high": 3.0, "status": "placeholder",
+      "source": "",
+      "note": "Not searched. Guess only."
+    },
+    "stator_steel_core_each": {
+      "unit": "each", "low": 0.0, "high": 0.0, "status": "unpriced",
+      "source": "",
+      "note": "Not priced. Steel laminations for a stator core are still open. Options: salvage, a laser-cut lamination stack, or a coreless design. Until this is priced, DIY motor totals are incomplete."
+    }
+  }
+}

@@ -10,7 +10,7 @@
         "pi5_4gb", "pi_camera3", "battery_4s1500", "charger_4s_balance", "lipo_bag",
         "elrs_rx_nano", "elrs_tx_radio", "tof_vl53l1x",
         "tag_ht_ct62", "tag_neo_m9n_bare", "tag_gnss_antenna_board", "tag_battery_board", "tag_enclosure_printed",
-        "phone_owned", "pla_1kg_spool"
+        "phone_owned"
       ],
       "remove": [],
       "note": "Every part a first complete build would want, priced from retail. This is the starting point for every reduction."
@@ -21,7 +21,7 @@
       "based_on": "pass0_retail_autopilot",
       "add": ["fc_pix32_v5_used", "pi_zero2w"],
       "remove": ["fc_pix32_v6", "pi5_4gb", "tof_vl53l1x"],
-      "note": "A used autopilot saves most of the big flight-controller cost. The Pi Zero streams video, and a phone or laptop on the ground runs detection. Risk added: control now depends on the ground link, so the autopilot's own link-loss failsafe must be tested in simulation. The close-range ToF is dropped until logs show a need."
+      "note": "A used autopilot saves some of the flight-controller cost. The Pi Zero streams video, and a phone or laptop on the ground runs detection. Risk added: control now depends on the ground link, so the autopilot's own link-loss failsafe must be tested in simulation. The close-range ToF is dropped until logs show a need."
     },
     {
       "id": "pass2_print_structure",
@@ -29,7 +29,7 @@
       "based_on": "pass1_shop_smart",
       "add": ["frame_printed_petg", "guard_printed_set", "cam_mount_printed"],
       "remove": ["frame_commercial_5in"],
-      "note": "Printed structure replaces the commercial frame. Risk added: printed parts fail differently from machined or moulded ones, so every printed load-bearing part needs a bench stress test before flight."
+      "note": "Printed structure replaces the commercial frame. Risk added: printed parts fail differently from moulded ones, so every printed load-bearing part needs a bench stress test before flight."
     },
     {
       "id": "pass3_bench_first",
@@ -41,15 +41,39 @@
         "frame_printed_petg", "guard_printed_set", "battery_4s1500", "charger_4s_balance",
         "lipo_bag", "elrs_tx_radio", "elrs_rx_nano"
       ],
-      "note": "Buy only what the bench rig needs: a Pi Zero, a camera, the tag, and filament. Sensors and companions are tested on a desk and the replay tool gets real logs. The flying parts wait until those logs justify them. The Tello is optional for indoor follow-logic tests."
+      "note": "Buy only what the bench rig needs: a Pi Zero, a camera, the tag, and printed parts. Sensors and companions are tested on a desk and the replay tool gets real logs. The flying parts wait until those logs justify them. The Tello is optional for indoor follow-logic tests."
     },
     {
-      "id": "pass4_repurpose_phone",
-      "title": "Owned phone replaces the Pi and camera on the drone",
+      "id": "pass4_pixel_onboard",
+      "title": "Pixel 8a (bought used) replaces the Pi and camera on the drone",
       "based_on": "pass2_print_structure",
-      "add": ["onboard_old_phone", "usb_serial_adapter"],
+      "add": ["pixel_8a_purchased", "usb_serial_adapter"],
       "remove": ["pi_zero2w", "pi_camera3"],
-      "note": "A spare phone already has a camera, GNSS, an IMU, Wi-Fi and enough compute for small detection models. Risk added: the phone adds weight, needs its own battery and mounting, and its power and heat behaviour is untested. Only try it after bench tests."
+      "note": "The Pixel is a real purchase at $250, far more than the Pi and camera it replaces. It buys a better camera, GNSS, IMU and compute. Risk added: about 188 g of extra weight, a phone battery on a drone (fire and crash risk), and a MAVLink bridge to the autopilot that must be built and tested. Assumes the Pixel is for the drone. Only try it after bench tests."
+    },
+    {
+      "id": "pass5_made_tag",
+      "title": "Bench kit with a made tag: bulk ESP32-C3 and outsourced board",
+      "based_on": "pass3_bench_first",
+      "add": ["chip_esp32c3_mini1", "pcb_tag_outsourced", "passives_kit_bulk"],
+      "remove": ["tag_ht_ct62"],
+      "note": "Replaces the retail HT-CT62 with a bulk ESP32-C3 module and an outsourced 2-layer board. The ESP32's Wi-Fi replaces the LoRa chip, since the drone's access point is within follow distance. Risk added: Wi-Fi range and dropouts must be measured in the field before this is trusted. The saving is small, because the GNSS module and antenna dominate the tag cost."
+    },
+    {
+      "id": "pass6_diy_motor_rnd",
+      "title": "Printed structure with DIY motor research and a thrust stand",
+      "based_on": "pass2_print_structure",
+      "add": ["motor_diy_outrunner", "thrust_stand_make", "load_cell_hx711_set"],
+      "remove": ["motor_2207"],
+      "note": "Replaces the four retail motors with DIY outrunners, and adds a thrust stand to measure them. Risk added: DIY motors may be less efficient or less reliable than the retail motor. Measure thrust per watt before using them on a drone. The steel stator core is unpriced, so the total is incomplete."
+    },
+    {
+      "id": "pass7_owned_pipeline",
+      "title": "Owned pipeline: printed structure, made tag, DIY motor research",
+      "based_on": "pass6_diy_motor_rnd",
+      "add": ["chip_esp32c3_mini1", "pcb_tag_outsourced", "passives_kit_bulk", "gnss_patch_antenna_pcb", "cnc_3018_mill"],
+      "remove": ["tag_ht_ct62", "tag_gnss_antenna_board"],
+      "note": "Combines the printed structure, the made tag, DIY motor research and the thrust stand. Still bought: the autopilot, GPS, ESC, battery, charger, transmitter and props. The patch antenna is an unverified design on a bought board. The mill is optional capital, and FAU or IEEE may already have one."
     }
   ]
 }

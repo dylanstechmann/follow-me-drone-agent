@@ -69,20 +69,46 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Updated the sensors, build-plan, budget and README docs to match. Corrected the README, which claimed uv and Docker Compose were in use.
 - Corrected three claims while checking the numbers: the printing saving is net of the added guards, the transmitter is a placeholder rather than unpriced, and tier 2 exceeds the budget at the high end.
 
-## Iteration 9: range-only sources, such as BLE RSSI (planned)
+## Iteration 9: the owned pipeline (done: 137 tests pass)
 
-- A BLE or RSSI reading gives range but no bearing. A single range cannot place the rider, so it cannot be a fused position vote the way GNSS or the camera can.
-- Plan: add `range_only.py` with a log-distance path-loss model (RSSI to range, with a variance that grows with range). Use it as a consistency check on the fused estimate: a range that disagrees with the fused range lowers that source's attention, and a range that agrees does not add a vote.
-- Tests: RSSI to range at known points, variance growth, and the consistency check on agreeing and disagreeing estimates.
-- Stop point for this turn: iteration 9 is planned here and not started. Resume from this plan.
+- Results, from the model:
+  - The bench kit with a made tag fits $100 at both ends: pass 5, $64.00 to $99.59. The saving over the retail tag is only $1.77 to $3.49.
+  - The owned pipeline (pass 7) is 12 percent made in-house by cost. The flight hardware is the rest.
+  - The Pixel 8a costs $210 to $215 more than the Pi and camera it would replace (pass 4).
+  - DIY motors cost $7.01 to $26.42 each, excluding the unpriced steel core, against $10 to $13.50 for a retail motor (pass 6).
+  - An outsourced 2-layer board is $0.40 to $0.70. An in-house 100 cm2 single-sided board is $1.82 to $15.48.
+- Dependency check: the used autopilot, the 2-layer board and the patch-antenna board each have only one listed supplier. The ESC, props, charger, transmitter, tag battery and passives have none.
+- Code: `bom/materials.json` holds raw inputs. Catalog items have a path (retail, bulk, used, service, make, owned, salvage). Made items are costed from materials. The report shows made-in-house share, already-owned cost, and the dependency check. `--passes-markdown` and `--markdown` generate the docs tables.
+- Docs: [pipeline.md](pipeline.md), [pcb-plan.md](pcb-plan.md), [motors-plan.md](motors-plan.md), [lab-access.md](lab-access.md), and updates to the printing, cost, companion, budget and README docs.
+- Found and fixed while checking: the made-share metric counted the Pixel as "made or owned", which made pass 4 look 32 percent self-made. It now counts only made and salvaged parts. A test had also forgotten the waste factor; fixed.
+- Not done: no KiCad or OpenSCAD file, because neither is installed here. The PCB and enclosure plans are written instead.
+
+## Iteration 9 plan (kept for the record)
+
+- Owner input: 3D printers are available at FAU's engineering building and the IEEE club. The owner bought a used Pixel 8a for $250. The owner wants to own design, fabrication and assembly, and to avoid supplier markups. The earlier prices were retail and marketplace prices, so they overstate the raw parts.
+- Research: raw and bulk prices for printing material, PCB blanks and etchant, magnet wire and magnets, a load cell, the chips for a tag and for a DIY ESC or flight controller, whether PX4 hardware designs are open, whether an open ESC firmware exists, the Pixel 8a's weight, and a desktop CNC PCB mill. Each price keeps its source.
+- Code: a `bom/materials.json` of raw inputs. Catalog items can be made (`path: make`), and their cost is computed from those inputs. The report splits totals by path (retail, bulk, used, purchased, make, owned) and shows the share that is made or owned. New passes cover a made tag, a DIY motor research track and an owned-pipeline pass. Pass 4 uses the Pixel 8a at its purchase price, not $0.
+- Docs: `docs/pipeline.md` (make-or-buy table, feasibility, savings and effort, and what cannot be owned), `docs/pcb-plan.md`, `docs/motors-plan.md`, `docs/lab-access.md` (what to ask FAU and IEEE for), and updates to the printing, cost, companion and budget docs.
+- Constraint: OpenSCAD and KiCad are not installed in this environment. CAD and PCB files cannot be rendered or checked here, so any design file is marked unverified until it is opened and rendered at the lab.
+- Stop point: none. Iteration 9 is complete.
+
+## Iteration 10: tag board in KiCad and the enclosure in OpenSCAD (planned)
+
+- The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here. Build them at home or at the lab, then mark each file as checked once it has been rendered or run through the design-rule check.
+
+## Iteration 11: range-only sources, such as BLE RSSI (planned)
+
+- A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
-- Price the open lines: a PX4-compatible autopilot, a transmitter, the 4-in-1 ESC, propellers and a charger.
 
 ## Open questions for the owner
 
-- Do you have access to a 3D printer (your own, a makerspace, or a print service)? This changes the printing costs.
+- What is the Pixel 8a for? The model assumes the drone's onboard computer and camera (pass 4). Confirm, because the rider's companion is your existing phone.
+- Does the $100 budget include the Pixel? The model keeps it outside the budget. The $250 is already more than the budget.
+- Which funding or equipment can FAU engineering or IEEE provide? See [lab-access.md](lab-access.md).
 - Do you already own an ELRS-compatible transmitter? It is the largest placeholder in the drone passes ($60 to $120).
+- What can FAU engineering and IEEE provide: a PCB mill or etching setup, soldering and hot-air stations, a bench power supply, a load cell, magnet wire, or funding? See [lab-access.md](lab-access.md).
 - Repo license (still unset; see the README).

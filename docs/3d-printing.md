@@ -6,10 +6,9 @@ Everything here is a starting point to test. No number in this doc has been meas
 
 ## Printer access
 
-Unknown. Options:
+The owner has access to 3D printers at FAU's engineering building and at the IEEE club. Ask about models, materials, charges and rules (see [lab-access.md](lab-access.md)). Other options:
 
 - Your own printer. Filament cost only.
-- A makerspace or library. Check its fees and whether it allows printing flight parts.
 - A print service. Replace the printing rows in [parts-catalog.md](parts-catalog.md) with its quotes.
 
 ## Materials
@@ -47,9 +46,14 @@ Unknown. Options:
 
 ## Costing a part
 
-Filament cost is grams divided by 1000, times the price per kilogram. For example, a 150 g frame at $26 per kg is $3.90 of filament. Time and electricity are not counted yet.
+Printed parts are costed from the raw filament prices in [materials.json](../bom/materials.json):
 
-The catalog's printed-part rows are estimates built this way. Measure them before trusting them.
+- PLA at $10.99 to $20 per kg, from 5 kg spools.
+- PETG at $15 to $30 per kg. This is a placeholder until a bulk PETG price is searched.
+
+Cost is grams divided by 1000, times the price per kilogram, with 20 percent waste added to the high end. A 150 g PETG frame comes to about $2.25 to $5.40. Time and electricity are not counted yet.
+
+The catalog's printed-part rows are estimates built this way. Measure the real grams in the slicer and replace them before trusting them.
 
 ## Safety
 
