@@ -60,15 +60,20 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Finding: the autopilot flight controller and the transmitter are most of the cost. A flying drone does not fit in $100 with any pass so far. The $100 budget covers the bench kit and one tag.
 - Found while checking: the report compared each pass with the line above it. Pass 4 is based on pass 2, so it now compares against its base.
 
-## Iteration 8: documentation from the data (planned)
+## Iteration 8: documentation from the data (done: 119 tests pass)
 
-- `docs/parts-catalog.md` generated from the catalog, `docs/3d-printing.md`, `docs/cost-reduction.md`, `docs/companion-tiers.md`.
+- `docs/parts-catalog.md` is generated from the catalog (`python -m follow_me.bom --markdown`). Regenerate it after any catalog change.
+- `docs/cost-reduction.md` covers the method, the five passes with their risks, the findings, and the steps for repeating the loop.
+- `docs/3d-printing.md` covers printer access, materials, parts with the test each one needs before flight, starting settings, costing, and safety.
+- `docs/companion-tiers.md` records the tag-plus-phone decision, the tier costs, the rule that a device must earn its place, and the safety limits on the board.
+- Updated the sensors, build-plan, budget and README docs to match. Corrected the README, which claimed uv and Docker Compose were in use.
+- Corrected three claims while checking the numbers: the printing saving is net of the added guards, the transmitter is a placeholder rather than unpriced, and tier 2 exceeds the budget at the high end.
 
 ## Next candidates (not started)
 
+- Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
+- Price the open lines: a PX4-compatible autopilot, a transmitter, the 4-in-1 ESC, propellers and a charger.
 - A BLE range source model (RSSI to distance with a log-distance fit, plus its variance).
-- Logging of each tick to a local file, so real bench data can feed back into the replay.
-- Find a PX4-compatible flight controller that costs well under the current options.
 
 ## Open questions for the owner
 

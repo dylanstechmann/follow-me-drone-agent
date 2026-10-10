@@ -16,6 +16,8 @@ Working budget: **$100 total**. This is a hobby project, so the plan is built ar
 |------|------|------|-------|
 | — | — | $0 | Nothing purchased yet |
 
+The cost passes and what each one buys are in [cost-reduction.md](cost-reduction.md). Prices are from web searches on 2026-10-10 and need checking at the seller.
+
 ## Possible funding
 
 - FAU / FAU IEEE (Florida Atlantic University and its IEEE student chapter) may be a funding source. This is not confirmed. Eligibility, amounts and whether a personal hobby project qualifies all need checking with them. No contact has been made.

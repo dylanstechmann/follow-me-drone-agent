@@ -6,9 +6,9 @@ The drone does the seeing. A small companion device the rider carries (a "tag") 
 
 ## Companion (rider) options, cheapest first
 
-These are options to evaluate, not purchases. Check current prices and availability before buying anything; none are quoted here.
+**Owner decision:** a dedicated tag and the phone app, together. Other options stay as evaluations, not purchases. Tiers and costs are in [companion-tiers.md](companion-tiers.md). Prices are in [parts-catalog.md](parts-catalog.md), from searches on 2026-10-10, and need checking at the seller.
 
-- **Phone app.** Uses the phone's own GNSS and radio. Zero extra hardware. Needs a link to the drone (local Wi-Fi or a radio module) or a cellular path. Good for early tests.
+- **Phone app.** Uses the phone's own GNSS, IMU and Wi-Fi. Zero extra hardware, since the phone is already owned. Needs a link to the drone (the drone's Wi-Fi access point is the simplest option). Good for early tests.
 - **BLE beacon on an ESP32-class board.** Broadcasts so the drone can estimate range from RSSI. Very noisy, but cheap and useful as a sanity check.
 - **GNSS module with a radio.** A repurposed GNSS module plus a small radio (for example a LoRa-class module) sends the rider's position. Needs an antenna and a battery plan.
 - **UWB tags.** Much better ranging, usually more expensive. Later option, only if the budget allows.
