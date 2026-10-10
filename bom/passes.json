@@ -1,0 +1,55 @@
+{
+  "budget_usd": 100,
+  "passes": [
+    {
+      "id": "pass0_retail_autopilot",
+      "title": "Retail autopilot drone with tag and phone",
+      "based_on": null,
+      "add": [
+        "fc_pix32_v6", "gps_m9n", "motor_2207", "esc_4in1", "props_5in", "frame_commercial_5in",
+        "pi5_4gb", "pi_camera3", "battery_4s1500", "charger_4s_balance", "lipo_bag",
+        "elrs_rx_nano", "elrs_tx_radio", "tof_vl53l1x",
+        "tag_ht_ct62", "tag_neo_m9n_bare", "tag_gnss_antenna_board", "tag_battery_board", "tag_enclosure_printed",
+        "phone_owned", "pla_1kg_spool"
+      ],
+      "remove": [],
+      "note": "Every part a first complete build would want, priced from retail. This is the starting point for every reduction."
+    },
+    {
+      "id": "pass1_shop_smart",
+      "title": "Used autopilot, Pi Zero streams video, ground station runs detection",
+      "based_on": "pass0_retail_autopilot",
+      "add": ["fc_pix32_v5_used", "pi_zero2w"],
+      "remove": ["fc_pix32_v6", "pi5_4gb", "tof_vl53l1x"],
+      "note": "A used autopilot saves most of the big flight-controller cost. The Pi Zero streams video, and a phone or laptop on the ground runs detection. Risk added: control now depends on the ground link, so the autopilot's own link-loss failsafe must be tested in simulation. The close-range ToF is dropped until logs show a need."
+    },
+    {
+      "id": "pass2_print_structure",
+      "title": "Printed frame and guards",
+      "based_on": "pass1_shop_smart",
+      "add": ["frame_printed_petg", "guard_printed_set", "cam_mount_printed"],
+      "remove": ["frame_commercial_5in"],
+      "note": "Printed structure replaces the commercial frame. Risk added: printed parts fail differently from machined or moulded ones, so every printed load-bearing part needs a bench stress test before flight."
+    },
+    {
+      "id": "pass3_bench_first",
+      "title": "Bench-first kit (no flying drone yet)",
+      "based_on": "pass2_print_structure",
+      "add": ["tello_refurb"],
+      "remove": [
+        "fc_pix32_v5_used", "gps_m9n", "motor_2207", "esc_4in1", "props_5in",
+        "frame_printed_petg", "guard_printed_set", "battery_4s1500", "charger_4s_balance",
+        "lipo_bag", "elrs_tx_radio", "elrs_rx_nano"
+      ],
+      "note": "Buy only what the bench rig needs: a Pi Zero, a camera, the tag, and filament. Sensors and companions are tested on a desk and the replay tool gets real logs. The flying parts wait until those logs justify them. The Tello is optional for indoor follow-logic tests."
+    },
+    {
+      "id": "pass4_repurpose_phone",
+      "title": "Owned phone replaces the Pi and camera on the drone",
+      "based_on": "pass2_print_structure",
+      "add": ["onboard_old_phone", "usb_serial_adapter"],
+      "remove": ["pi_zero2w", "pi_camera3"],
+      "note": "A spare phone already has a camera, GNSS, an IMU, Wi-Fi and enough compute for small detection models. Risk added: the phone adds weight, needs its own battery and mounting, and its power and heat behaviour is untested. Only try it after bench tests."
+    }
+  ]
+}
