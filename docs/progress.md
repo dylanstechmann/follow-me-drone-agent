@@ -69,14 +69,20 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Updated the sensors, build-plan, budget and README docs to match. Corrected the README, which claimed uv and Docker Compose were in use.
 - Corrected three claims while checking the numbers: the printing saving is net of the added guards, the transmitter is a placeholder rather than unpriced, and tier 2 exceeds the budget at the high end.
 
+## Iteration 9: range-only sources, such as BLE RSSI (planned)
+
+- A BLE or RSSI reading gives range but no bearing. A single range cannot place the rider, so it cannot be a fused position vote the way GNSS or the camera can.
+- Plan: add `range_only.py` with a log-distance path-loss model (RSSI to range, with a variance that grows with range). Use it as a consistency check on the fused estimate: a range that disagrees with the fused range lowers that source's attention, and a range that agrees does not add a vote.
+- Tests: RSSI to range at known points, variance growth, and the consistency check on agreeing and disagreeing estimates.
+- Stop point for this turn: iteration 9 is planned here and not started. Resume from this plan.
+
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
 - Price the open lines: a PX4-compatible autopilot, a transmitter, the 4-in-1 ESC, propellers and a charger.
-- A BLE range source model (RSSI to distance with a log-distance fit, plus its variance).
 
 ## Open questions for the owner
 
 - Do you have access to a 3D printer (your own, a makerspace, or a print service)? This changes the printing costs.
-- Do you already own an ELRS-compatible transmitter? That line is the largest unpriced item in the drone builds.
+- Do you already own an ELRS-compatible transmitter? It is the largest placeholder in the drone passes ($60 to $120).
 - Repo license (still unset; see the README).
