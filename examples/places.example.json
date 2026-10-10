@@ -1,0 +1,20 @@
+{
+  "places": [
+    {
+      "name": "Example shed (fake coordinates)",
+      "lat": 0.0010,
+      "lon": 0.0010,
+      "radius_m": 40,
+      "attention": { "camera": 0.3, "tof": 1.2 },
+      "note": "Camera gets confused by a reflective shed wall; rely on companion GNSS here."
+    },
+    {
+      "name": "Example rough patch (fake coordinates)",
+      "lat": 0.0050,
+      "lon": 0.0020,
+      "radius_m": 60,
+      "attention": { "companion_gnss": 0.5 },
+      "note": "Known cellular dead zone; lower the companion link weight."
+    }
+  ]
+}
