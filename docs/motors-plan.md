@@ -4,19 +4,26 @@ The aim is to understand motors well enough to build them, measure them, and jud
 
 ## What the model says
 
-For one 2207-class outrunner, from [bom/catalog.json](../bom/catalog.json):
+For one 2207-class outrunner, from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Two parts routes:
 
-| Input | Quantity per motor | Cost (USD, low to high) |
-|---|---|---|
-| 0.3 mm enamelled copper wire | 40 g | 1.04 to 1.80 |
-| N52 neodymium discs, 10 x 2 mm | 14 | 3.64 to 10.92 |
-| 608 bearings | 2 | 1.00 to 4.00 (placeholder) |
-| Steel shaft | 1 | 1.00 to 3.00 (placeholder) |
-| Printed bell (PLA) | 30 g | 0.33 to 0.60 |
-| Steel stator core | 1 | unpriced |
-| **Total, excluding the core, with 30 percent waste on the high end** | | **7.01 to 26.42** |
+| Input | Quantity per motor | Retail and distributor parts (USD) | Factory parts and lab stator (USD) |
+|---|---|---|---|
+| 0.3 mm enamelled copper wire | 40 g | 0.47 to 1.78 | 0.47 to 1.78 (or salvaged) |
+| N52 neodymium discs, 10 x 2 mm | 14 | 3.64 to 10.92 (distributor) | 0.28 to 1.40 (factory, 1,000 minimum) |
+| Miniature bearings, 4 x 9 x 4 mm (684ZZ) | 2 | 6.00 to 8.76 (retail) | 0.32 to 1.76 (factory, 100 minimum) |
+| Steel shaft | 1 | 1.00 to 3.00 (placeholder) | 1.00 to 3.00 (placeholder) |
+| Electrical steel for the stator | 25 g | 0.04 to 0.05 | 0.04 to 0.05 |
+| Stator laminations | 1 set | 0.50 to 2.00 (laser-cut placeholder) | 0.20 to 1.00 (lab etch placeholder) |
+| Printed bell (PLA, thrust stand only) | 30 g | 0.26 to 0.54 | 0.26 to 0.54 |
+| **Total, with 30 percent waste on the high end** | | **11.91 to 35.17** | **2.57 to 12.40** |
 
-A retail T-Motor V2207 V2 is $10 to $13.50. So the DIY motor is not clearly cheaper, and the steel core could add to it. The 14-magnet count is an assumption for a 2207-class outrunner. Check it against the chosen stator design.
+A retail T-Motor V2207 V2 is $10 to $13.50 (undated). Only the factory-parts route is cheaper. The 14-magnet count is an assumption for a 2207-class outrunner, so check it against the chosen stator design.
+
+**Correction:** an earlier version used 608 skateboard bearings. They are 22 mm across, the same size as a 2207 stator, so they cannot fit. Small drone motors use miniature bearings around 4 x 9 x 4 mm.
+
+**Laminations:** most makerspace CO2 lasers cannot cut steel. Use a fiber laser, a cutting service, or photo-etching with ferric chloride (unverified for silicon steel, so test a coupon first). Factory stator cores are $0.99 to $1.99 at a 1,000-piece minimum, which is about $1,000 to $2,000 of cash.
+
+**Bells:** a printed bell is for the thrust stand only. A flight motor needs a metal bell, which is not priced.
 
 ## Design options
 

@@ -1,6 +1,6 @@
 # Cost reduction
 
-Budget: $100 for the bench and pipeline work (see [budget.md](budget.md)). A flying drone's hardware is a separate budget. Every price comes from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json), and each price carries the date it was seen on its source. Most are undated or older than 12 months, which [price-audit.md](price-audit.md) lists. Check each one at the seller before buying.
+Budget: $100 for the bench and pipeline work (see [budget.md](budget.md)). A flying drone's hardware is a separate budget. Every price comes from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Each price carries the date it was seen on its source. Only 10 of 51 sourced prices are dated within 12 months, as [price-audit.md](price-audit.md) shows, so check each one at the seller before buying.
 
 Run the reports after any change:
 
@@ -17,76 +17,80 @@ Status (how sure the price is):
 
 - **snapshot**: seen on a source page or in a listing.
 - **official**: a manufacturer's list price.
-- **estimate**: a calculation from a stated assumption, such as grams of filament.
+- **estimate**: a calculation from a stated assumption.
 - **placeholder**: a guess, counted in totals so the total is not too low.
 - **owned** and **purchased**: already held, at $0, or at the exact price the owner paid.
 - **unpriced**: not priced, counted as $0 and reported separately.
 
-Checked (when the price was seen): a date (`2026-10-10`), a month (`2026-08`), a year (`2026`), or empty (undated). A price is **fresh** only with month precision and a date within 12 months before 2026-10-10.
+Checked (when the price was seen): a date, a month, a year, or empty (undated). A price is **fresh** only with month precision and a date within 12 months before 2026-10-10.
 
 Path (how the part is obtained):
 
-- **buy_retail**: a finished product or module at retail or marketplace prices.
-- **buy_bulk**: a distributor price for a chip, module or commodity.
-- **buy_used**: used or refurbished.
-- **buy_service**: a fabrication service, such as a PCB fab.
-- **make**: computed from raw materials in [materials.json](../bom/materials.json).
+- **buy_retail**, **buy_bulk**, **buy_used**: bought finished, from a retailer, distributor or the used market.
+- **buy_service** and **buy_factory**: made by a fab or factory. When the item lists its parts, it is the owner's design.
+- **make**: made in-house from materials.
 - **owned** or **salvage**: already held, or reclaimed.
+
+Two cash numbers:
+
+- **Core cost** is per drone, at the price for the quantity needed.
+- **Cash at minimum orders** is what it takes to place every order at its minimum quantity: 1,000 magnets, five boards per design, one assembly setup per design, and so on.
 
 ## Pass results
 
-Core costs in USD, low to high. Optional items are excluded. The last column counts sourced prices dated within 12 months.
+| Pass | Based on | Core low | Core high | Change vs base (low to high) | Cash at minimum orders | Made in house | Owner-designed | Budget | Placeholders | Dated in 12 months |
+|---|---|---|---|---|---|---|---|---|---|---|
+| pass0 Retail autopilot drone with tag and phone | none | 557.91 | 964.58 | none (starting point) | 566.25 to 982.04 | 0% | 0% | over | 7 | 0 of 12 |
+| pass1 Used autopilot, Pi Zero streams video | pass0 | 495.97 | 738.39 | -61.94 to -226.19 | 504.31 to 755.85 | 0% | 0% | over | 7 | 0 of 11 |
+| pass2 Printed frame and guards | pass1 | 468.93 | 685.52 | -27.04 to -52.87 | 489.31 to 725.85 | 1% | 1% | over | 8 | 0 of 11 |
+| pass3 Bench-first kit (no flying drone yet) | pass2 | 67.36 | 101.23 | -401.57 to -584.29 | 75.44 to 118.04 | 1% | 1% | fits at low prices only | 2 | 0 of 6 |
+| pass4 Used feature-rich phone onboard (example) | pass2 | 683.93 | 895.52 | +215.00 to +210.00 | 704.31 to 935.85 | 1% | 1% | over | 9 | 0 of 9 |
+| pass5 Bench kit with a made tag | pass3 | 63.87 | 98.99 | -3.49 to -2.24 | 71.95 to 115.80 | 1% | 1% | fits at both ends | 2 | 1 of 7 |
+| pass6 DIY motor research (retail parts) and a thrust stand | pass2 | 480.05 | 782.12 | +11.12 to +96.60 | 509.96 to 825.42 | 16% | 16% | over | 9 | 2 of 15 |
+| pass7 Owned pipeline | pass6 | 471.96 | 765.58 | -8.09 to -16.54 | 501.87 to 808.88 | 16% | 16% | over | 8 | 3 of 17 |
+| pass8 Own most: made autopilot board, ESC, transmitter, tag battery | pass7 | 275.09 | 623.11 | -196.87 to -142.47 | 316.85 to 752.24 | 48% | 48% | over | 7 | 6 of 26 |
+| pass9 Own most, with the by-weight and salvage motor target | pass8 | 238.17 | 516.23 | -36.92 to -106.88 | 373.44 to 834.95 | 38% | 38% | over | 7 | 5 of 25 |
+| pass10 Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators | pass8 | 207.86 | 534.21 | -67.23 to -88.90 | 332.20 to 934.98 | 20% | 51% | over | 10 | 7 of 28 |
+| pass11 Factory stator cores at a 1,000-piece minimum | pass10 | 210.86 | 539.05 | +3.00 to +4.84 | 1,319.96 to 2,918.89 | 21% | 51% | over | 10 | 6 of 28 |
 
-| Pass | Based on | Core low | Core high | Change vs base (low to high) | Made in house | Budget | Placeholders | Dated in 12 months |
-|---|---|---|---|---|---|---|---|---|
-| pass0 Retail autopilot drone with tag and phone | none (starting point) | 560.02 | 976.29 | none | 0% | over | 8 | 0 of 11 |
-| pass1 Used autopilot, Pi Zero streams video | pass0 | 498.08 | 750.10 | -61.94 to -226.19 | 0% | over | 8 | 0 of 10 |
-| pass2 Printed frame and guards | pass1 | 471.04 | 697.23 | -27.04 to -52.87 | 1% | over | 9 | 0 of 10 |
-| pass3 Bench-first kit (no flying drone yet) | pass2 | 67.36 | 101.23 | -403.68 to -596.00 | 1% | fits at low prices only | 2 | 0 of 6 |
-| pass4 Used feature-rich phone replaces the Pi and camera (example) | pass2 | 686.04 | 907.23 | +215.00 to +210.00 | 1% | over | 10 | 0 of 8 |
-| pass5 Bench kit with a made tag | pass3 | 63.87 | 98.99 | -3.49 to -2.24 | 1% | fits at both ends | 2 | 1 of 7 |
-| pass6 Printed structure, DIY motor research, thrust stand | pass2 | 468.16 | 764.39 | -2.88 to +67.16 | 13% | over | 10 | 3 of 14 |
-| pass7 Owned pipeline | pass6 | 460.07 | 747.85 | -8.09 to -16.54 | 13% | over | 9 | 4 of 16 |
-| pass8 Own most: made autopilot board, ESC, transmitter, tag battery | pass7 | 267.32 | 594.07 | -192.75 to -153.78 | 45% | over | 9 | 7 of 23 |
-| pass9 Own most, with the by-weight and salvage motor target | pass8 | 253.12 | 523.59 | -14.20 to -70.48 | 38% | over | 9 | 6 of 22 |
-
-Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 has the optional CNC mill ($115 to $200). Neither is in the core totals.
+Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later include the optional CNC mill ($115 to $200). Neither is in the core totals.
 
 ## What each pass does and the risk it adds
 
 - **Pass 0, retail.** Every part a complete first build would want, at retail or marketplace prices.
-- **Pass 1, used autopilot.** A used Pix32 v5 at $149 replaces the new board. At the low end it is not cheaper than the new one ($146.99), so the saving comes from dropping the Pi 5 and the ToF sensor. Risk added: control depends on the ground link, so the autopilot's link-loss failsafe must be tested in simulation.
-- **Pass 2, printed structure.** Printed frame, guards and camera mount replace the commercial frame. Risk added: printed parts fail differently from moulded ones, so each load-bearing part needs a bench test. See [3d-printing.md](3d-printing.md).
-- **Pass 3, bench-first kit.** Drops every flying part and keeps what a desk needs. This is the only pass that fits $100 at low prices without a made tag.
-- **Pass 4, used phone onboard (example).** A used phone replaces the Pi and camera. It costs $210 to $215 more. The example is the owner's Pixel 8a, bought for $250. Risk added: about 188 g of weight, a phone battery on a drone, and a MAVLink bridge to build and test.
-- **Pass 5, made tag.** Replaces the retail HT-CT62 with a bulk ESP32-C3 and an outsourced 2-layer board. Wi-Fi replaces the LoRa chip. Risk added: Wi-Fi range must be measured in the field. The saving is $2 to $3.50.
-- **Pass 6, DIY motor research.** Replaces the four T-Motors with DIY outrunners and adds a thrust stand. Risk added: DIY motors may be less efficient or less reliable. Magnets bought per disc are the largest cost.
-- **Pass 7, owned pipeline.** Combines the printed structure, the made tag, DIY motor research and the thrust stand. Still bought: the autopilot, GPS, ESC, transmitter, battery, charger and props.
-- **Pass 8, own most.** Replaces the bought autopilot, ESC, transmitter and tag battery with designs made from chips and outsourced or printed parts. Risk added: the autopilot firmware port, the barometer and regulators, and the MOSFET prices are not costed or are placeholders.
-- **Pass 9, by-weight motors.** A what-if: magnets bought by weight, wire and shaft salvaged. It is real only after a magnet quote and a salvage check.
+- **Pass 1, used autopilot.** A used Pix32 v5 at $149 replaces the new board. Its low end is not cheaper than new ($146.99), so the saving comes from dropping the Pi 5 and the ToF sensor. Risk added: control depends on the ground link.
+- **Pass 2, printed structure.** Printed frame, guards and camera mount. Risk added: printed parts need bench load tests ([3d-printing.md](3d-printing.md)).
+- **Pass 3, bench-first kit.** Only what a desk needs.
+- **Pass 4, used phone onboard (example).** Costs $210 to $215 more than the Pi and camera it replaces. Risk added: weight, a phone battery on a drone, and a MAVLink bridge.
+- **Pass 5, made tag.** Bulk ESP32-C3 and an outsourced board. Wi-Fi replaces LoRa.
+- **Pass 6, DIY motors with retail parts.** Now more expensive than retail motors, because miniature bearings at retail are $3 to $4.38 each.
+- **Pass 7, owned pipeline.** Printed structure, made tag, DIY motor research, thrust stand.
+- **Pass 8, own most.** Hand-assembled autopilot board, ESC and transmitter, and an own tag battery. Risk added: the autopilot firmware port and MOSFET prices are not costed.
+- **Pass 9, by-weight motors.** A what-if: magnets by weight, wire and shaft salvaged.
+- **Pass 10, closer to the factory.** The board factory assembles the owner's designs from its own parts stock. The GPS becomes an own board with a bare M9N. Magnets and bearings come from factories. Stators are etched in the lab (unverified). The tag moves to a BLE chip and a clone GNSS module (both untested). Includes an import-duty allowance. Risk added: minimum orders, uncertain duty, and new parts that need testing.
+- **Pass 11, factory stators.** A what-if that shows the cash trap of a 1,000-piece minimum order.
 
 ## Findings
 
-- **The bench kit fits $100 at both ends with a made tag** (pass 5: $63.87 to $98.99). Without the made tag, it fits only at low prices (pass 3).
-- **Owning more cuts the drone's cost but not below $100.** Pass 8 is $267 to $594, and 45 percent of that cost is made in-house by cost (midpoints). The largest remaining items are the motors at retail magnet prices, the Holybro GPS, the ESC, the charger and LiPo bag (placeholders), the 4S battery and the camera.
-- **Motors are the biggest make item and the largest uncertainty.** At retail magnet prices, four DIY motors cost $33.64 to $111.24, against $40 to $54 for four T-Motors. Magnets bought by weight and salvaged wire and shaft bring the target to $19.44 to $40.76 (pass 9).
-- **The ESC depends on MOSFET prices we have not verified.** The bulk price is a placeholder, and the retail price is $1.75 (June 2026). The ESC total is $15.92 to $82.18 for that reason.
-- **The made tag saves little.** The GNSS module and antenna dominate the cost.
-- **Outsourcing a 2-layer board beats etching in-house.** $0.40 to $0.70 per board, against $1.82 to $15.48 for 100 cm2 etched at home.
-- **The data is weaker than the totals suggest.** Only 9 of 39 sourced prices are dated within 12 months, and 16 inputs are placeholders. The totals are useful for comparing routes, not for quoting a build.
+- **The bench kit fits $100 at both ends with a made tag** (pass 5: $63.87 to $98.99).
+- **Going upstream is the biggest cut so far.** Pass 10 is $207.86 to $534.21 per drone, against $275.09 to $623.11 for pass 8. The largest single saving is the GPS: an own factory-assembled board at $15.54 to $28.59 replaces a $54.99 to $74.90 retail board.
+- **Motors only beat retail with factory parts.** With retail magnets and bearings, a DIY motor is $11.91 to $35.17. With factory magnets and bearings and a lab-etched stator, it is $2.57 to $12.40. A T-Motor is $10 to $13.50.
+- **Cheaper per drone needs more cash up front.** Pass 10 needs $332.20 to $934.98 at minimum orders. Factory stator cores (pass 11) push that to $1,319.96 to $2,918.89. Group orders through the IEEE club are how this becomes affordable.
+- **Still over $100 for a flying drone.** The 4S battery, charger, LiPo bag, camera, Pi and ESC MOSFETs remain.
+- **The data is weak.** Only 10 of 51 sourced prices are dated within 12 months, and 16 inputs are placeholders. The totals compare routes. They are not a quote.
 
 ## Gaps that change the numbers
 
-- Undated prices: about 30 of the 39 sourced prices. Re-check the chips, the GPS modules and the motors first, because they drive most of the total.
-- MOSFET and gate-driver bulk prices, for the ESC.
-- The laser-cut stator, the 4-layer board, the gimbal pots and the transmitter's 2.4 GHz module.
-- The charger and LiPo bag for the drone, both still retail placeholders.
-- The PETG price (a placeholder).
+- **ESC MOSFET bulk price.** The largest placeholder in pass 10.
+- **Import duty rate.** A placeholder allowance until checked with CBP.
+- **Lab lamination etching.** An unverified process with a placeholder cost.
+- **Ceramic GNSS antenna, gimbal pots, steel shaft, charger, LiPo bag and PETG.** All placeholders.
+- **About 41 undated or stale prices.**
 
 ## Repeating the loop
 
-1. Check a price at the seller. Update its row in [catalog.json](../bom/catalog.json) or its input in [materials.json](../bom/materials.json). Record the date you saw it in `checked`, and set the status to match the source.
-2. If a design changes, change its path and its make inputs together.
-3. Add a pass based on the latest one, with its adds and removes, reason and risk.
+1. Check a price at the seller. Update its row in [catalog.json](../bom/catalog.json) or its input in [materials.json](../bom/materials.json). Record the date you saw it, its minimum order (`moq`), and whether each design pays its own minimum (`moq_per_item`).
+2. If a design changes, change its path and its inputs together.
+3. Add a pass based on the latest one, with adds, removes, reason and risk.
 4. Run the reports. Regenerate [parts-catalog.md](parts-catalog.md), [price-audit.md](price-audit.md) and the table above.
 5. Commit the data, the passes and the docs together.

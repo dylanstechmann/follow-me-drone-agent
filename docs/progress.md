@@ -111,11 +111,34 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Docs: `docs/make-own-ladder.md`, `docs/price-audit.md` (generated), and updates to pipeline and cost docs.
 - Note: the Pixel 8a was an example of a cheap used phone. It is a parts source too (GNSS, IMU, camera, Wi-Fi and cells), not a decided drone computer.
 
-## Iteration 11: KiCad board and OpenSCAD enclosure (planned, needs tools)
+## Iteration 11: closer to the supply side (done: 151 tests pass)
+
+- Results, from the model:
+  - Pass 10 (factory-assembled own boards, factory magnets and bearings, lab-etched stators, BLE tag): $207.86 to $534.21 per drone, $67 to $89 below pass 8. Cash at minimum orders is $332.20 to $934.98. 20 percent made in-house, 51 percent the owner's design.
+  - Pass 11 (factory stator cores): about the same per drone, but $1,319.96 to $2,918.89 of cash at the 1,000-piece minimum.
+  - Largest single saving: the own GNSS board, factory-assembled with a bare M9N, at $15.54 to $28.59 against $54.99 to $74.90 retail.
+  - Motors beat retail only with factory parts: $2.57 to $12.40 each, against $11.91 to $35.17 with retail parts and $10 to $13.50 for a T-Motor.
+  - No gain upstream for complete motors, props, cells (shipping rules) or filament from pellets (extruder payback of 55 to 150 kg).
+- Corrections: the motor model used 608 skateboard bearings, which are too large for a 2207 motor. It now uses 4 x 9 x 4 mm miniature bearings. "Laser-cut stator" now notes that most makerspace CO2 lasers cannot cut steel.
+- Code: a `moq` (minimum order) on items and materials, `moq_per_item` for boards and assembly fees, the `buy_factory` path, composed service and factory items, the cash-at-minimum-orders figure, and an owner-designed share.
+- Docs: [supply-side.md](supply-side.md), plus updates to the make-own ladder, cost, motor and lab docs.
+- Data quality: 10 of 51 sourced prices are dated within 12 months, and 16 inputs are placeholders. The ESC MOSFET bulk price is the largest open placeholder.
+- The licence and import-duty claims come from summaries and trade guides. Verify them with the LICENSE files and with CBP.
+
+## Iteration 11 plan (kept for the record)
+
+- Owner input: make it cheaper, own more, and get closer to the factory, fab and lab.
+- Goal: move each part one step up its supply chain, from retail to distributor to factory or fab to in-house lab, and show what each step costs in cash and minimum orders.
+- Research (with 2026 cues and dates): factory and OEM prices with minimum orders for motors, stators, magnets, props, cells and packs. Bare chips instead of modules (an ESP32-C3 with in-package flash, a low-cost BLE SoC, GNSS chips). The ESC power parts commonly used in factory ESCs (MOSFETs, three-phase gate drivers). PCB assembly fees at a factory that stocks the parts. Raw plastic pellets and filament extrusion. Import duties and the end of US de minimis for small parcels. Lithium shipping rules. FAU lab facilities.
+- Model: a minimum order quantity (`moq`) on items and materials, and a `buy_factory` path. The report shows both the per-unit cost and the cash outlay at the minimum order, so cheaper per unit is never confused with cheaper to start.
+- New pass: factory-direct parts and factory-assembled boards.
+- Docs: `docs/supply-side.md`: who makes each part, how close the project can get, minimum orders, duties and shipping, group buys through the IEEE club, and the lab steps.
+
+## Iteration 12: KiCad board and OpenSCAD enclosure (planned, needs tools)
 
 - The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here.
 
-## Iteration 12: range-only sources, such as BLE RSSI (planned)
+## Iteration 13: range-only sources, such as BLE RSSI (planned)
 
 - A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 

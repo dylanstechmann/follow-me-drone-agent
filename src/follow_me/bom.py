@@ -26,7 +26,12 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 STATUSES = ("snapshot", "official", "estimate", "placeholder", "owned", "purchased", "unpriced")
-PATHS = ("buy_retail", "buy_bulk", "buy_used", "buy_service", "make", "owned", "salvage")
+PATHS = (
+    "buy_retail", "buy_bulk", "buy_used", "buy_service", "buy_factory", "make", "owned", "salvage",
+)
+# Paths whose cost may be composed from material inputs: made in-house, or assembled
+# by a fab or factory from parts the owner chose.
+COMPOSED_PATHS = ("make", "buy_service", "buy_factory")
 # Paths where the owner makes the part, or reclaims it. These count toward in-house share.
 MADE_PATHS = ("make", "salvage")
 SOURCED_STATUSES = ("snapshot", "official")
@@ -51,6 +56,8 @@ class Material:
     checked: str = ""  # YYYY, YYYY-MM or YYYY-MM-DD; empty when the source shows no date
     source: str = ""
     note: str = ""
+    moq: float = 1.0  # minimum order, in the material's unit
+    moq_per_item: bool = False  # each design pays its own minimum (boards, assembly fees)
 
 
 @dataclass(frozen=True)
@@ -68,6 +75,7 @@ class Item:
     optional: bool = False
     make: dict | None = None  # {"inputs": {material_key: quantity}, "waste_high": 1.2}
     checked: str = ""
+    moq: int = 1  # minimum order quantity for a bought item
 
 
 @dataclass(frozen=True)
@@ -138,6 +146,8 @@ def _validate_material(m: Material) -> None:
         raise ValueError(f"material {m.key}: need 0 <= low <= high")
     if m.status == "unpriced" and (m.low or m.high):
         raise ValueError(f"material {m.key}: unpriced materials must have zero prices")
+    if m.moq <= 0:
+        raise ValueError(f"material {m.key}: moq must be positive")
     check_date_format(m.checked)
 
 
@@ -158,17 +168,21 @@ def _validate_item(item: Item) -> None:
         raise ValueError(f"{item.id}: unknown path {item.path!r}")
     if item.qty < 1:
         raise ValueError(f"{item.id}: qty must be at least 1")
+    if item.moq < 1:
+        raise ValueError(f"{item.id}: moq must be at least 1")
     check_date_format(item.checked)
-    if item.path == "make":
-        if not item.make or not item.make.get("inputs"):
-            raise ValueError(f"{item.id}: a made item needs make.inputs")
+    if item.make is not None:
+        if item.path not in COMPOSED_PATHS:
+            raise ValueError(f"{item.id}: only made, service or factory items may have make inputs")
+        if not item.make.get("inputs"):
+            raise ValueError(f"{item.id}: a composed item needs make.inputs")
         if item.low or item.high:
-            raise ValueError(f"{item.id}: made items are costed from materials, not prices")
+            raise ValueError(f"{item.id}: composed items are costed from materials, not prices")
         if item.make.get("waste_high", 1.0) < 1.0:
             raise ValueError(f"{item.id}: waste_high must be at least 1")
         return
-    if item.make is not None:
-        raise ValueError(f"{item.id}: only made items may have make inputs")
+    if item.path == "make":
+        raise ValueError(f"{item.id}: a made item needs make.inputs")
     if item.low < 0 or item.high < item.low:
         raise ValueError(f"{item.id}: need 0 <= low <= high")
     if item.status == "unpriced" and (item.low or item.high):
@@ -296,6 +310,68 @@ def totals(
     )
 
 
+def cash_outlay(
+    catalog: dict[str, Item],
+    ids: tuple[str, ...] | list[str],
+    materials: dict[str, Material],
+) -> tuple[float, float]:
+    """Cash needed to place every order at its minimum quantity (core items only).
+
+    Per-unit cost hides minimum orders: 1,000 magnets are cheap each and still
+    cost real money up front. Shared minimums are counted once per pass; boards
+    and assembly fees are counted once per design.
+    """
+    low = high = 0.0
+    shared: dict[str, float] = {}
+    for iid in ids:
+        item = catalog[iid]
+        if item.optional:
+            continue
+        if item.make is None:
+            n = max(item.qty, item.moq)
+            low += n * item.low
+            high += n * item.high
+            continue
+        for key, quantity in item.make["inputs"].items():
+            m = materials[key]
+            used = quantity * item.qty
+            if m.moq_per_item:
+                n = max(used, m.moq)
+                low += n * m.low
+                high += n * m.high
+            else:
+                shared[key] = shared.get(key, 0.0) + used
+    for key, used in shared.items():
+        m = materials[key]
+        n = max(used, m.moq)
+        low += n * m.low
+        high += n * m.high
+    return round(low, 2), round(high, 2)
+
+
+def designed_share(
+    catalog: dict[str, Item],
+    ids: tuple[str, ...] | list[str],
+    materials: dict[str, Material],
+) -> float:
+    """Share of core cost, at midpoints, in parts the owner designs, whoever builds them.
+
+    A composed item (one with make inputs) is the owner's design: its parts and
+    layout are chosen by the owner, even when a factory assembles it.
+    """
+    designed = total = 0.0
+    for iid in ids:
+        item = catalog[iid]
+        if item.optional:
+            continue
+        lo, hi = unit_cost(item, materials)
+        mid = (lo + hi) / 2 * item.qty
+        total += mid
+        if item.make is not None:
+            designed += mid
+    return designed / total if total else 0.0
+
+
 def made_share(t: Totals) -> float:
     """Share of core cost, at midpoints, that the owner makes or salvages in-house."""
     mids = {path: (lo + hi) / 2 for path, (lo, hi) in t.by_path.items()}
@@ -417,10 +493,15 @@ def report(
         )
         lines.append(
             f"    made in house {made_share(t):.0%} of core (midpoints)"
+            f"   owner-designed {designed_share(catalog, p.items, materials):.0%}"
             f"   already owned ${mids.get('owned', 0):,.2f}"
             f"   retail ${mids.get('buy_retail', 0):,.2f}"
             f"   bulk and service ${mids.get('buy_bulk', 0) + mids.get('buy_service', 0):,.2f}"
             f"   used ${mids.get('buy_used', 0):,.2f}"
+        )
+        cash_lo, cash_hi = cash_outlay(catalog, p.items, materials)
+        lines.append(
+            f"    cash to start at minimum orders ${cash_lo:,.2f} to ${cash_hi:,.2f}"
         )
         change = _change(p, t, by_id)
         lines.append(
@@ -438,8 +519,8 @@ def passes_markdown(
     materials: dict[str, Material],
 ) -> str:
     rows = [
-        "| Pass | Based on | Core low | Core high | Change vs base (low to high) | Made in house (midpoint) | Budget | Placeholders | Sourced prices dated in last 12 months |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| Pass | Based on | Core low | Core high | Change vs base (low to high) | Cash at minimum orders | Made in house | Owner-designed | Budget | Placeholders | Sourced prices dated in last 12 months |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     by_id: dict[str, Totals] = {}
     for p in passes:
@@ -452,10 +533,12 @@ def passes_markdown(
                 f"{t.core_low - base.core_low:+,.2f} to {t.core_high - base.core_high:+,.2f}"
             )
         fresh, sourced, _ = date_summary(price_rows(catalog, materials, p.items))
+        cash_lo, cash_hi = cash_outlay(catalog, p.items, materials)
         rows.append(
             f"| {p.id} {p.title} | {p.based_on or 'none'} | {t.core_low:,.2f} | {t.core_high:,.2f} | "
-            f"{change} | {made_share(t):.0%} | {_budget_status(t, budget)} | {t.placeholders} | "
-            f"{fresh} of {sourced} |"
+            f"{change} | {cash_lo:,.2f} to {cash_hi:,.2f} | {made_share(t):.0%} | "
+            f"{designed_share(catalog, p.items, materials):.0%} | "
+            f"{_budget_status(t, budget)} | {t.placeholders} | {fresh} of {sourced} |"
         )
     return "\n".join(rows)
 

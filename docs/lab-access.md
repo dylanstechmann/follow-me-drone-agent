@@ -2,6 +2,13 @@
 
 The owner has access to 3D printers at FAU's engineering building and at the IEEE club. Other resources are unknown until someone asks. This doc lists what to ask, and what to prepare before asking.
 
+## Known so far
+
+- FAU's School of Architecture runs a FabLab in Fort Lauderdale with laser cutters, 3D printers, a CNC machine, a 3D scanner and a wood shop. A safety orientation comes first, and it enrolls users in the laser cutter, 3D printer and wood shop orientations.
+- Ask whether any FabLab laser is a fiber laser. Most makerspace CO2 lasers cannot cut steel, so stator laminations need a fiber laser, a cutting service, or etching.
+- No FAU cleanroom turned up in a search. The University of Florida's Nanoscale Research Facility has cleanrooms for UF-affiliated users.
+- Group orders through the IEEE club can meet factory minimum orders (see [supply-side.md](supply-side.md)).
+
 ## Framing
 
 This is a personal hobby and learning project, built with AI coding assistants and reviewed by the owner. It is not a company, a product, or a university project unless the lab or club decides to make it one. Describe it that way in any request.

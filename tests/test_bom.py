@@ -109,6 +109,8 @@ def test_shipped_passes_resolve_in_order():
         "pass7_owned_pipeline",
         "pass8_own_most",
         "pass9_own_most_target_motors",
+        "pass10_factory_and_lab",
+        "pass11_factory_stators",
     ]
 
 
@@ -233,7 +235,7 @@ def test_bought_item_cannot_carry_make_inputs(tmp_path):
         "c.json",
         {"items": [raw_item(make={"inputs": {"pla": 1}})]},
     )
-    with pytest.raises(ValueError, match="only made items"):
+    with pytest.raises(ValueError, match="only made, service or factory items"):
         load_catalog(path, MATS)
 
 
@@ -505,6 +507,71 @@ def test_cli_markdown_modes(capsys):
     out = capsys.readouterr().out
     assert out.startswith("| Pass | Based on")
     assert "pass7_owned_pipeline" in out
+
+
+# ---- minimum orders and the supply side -------------------------------------
+
+MOQ_MATS = {
+    "magnet": Material("magnet", "each", 0.02, 0.10, "snapshot", moq=1000),
+    "board": Material("board", "board", 0.40, 0.70, "snapshot", moq=5, moq_per_item=True),
+    "fee": Material("fee", "order", 9.71, 9.71, "snapshot", moq=1, moq_per_item=True),
+}
+
+
+def test_cash_outlay_pays_shared_minimums_once_and_per_design_minimums_per_design(tmp_path):
+    items = [
+        raw_item(id="motor", low=0, high=0, status="estimate", path="make", qty=4,
+                 make={"inputs": {"magnet": 14}}),
+        raw_item(id="board_a", low=0, high=0, status="estimate", path="buy_service",
+                 make={"inputs": {"board": 1, "fee": 0.2}}),
+        raw_item(id="board_b", low=0, high=0, status="estimate", path="buy_factory",
+                 make={"inputs": {"board": 1, "fee": 0.2}}),
+        raw_item(id="bought", low=3, high=4, qty=2, moq=10),
+    ]
+    catalog = load_catalog(write_json(tmp_path, "c.json", {"items": items}), MOQ_MATS)
+    from follow_me.bom import cash_outlay
+
+    low, high = cash_outlay(catalog, ["motor", "board_a", "board_b", "bought"], MOQ_MATS)
+    # Magnets: 56 used, 1,000 minimum (shared). Boards: 5 each per design. Fee: one per design.
+    # Bought item: 10 at the minimum, not the 2 needed.
+    assert low == pytest.approx(1000 * 0.02 + 2 * 5 * 0.40 + 2 * 9.71 + 10 * 3)
+    assert high == pytest.approx(1000 * 0.10 + 2 * 5 * 0.70 + 2 * 9.71 + 10 * 4)
+
+
+def test_moq_below_one_is_rejected(tmp_path):
+    path = write_json(tmp_path, "c.json", {"items": [raw_item(moq=0)]})
+    with pytest.raises(ValueError, match="moq"):
+        load_catalog(path, MATS)
+
+
+def test_factory_pass_is_cheaper_per_drone_than_own_most():
+    t, _ = shipped_totals()
+    assert t["pass10_factory_and_lab"].core_low < t["pass8_own_most"].core_low
+    assert t["pass10_factory_and_lab"].core_high < t["pass8_own_most"].core_high
+
+
+def test_factory_stators_need_far_more_cash_up_front():
+    from follow_me.bom import cash_outlay
+
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    _, raw = load_passes(DEFAULT_PASSES)
+    passes = {p.id: p for p in resolve(catalog, raw)}
+    lab = cash_outlay(catalog, passes["pass10_factory_and_lab"].items, materials)
+    factory = cash_outlay(catalog, passes["pass11_factory_stators"].items, materials)
+    assert factory[0] > lab[0] + 900  # 1,000 stator cores at the minimum order
+
+
+def test_factory_pass_owns_more_of_the_design():
+    from follow_me.bom import designed_share
+
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    _, raw = load_passes(DEFAULT_PASSES)
+    passes = {p.id: p for p in resolve(catalog, raw)}
+    p8 = designed_share(catalog, passes["pass8_own_most"].items, materials)
+    p10 = designed_share(catalog, passes["pass10_factory_and_lab"].items, materials)
+    assert p10 > p8
 
 
 # ---- price dates ------------------------------------------------------------

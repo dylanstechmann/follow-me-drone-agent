@@ -90,6 +90,22 @@
       "add": ["motor_diy_target_2207"],
       "remove": ["motor_diy_outrunner"],
       "note": "What-if pass: the motors use magnets bought by weight, and wire and shaft salvaged. This is only real after a magnet quote and a salvage check. Compare it with pass 8 to see the value of those two routes."
+    },
+    {
+      "id": "pass10_factory_and_lab",
+      "title": "Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators",
+      "based_on": "pass8_own_most",
+      "add": ["esc_4in1_pcba_factory", "autopilot_board_pcba_factory", "gps_board_factory", "motor_lab_etched", "tag_v2_board_factory", "import_duty_allowance"],
+      "remove": ["esc_4in1_own", "autopilot_board_own", "gps_m9n", "motor_diy_outrunner", "chip_esp32c3_mini1", "pcb_tag_outsourced", "passives_kit_bulk", "gnss_patch_antenna_pcb", "tag_neo_m9n_bare"],
+      "note": "The owner's board designs are assembled by the PCB factory from its own parts stock. Magnets and bearings come from factories at their minimum orders. Stator laminations are photo-etched in the lab (unverified). The tag moves to a BLE chip and a clone GNSS module (both untested). An allowance covers import duty, since small parcels from China no longer enter duty-free. Risk added: minimum orders tie up cash, duty rates are uncertain, and every new part needs a test before it replaces a proven one."
+    },
+    {
+      "id": "pass11_factory_stators",
+      "title": "Factory stator cores at a 1,000-piece minimum",
+      "based_on": "pass10_factory_and_lab",
+      "add": ["motor_factory_stator"],
+      "remove": ["motor_lab_etched"],
+      "note": "What-if pass: stator cores from a factory instead of the lab. Per unit it is close to the lab route, but the minimum order needs about $1,000 to $2,000 of cash up front, plus a drawing and 10 to 12 weeks of tooling. Only sensible as a group order."
     }
   ]
 }
