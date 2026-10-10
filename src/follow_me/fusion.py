@@ -6,7 +6,6 @@ Each source reports an isotropic variance (m^2). A reliability multiplier
 """
 
 import math
-import statistics
 from dataclasses import dataclass
 
 
@@ -36,9 +35,9 @@ class Reading:
 def fuse(readings: list[Reading], gate: float = 9.0) -> Estimate | None:
     """Return one fused estimate, or None when no consensus exists.
 
-    Readings far from a robust median reference are rejected (gate is a squared
-    distance in units of variance, roughly a chi-square bound for 2 degrees of
-    freedom). The rest are combined by inverse-variance weighting.
+    Readings far from a reliability-weighted median reference are rejected. The
+    gate is a squared distance in units of variance, roughly a chi-square bound
+    for 2 degrees of freedom. The rest are combined by inverse-variance weighting.
     """
     active = [r for r in readings if r.reliability > 0]
     if not active:
@@ -58,12 +57,28 @@ def _combine(readings: list[Reading]) -> Estimate:
 
 
 def _gate(readings: list[Reading], gate: float) -> list[Reading]:
-    # Median, not mean: one wild outlier must not drag the reference toward itself.
-    ref_x = statistics.median(r.estimate.x for r in readings)
-    ref_y = statistics.median(r.estimate.y for r in readings)
+    # Reliability-weighted median, not mean: a wild outlier cannot drag the
+    # reference toward itself, and a trusted source beats an unreliable one even
+    # when there are only two sources.
+    ref_x = _weighted_median([(r.estimate.x, r.reliability) for r in readings])
+    ref_y = _weighted_median([(r.estimate.y, r.reliability) for r in readings])
     kept = []
     for r in readings:
         d2 = (r.estimate.x - ref_x) ** 2 + (r.estimate.y - ref_y) ** 2
         if d2 / r.estimate.variance <= gate:
             kept.append(r)
     return kept
+
+
+def _weighted_median(pairs: list[tuple[float, float]]) -> float:
+    """Median of values with weights. An exact weight tie returns the midpoint."""
+    ordered = sorted(pairs)
+    half = sum(w for _, w in ordered) / 2.0
+    cum = 0.0
+    for i, (value, weight) in enumerate(ordered):
+        cum += weight
+        if math.isclose(cum, half, rel_tol=1e-12) and i + 1 < len(ordered):
+            return (value + ordered[i + 1][0]) / 2.0
+        if cum > half:
+            return value
+    return ordered[-1][0]

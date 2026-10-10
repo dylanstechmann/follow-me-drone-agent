@@ -28,3 +28,19 @@ def camera_estimate(
     y = rng * math.sin(bearing)
     sigma = max(rng * range_sigma_frac, rng * bearing_sigma_rad)
     return Estimate(x, y, sigma**2)
+
+
+def estimate_to_detection(
+    est: Estimate,
+    hfov_rad: float,
+    vfov_rad: float,
+    person_height_m: float = 1.75,
+) -> Detection:
+    """Inverse of camera_estimate: express a body-frame estimate as a box.
+
+    Lets the controller, which works in image terms, consume fused estimates.
+    Vertical position is unknown from a 2D estimate, so the box is centered.
+    """
+    cx = 0.5 - est.bearing / hfov_rad
+    height = person_height_m / (2.0 * est.range * math.tan(vfov_rad / 2.0))
+    return Detection(cx=cx, cy=0.5, height=height)
