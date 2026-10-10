@@ -1,7 +1,10 @@
 # Parts catalog
 
-Generated from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json) by `PYTHONPATH=src python3 -m follow_me.bom --markdown`. Prices are USD. Composed items (made in-house, or assembled by a factory from the owner's design) are costed from materials. The Checked column is the date the price was seen on its source; empty means undated. See [price-audit.md](price-audit.md), [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.md).
+The table below is generated from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Do not edit it by hand: change the data and run `PYTHONPATH=src python3 -m follow_me.docs_sync`. The test suite fails when the table is stale.
 
+Prices are USD. Composed items (made in-house, or assembled by a fab or factory from the owner's design) are costed from materials. The Checked column is the date the price was seen on its source; empty means undated. See [price-audit.md](price-audit.md), [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.md).
+
+<!-- generated:catalog:start -->
 | Item | Category | Path | Qty | USD each (low to high) | Status | Checked | Sources | Note |
 |---|---|---|---|---|---|---|---|---|
 | Holybro Pix32 v6 autopilot (new) | flight | buy_retail | 1 | 146.99 to 262.99 | snapshot | undated | [holybro.com](https://holybro.com/products/pix32-v6) · [unmannedrc.com](https://unmannedrc.com/products/holybro-pix32-v6-flight-controller) | Holybro regular price $201.56, Holybro offer range $146.99 to $210.96, Unmanned RC $262.99 with tax. Undated. |
@@ -61,3 +64,4 @@ Generated from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](
 | Import duty and entry fees for factory orders (allowance) | logistics | buy_service | 1 | 10.00 to 60.00 | placeholder | undated | [cmgm.net](https://www.cmgm.net/us-de-minimis-exemption-ended-2026-china/) | The US small-parcel exemption ended for China in May 2025, so factory orders pay duty and entry fees. Sources disagree on the 2026 rate. Guess only. Consolidate orders into one entry, or share a group order through the IEEE club. |
 | Desktop filament extruder kit (pellets to filament, capital) (optional) | tooling | buy_retail | 1 | 769.00 to 1,539.00 | estimate | undated | [felfil.com](https://felfil.com/) | Felfil Evo kit EUR 699, or EUR 1,399 with a spooler, converted at an assumed 1.10 USD per EUR. Pellets at $1 to $4.85 per kg against filament at $8.55 to $18 means it pays back only after roughly 55 to 150 kg. Not worth it at hobby scale unless a lab already has one. |
 | Wearable IMU board (per unit, for later companion tiers) (optional) | companion_imu | buy_bulk | 1 | 0.00 | unpriced | undated | none | Not priced. Only needed if the tiers reach wearable IMUs. Costs add up quickly per unit. |
+<!-- generated:catalog:end -->

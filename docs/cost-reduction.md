@@ -6,10 +6,11 @@ Run the reports after any change:
 
 ```
 PYTHONPATH=src python3 -m follow_me.bom                    # cost report for every pass, plus dependency check
-PYTHONPATH=src python3 -m follow_me.bom --passes-markdown  # the pass table below
-PYTHONPATH=src python3 -m follow_me.bom --audit            # price dates and placeholders
-PYTHONPATH=src python3 -m follow_me.bom --markdown         # the parts catalog
+PYTHONPATH=src python3 -m follow_me.docs_sync              # rewrite the generated tables in the docs
+PYTHONPATH=src python3 -m follow_me.docs_sync --check      # fail if any generated table is stale
 ```
+
+The pass table below, the [parts catalog](parts-catalog.md), the [price audit](price-audit.md) and the [group order](group-order.md) are generated blocks. The test suite fails when one is stale.
 
 ## Labels
 
@@ -38,20 +39,24 @@ Two cash numbers:
 
 ## Pass results
 
-| Pass | Based on | Core low | Core high | Change vs base (low to high) | Cash at minimum orders | Made in house | Owner-designed | Budget | Placeholders | Dated in 12 months |
+The table is generated from the data files and kept in sync by `PYTHONPATH=src python3 -m follow_me.docs_sync`. Do not edit it by hand.
+
+<!-- generated:passes:start -->
+| Pass | Based on | Core low | Core high | Change vs base (low to high) | Cash at minimum orders | Made in house | Owner-designed | Budget | Placeholders | Sourced prices dated in last 12 months |
 |---|---|---|---|---|---|---|---|---|---|---|
-| pass0 Retail autopilot drone with tag and phone | none | 557.91 | 964.58 | none (starting point) | 566.25 to 982.04 | 0% | 0% | over | 7 | 0 of 12 |
-| pass1 Used autopilot, Pi Zero streams video | pass0 | 495.97 | 738.39 | -61.94 to -226.19 | 504.31 to 755.85 | 0% | 0% | over | 7 | 0 of 11 |
-| pass2 Printed frame and guards | pass1 | 468.93 | 685.52 | -27.04 to -52.87 | 489.31 to 725.85 | 1% | 1% | over | 8 | 0 of 11 |
-| pass3 Bench-first kit (no flying drone yet) | pass2 | 67.36 | 101.23 | -401.57 to -584.29 | 75.44 to 118.04 | 1% | 1% | fits at low prices only | 2 | 0 of 6 |
-| pass4 Used feature-rich phone onboard (example) | pass2 | 683.93 | 895.52 | +215.00 to +210.00 | 704.31 to 935.85 | 1% | 1% | over | 9 | 0 of 9 |
-| pass5 Bench kit with a made tag | pass3 | 63.87 | 98.99 | -3.49 to -2.24 | 71.95 to 115.80 | 1% | 1% | fits at both ends | 2 | 1 of 7 |
-| pass6 DIY motor research (retail parts) and a thrust stand | pass2 | 480.05 | 782.12 | +11.12 to +96.60 | 509.96 to 825.42 | 16% | 16% | over | 9 | 2 of 15 |
-| pass7 Owned pipeline | pass6 | 471.96 | 765.58 | -8.09 to -16.54 | 501.87 to 808.88 | 16% | 16% | over | 8 | 3 of 17 |
-| pass8 Own most: made autopilot board, ESC, transmitter, tag battery | pass7 | 275.09 | 623.11 | -196.87 to -142.47 | 316.85 to 752.24 | 48% | 48% | over | 7 | 6 of 26 |
-| pass9 Own most, with the by-weight and salvage motor target | pass8 | 238.17 | 516.23 | -36.92 to -106.88 | 373.44 to 834.95 | 38% | 38% | over | 7 | 5 of 25 |
-| pass10 Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators | pass8 | 207.86 | 534.21 | -67.23 to -88.90 | 332.20 to 934.98 | 20% | 51% | over | 10 | 7 of 28 |
-| pass11 Factory stator cores at a 1,000-piece minimum | pass10 | 210.86 | 539.05 | +3.00 to +4.84 | 1,319.96 to 2,918.89 | 21% | 51% | over | 10 | 6 of 28 |
+| pass0_retail_autopilot Retail autopilot drone with tag and phone | none | 557.91 | 964.58 | none (starting point) | 566.25 to 982.04 | 0% | 0% | over budget | 7 | 0 of 12 |
+| pass1_shop_smart Used autopilot, Pi Zero streams video, ground station runs detection | pass0_retail_autopilot | 495.97 | 738.39 | -61.94 to -226.19 | 504.31 to 755.85 | 0% | 0% | over budget | 7 | 0 of 11 |
+| pass2_print_structure Printed frame and guards | pass1_shop_smart | 468.93 | 685.52 | -27.04 to -52.87 | 489.31 to 725.85 | 1% | 1% | over budget | 8 | 0 of 11 |
+| pass3_bench_first Bench-first kit (no flying drone yet) | pass2_print_structure | 67.36 | 101.23 | -401.57 to -584.29 | 75.44 to 118.04 | 1% | 1% | fits budget at low prices only | 2 | 0 of 6 |
+| pass4_pixel_onboard Used feature-rich phone replaces the Pi and camera on the drone (example) | pass2_print_structure | 683.93 | 895.52 | +215.00 to +210.00 | 704.31 to 935.85 | 1% | 1% | over budget | 9 | 0 of 9 |
+| pass5_made_tag Bench kit with a made tag: bulk ESP32-C3 and outsourced board | pass3_bench_first | 63.87 | 98.99 | -3.49 to -2.24 | 71.95 to 115.80 | 1% | 1% | fits budget at low and high prices | 2 | 1 of 7 |
+| pass6_diy_motor_rnd Printed structure with DIY motor research and a thrust stand | pass2_print_structure | 480.05 | 782.12 | +11.12 to +96.60 | 509.96 to 825.42 | 16% | 16% | over budget | 9 | 2 of 15 |
+| pass7_owned_pipeline Owned pipeline: printed structure, made tag, DIY motor research | pass6_diy_motor_rnd | 471.96 | 765.58 | -8.09 to -16.54 | 501.87 to 808.88 | 16% | 16% | over budget | 8 | 3 of 17 |
+| pass8_own_most Own most: made autopilot board, ESC, transmitter and tag battery | pass7_owned_pipeline | 275.09 | 623.11 | -196.87 to -142.47 | 316.85 to 752.24 | 48% | 48% | over budget | 7 | 6 of 26 |
+| pass9_own_most_target_motors Own most, with the by-weight and salvage motor target | pass8_own_most | 238.17 | 516.23 | -36.92 to -106.88 | 373.44 to 834.95 | 38% | 38% | over budget | 7 | 5 of 25 |
+| pass10_factory_and_lab Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators | pass8_own_most | 207.86 | 534.21 | -67.23 to -88.90 | 332.20 to 934.98 | 20% | 51% | over budget | 10 | 7 of 28 |
+| pass11_factory_stators Factory stator cores at a 1,000-piece minimum | pass10_factory_and_lab | 210.86 | 539.05 | +3.00 to +4.84 | 1,319.96 to 2,918.89 | 21% | 51% | over budget | 10 | 6 of 28 |
+<!-- generated:passes:end -->
 
 Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later include the optional CNC mill ($115 to $200). Neither is in the core totals.
 

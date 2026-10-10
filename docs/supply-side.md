@@ -46,7 +46,9 @@ From [cost-reduction.md](cost-reduction.md):
 - One order meets the minimum, and members pay per unit.
 - Good candidates: magnets (1,000), bearings (100), boards (five per design), assembly setup fees (one per design), and later stator cores (1,000).
 - One customs entry for the whole order keeps duty fees down.
-- Keep a written allocation of who paid for what.
+- Keep a written allocation of who paid for what, in the club's private channel, not on GitHub.
+
+The plan, its quantities, minimum orders, costs per member and status are in [group-order.md](group-order.md). It is generated from [bom/group_order.json](../bom/group_order.json), so it stays current as the order moves.
 
 ## The lab: what FAU has
 

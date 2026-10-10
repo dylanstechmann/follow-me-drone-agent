@@ -8,6 +8,10 @@ This repo is public. Your routes, home, and any place profiles with real coordin
 - The repo ships only fake examples in `examples/`.
 - `.gitignore` excludes `places.json` and `*.local.json` as a safety net, but do not rely on it alone.
 
+## Group orders stay anonymous
+
+The IEEE group order plan ([group-order.md](group-order.md)) is public. It names roles only, such as the coordinator. Names, email addresses, phone numbers, delivery addresses, payment records and order screenshots stay in the club's private channel. A test fails if email-like or phone-like text appears in the plan files.
+
 ## Consent
 
 - The tracked person is the owner. If anyone else ever carries a tag or is filmed, they must agree first.

@@ -1,0 +1,141 @@
+{
+  "status": "draft",
+  "last_updated": "2026-10-10",
+  "member_counts": [5, 10, 20],
+  "waves": {
+    "1": "Factory parts, ready now",
+    "2": "Assembled boards, blocked by designs",
+    "3": "Deferred until the lab tests pass"
+  },
+  "facts": [
+    {"fact": "The IEEE club can run group orders.", "source": "Owner, 2026-10-10", "confirmed": false},
+    {"fact": "FAU engineering and the IEEE club have 3D printers.", "source": "Owner, earlier in this project (date not recorded)", "confirmed": false},
+    {"fact": "The US small-parcel duty exemption ended for China in 2025, and sources disagree on the 2026 rate.", "source": "Trade guides found 2026-10-10; not checked with US Customs", "confirmed": false}
+  ],
+  "open_decisions": [
+    {"id": "organizer", "question": "Who coordinates the order (a role, such as the club's treasurer or the project lead)?", "status": "open", "decision": ""},
+    {"id": "interest", "question": "How many members want each line? Collect anonymous counts, then update the lines.", "status": "open", "decision": ""},
+    {"id": "payment", "question": "Does the club pay and collect later, or do members pay suppliers directly? Ask the officers what the university allows for student-organization purchases.", "status": "open", "decision": ""},
+    {"id": "importer", "question": "Who is the importer of record, and which delivery address is allowed? Keep the address off GitHub.", "status": "open", "decision": ""},
+    {"id": "quotes", "question": "Request quotes from at least two suppliers per factory line, using the template in docs/group-order.md.", "status": "open", "decision": ""},
+    {"id": "duty", "question": "Ask the carrier for a delivered-duty-paid quote, and check the duty rate with US Customs before ordering.", "status": "open", "decision": ""},
+    {"id": "inspection", "question": "Who inspects arriving parts, and what are the acceptance tests? The lines list the tests.", "status": "open", "decision": ""},
+    {"id": "split", "question": "How are parts split among members, and what happens to leftover stock? Keep the records in the club's private channel.", "status": "open", "decision": ""},
+    {"id": "samples", "question": "Order the small distributor samples first and build one test motor before the factory order.", "status": "open", "decision": ""}
+  ],
+  "lines": [
+    {
+      "id": "magnets_sample", "wave": 1, "supplier_type": "distributor", "unit": "disc", "order_qty": 25, "state": "needs quote",
+      "name": "N52 disc magnets, 10 x 2 mm: sample from a distributor",
+      "price": {"low": 0.78, "high": 0.78, "moq": 25, "basis": "listing", "checked": "", "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm"},
+      "ships_from": "US", "units_per_drone": 56,
+      "inspection": "Weigh and caliper a few discs. Pull-test one. Check the coating for chips.",
+      "note": "Enough for one test motor (14 discs) with spares. Lets the team test the winding and the pull before the factory order. Magnets pinch fingers and shatter if they snap together: use spacers."
+    },
+    {
+      "id": "bearings_sample", "wave": 1, "supplier_type": "retail", "unit": "bearing", "order_qty": 10, "state": "needs quote",
+      "name": "684ZZ miniature bearings, 4 x 9 x 4 mm: sample from a retailer",
+      "price": {"low": 3.0, "high": 4.38, "moq": 1, "basis": "listing", "checked": "", "source": "https://vxb.com/products/684zz-4x9-shielded-4x9x4-miniature-bearing-pa; https://bearingsdirect.com/684-zz-miniature-ball-bearing-4x9x4-shielded-r940zz/"},
+      "ships_from": "US", "units_per_drone": 8,
+      "inspection": "Spin each bearing by hand and listen. Check radial play with a dial gauge if one is available.",
+      "note": "The same size is sold as MR94ZZ. Compare the factory order against this sample."
+    },
+    {
+      "id": "magnets_factory", "wave": 1, "supplier_type": "factory", "unit": "disc", "order_qty": 1000, "state": "needs quote",
+      "name": "N52 disc magnets, 10 x 2 mm, from a factory",
+      "material": "ndfeb_n52_10x2_factory_each",
+      "ships_from": "China", "units_per_drone": 56,
+      "candidates": ["Nanjing Huajin Magnet (a Made-in-China listing)", "An Alibaba listing at a 1,000-piece minimum"],
+      "inspection": "Pull-test ten samples from the batch. Check grade marking, coating and magnetization direction against the datasheet. Calipers for size.",
+      "note": "Ask for the grade, the coating, the magnetization direction (axial), the tolerance, packaging for strong magnets, and the delivered-duty-paid price. Candidates come from listings and are not vetted."
+    },
+    {
+      "id": "bearings_factory", "wave": 1, "supplier_type": "factory", "unit": "bearing", "order_qty": 100, "state": "needs quote",
+      "name": "684ZZ miniature bearings, 4 x 9 x 4 mm, from a factory",
+      "material": "bearing_mini_684_factory_each",
+      "ships_from": "China", "units_per_drone": 8,
+      "candidates": ["Ningbo Sanzo (a Made-in-China listing)", "Jinan Shengwang (a Made-in-China listing)"],
+      "inspection": "Spin-test every bearing from a sample of twenty. Check radial play and noise. Reject any that stick.",
+      "note": "Quality varies at this price. Ask for the precision grade and the lubricant."
+    },
+    {
+      "id": "wire_spool", "wave": 1, "supplier_type": "retail", "unit": "kg", "order_qty": 2, "state": "needs quote",
+      "name": "Enamelled copper wire, 0.3 mm, 1 kg spools",
+      "material": "magnet_wire_per_kg",
+      "ships_from": "US", "units_per_drone": 0.16,
+      "inspection": "Check the diameter with calipers and the enamel with a continuity test.",
+      "note": "The factory minimum is 300 kg, so buy spools. Salvaged wire from old motors and transformers can replace part of this."
+    },
+    {
+      "id": "shafts", "wave": 1, "supplier_type": "retail", "unit": "shaft", "order_qty": 20, "state": "needs quote",
+      "name": "Hardened steel motor shafts",
+      "material": "steel_shaft_each",
+      "ships_from": "US", "units_per_drone": 4,
+      "inspection": "Check the diameter against the chosen bearing bore, and the straightness on a flat surface.",
+      "note": "Not searched. The price is a placeholder."
+    },
+    {
+      "id": "shipping_duty_wave1", "wave": 1, "supplier_type": "shared", "unit": "order", "order_qty": 1, "state": "needs quote",
+      "name": "Shipping, duty and brokerage allowance, wave 1",
+      "price": {"low": 30.0, "high": 140.0, "moq": 1, "basis": "placeholder", "checked": "", "source": ""},
+      "ships_from": "China",
+      "note": "A guess. Replace it with the carrier's delivered-duty-paid quote before ordering."
+    },
+    {
+      "id": "board_gnss_assembled", "wave": 2, "supplier_type": "fab", "unit": "board", "order_qty": 10, "state": "blocked",
+      "name": "GNSS board with a bare u-blox M9N, factory-assembled",
+      "bom_item": "gps_board_factory",
+      "ships_from": "China", "units_per_drone": 1,
+      "blocked_by": "No board design exists yet. The KiCad file has not been made.",
+      "inspection": "Power-up check, then a satellite-signal test outdoors against a known-good receiver."
+    },
+    {
+      "id": "board_tag_assembled", "wave": 2, "supplier_type": "fab", "unit": "board", "order_qty": 10, "state": "blocked",
+      "name": "Tag board v2 (CH592 BLE and a clone GNSS module), factory-assembled",
+      "bom_item": "tag_v2_board_factory",
+      "ships_from": "China", "units_per_drone": 1,
+      "blocked_by": "The BLE range and clone-GNSS field tests have not been run.",
+      "inspection": "Bring-up checklist in docs/pcb-plan.md."
+    },
+    {
+      "id": "board_autopilot_assembled", "wave": 2, "supplier_type": "fab", "unit": "board", "order_qty": 10, "state": "blocked",
+      "name": "Autopilot board (STM32H743 and ICM-42688-P), factory-assembled",
+      "bom_item": "autopilot_board_pcba_factory",
+      "ships_from": "China", "units_per_drone": 1,
+      "blocked_by": "Needs simulation results and a firmware port plan. The IMU has a 45 to 53 week lead time at some distributors.",
+      "inspection": "Power-up check, sensor read-back, then bench tests with props off."
+    },
+    {
+      "id": "board_esc_assembled", "wave": 2, "supplier_type": "fab", "unit": "board", "order_qty": 10, "state": "blocked",
+      "name": "4-in-1 ESC board (AT32F421 and FD6288Q), factory-assembled",
+      "bom_item": "esc_4in1_pcba_factory",
+      "ships_from": "China", "units_per_drone": 1,
+      "blocked_by": "Needs a bulk MOSFET price and a design review.",
+      "inspection": "Low-voltage, current-limited bench test with no motor, then with a motor and no prop."
+    },
+    {
+      "id": "shipping_duty_wave2", "wave": 2, "supplier_type": "shared", "unit": "order", "order_qty": 1, "state": "blocked",
+      "name": "Shipping, duty and brokerage allowance, wave 2",
+      "price": {"low": 30.0, "high": 140.0, "moq": 1, "basis": "placeholder", "checked": "", "source": ""},
+      "ships_from": "China",
+      "blocked_by": "Same as the wave 2 boards.",
+      "note": "A guess. Replace it with a quote."
+    },
+    {
+      "id": "stator_cores_factory", "wave": 3, "supplier_type": "factory", "unit": "core", "order_qty": 1000, "state": "blocked",
+      "name": "Stator cores, 2207 class, from a factory",
+      "material": "stator_core_factory_each",
+      "ships_from": "China", "units_per_drone": 4,
+      "blocked_by": "The lab lamination etching test comes first. New tooling takes 10 to 12 weeks, and the order needs a drawing.",
+      "inspection": "Check flatness, burrs and slot size against the drawing.",
+      "note": "About $1,000 to $2,000 of cash at the minimum, enough for hundreds of motors. Only worth it as a large group order."
+    },
+    {
+      "id": "steel_sheet", "wave": 3, "supplier_type": "retail", "unit": "kg", "order_qty": 1, "state": "blocked",
+      "name": "Electrical steel sheet for etched laminations",
+      "material": "electrical_steel_per_kg",
+      "ships_from": "US",
+      "blocked_by": "Waiting for the etching coupon test. Small lots cost more than the benchmark price."
+    }
+  ]
+}

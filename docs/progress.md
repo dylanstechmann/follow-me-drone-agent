@@ -134,11 +134,32 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - New pass: factory-direct parts and factory-assembled boards.
 - Docs: `docs/supply-side.md`: who makes each part, how close the project can get, minimum orders, duties and shipping, group buys through the IEEE club, and the lab steps.
 
-## Iteration 12: KiCad board and OpenSCAD enclosure (planned, needs tools)
+## Iteration 12: IEEE group order plan, kept in sync (done: 184 tests pass)
+
+- Results:
+  - The plan has 14 lines in three waves. Wave 1, the factory parts that are ready now, totals $159.20 to $540.44. At 10 members that is $15.92 to $54.04 each. Wave 2 (assembled boards, blocked by designs) totals $576.90 to $1,843.10. Wave 3 (deferred) totals $991.44 to $1,992.09.
+  - Nothing has been ordered, no supplier has been contacted, and there are no quotes (0 of 14 lines). The club's ability to run group orders is owner-reported and unconfirmed.
+  - Nine open decisions are listed, led by the coordinator role, payment and custody, the importer and address, quote requests, and the duty quote.
+- How it stays current: the plan is data (`bom/group_order.json`). The doc is generated from it. `follow_me.docs_sync` rewrites every generated table in the docs, and the test suite fails if one is stale. AGENTS.md tells every future session to update the line states, quotes and `last_updated` as the order moves, and to run the sync.
+- Privacy: the plan uses roles only. A test scans the plan files for emails and phone numbers.
+- Moved to the same mechanism: the parts catalog, the price audit and the pass table in the cost doc, which had been hand-copied.
+- Code: `follow_me.group_order` (loading, validation, totals, per-member shares, drones covered) and `follow_me.docs_sync`.
+
+## Iteration 12 plan (kept for the record)
+
+- Owner input: the IEEE club can do group orders. Put the details on GitHub and keep them updated.
+- Data: `bom/group_order.json` holds the plan: waves of order lines, quantities, minimum orders, states (blocked, needs quote, quoted, ordered, received, inspected), supplier quotes when they arrive, open decisions, and facts with their provenance. Prices come from the cost model until a quote replaces them, so a change to a material price moves the plan.
+- Code: `follow_me.group_order` loads and validates the plan and computes totals, per-member shares for 5, 10 and 20 members, and how many drones each line covers. `follow_me.docs_sync` rewrites generated blocks in the docs from the data, and `--check` fails when a block is stale.
+- Docs: `docs/group-order.md` (a human part plus a generated block), with the generated tables in the parts catalog, price audit and cost docs moved to the same mechanism.
+- Keep-updated rules: the test suite fails if a generated block is stale. AGENTS.md tells every future session to run the sync after changing the data and to update line states, quotes and `last_updated` as the order moves.
+- Privacy: this repo is public. The plan uses roles only. No names, contact details, addresses, payment records or order screenshots. A test scans for email-like text.
+- Not claimed: the club's ability to run group orders is owner-reported, not confirmed with the club's officers. No supplier has been contacted and no quote exists.
+
+## Iteration 13: KiCad board and OpenSCAD enclosure (planned, needs tools)
 
 - The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here.
 
-## Iteration 13: range-only sources, such as BLE RSSI (planned)
+## Iteration 14: range-only sources, such as BLE RSSI (planned)
 
 - A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 
