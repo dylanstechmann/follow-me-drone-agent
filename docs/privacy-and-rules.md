@@ -1,0 +1,28 @@
+# Privacy and rules
+
+## Location data stays local
+
+This repo is public. Your routes, home, and any place profiles with real coordinates must never be committed.
+
+- Real place profiles live in a JSON file outside the repo, by default `~/.config/follow-me/places.json`, or at the path in the `FOLLOW_ME_PLACES` environment variable.
+- The repo ships only fake examples in `examples/`.
+- `.gitignore` excludes `places.json` and `*.local.json` as a safety net, but do not rely on it alone.
+
+## Consent
+
+- The tracked person is the owner. If anyone else ever carries a tag or is filmed, they must agree first.
+- Footage stays on the owner's device unless every person in it has agreed to sharing.
+
+## Bystanders and airspace
+
+- No flights over people, roads, or busy skate areas.
+- Check local drone rules before any flight. Verify these with official sources:
+  - In the US, drones over 250 g generally need FAA registration and Remote ID.
+  - Flying over people and commercial use (for example, paid footage) have their own rules.
+  - Cellular-connected drones may need checking against carrier and FCC rules.
+- FAU is in Florida, so the US rules apply if flying there.
+
+## Honest framing
+
+- This is a hobby and learning project, built with AI coding assistants and reviewed by the owner.
+- Nothing here is tested on real hardware or certified for flight. Do not present it as safe or autonomous.

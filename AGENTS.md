@@ -15,3 +15,11 @@ This is a personal hobby and learning project. Keep it framed that way in public
 - Use the `dev` Docker Compose service for builds and tests once it exists.
 - Keep provider sign-ins out of the repo.
 - Credit sources (papers, docs, datasets, libraries) in docs/references.md.
+
+## Location data (hard)
+
+- Never commit real coordinates, routes, home or regular-place data. Real place profiles live outside the repo (see docs/privacy-and-rules.md). Only fake examples belong in examples/.
+
+## Loop
+
+- Work in plan, do, record cycles. Write each plan in docs/progress.md before doing it, commit and push each iteration, and record the outcome in docs/progress.md.
