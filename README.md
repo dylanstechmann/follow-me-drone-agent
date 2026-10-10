@@ -4,9 +4,14 @@ A personal hobby and learning project: a drone that follows a skater (pennyboard
 
 ## Status
 
-- Planning and repo scaffolding only.
+- The follow controller exists: a pure-Python module that turns a person's box in the frame into yaw, forward and climb commands. It has unit tests (`python3 -m pytest`) and no hardware dependency.
+- Not built yet: person detection and tracking, the simulator bridge, and any flight adapter.
 - Nothing here has flown, and nothing here has been tested against hardware.
 - Do not use this code to fly anything near people until the safety plan in [docs/safety.md](docs/safety.md) is met.
+
+## Budget and funding
+
+The working budget is $100, so most of the software is written from scratch and simulation comes first. See [docs/budget.md](docs/budget.md). FAU / FAU IEEE is a possible funding source; this is not confirmed.
 
 ## Planned scope
 
