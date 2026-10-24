@@ -155,11 +155,29 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Privacy: this repo is public. The plan uses roles only. No names, contact details, addresses, payment records or order screenshots. A test scans for email-like text.
 - Not claimed: the club's ability to run group orders is owner-reported, not confirmed with the club's officers. No supplier has been contacted and no quote exists.
 
-## Iteration 13: KiCad board and OpenSCAD enclosure (planned, needs tools)
+## Iteration 13: agent-readable project record and the owner's vision (done: 190 tests pass)
+
+- Results:
+  - Wrote [project-context.md](project-context.md) (the briefing for any agent), [vision.md](vision.md) (the owner's stance and ambition), [decisions.md](decisions.md) (16 decisions, 12 corrections, lessons) and [history.md](history.md) (what happened, in order, with who did what).
+  - Rewrote the README with a start-here list, the direction and the money stance. AGENTS.md now has a reading order and the owner's preferences as hard rules.
+  - Funding mentions in the budget and lab-access docs are now optional and marked as not part of the plan. Group orders are described as cost-sharing, not fundraising.
+  - Found and fixed C12: three docs said the code was "reviewed by the owner", and no review is recorded.
+  - Added tests that the briefing lists every doc, that the entry points exist, that the money stance is where agents will read it, and that no doc claims owner review.
+- Not claimed: no fleet size, revenue plan or product plan. The owner said "tons" of drones and "money" as an expected benefit; both are recorded as the owner's words, with open questions in [vision.md](vision.md).
+
+## Iteration 13 plan (kept for the record)
+
+- Owner input (2026-10-24): save everything discussed in documents in the repo, so other AI agents can understand the project. Also record the owner's stance and ambition: the owner does not like asking for money, and is curious about building many drones, and the software that may power them, by getting each part oneself rather than from off-the-shelf components. The owner expects that process to bring more control, power, money, understanding and capabilities.
+- Docs to write: `docs/project-context.md` (a briefing for any agent: what this is, what exists, how it fits together, rules, caveats, how to continue, glossary, doc map), `docs/vision.md` (the owner's stance and ambition, what each claimed benefit means in practice, what the evidence supports, the fleet question, risks and legal checks), `docs/decisions.md` (decision log and corrections log), `docs/history.md` (what was discussed and done, in order).
+- Updates for consistency: AGENTS.md gets a "start here" list and the owner's preferences. Funding mentions in the README, budget and lab-access docs become optional and are marked as not part of the plan. Group orders are described as cost-sharing, not fundraising.
+- Tests: a check that the doc map lists every file in docs/, so the briefing cannot silently fall behind.
+- Honesty rules for the new docs: report the owner's statements as the owner's. Mark what the model supports and what it does not. Do not turn an aspiration into a plan, and do not add a business case or a number of drones the owner has not given.
+
+## Iteration 14: KiCad board and OpenSCAD enclosure (planned, needs tools)
 
 - The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here.
 
-## Iteration 14: range-only sources, such as BLE RSSI (planned)
+## Iteration 15: range-only sources, such as BLE RSSI (planned)
 
 - A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 
@@ -171,7 +189,7 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 
 - What is the Pixel 8a for? The model assumes the drone's onboard computer and camera (pass 4). Confirm, because the rider's companion is your existing phone.
 - Does the $100 budget include the Pixel? The model keeps it outside the budget. The $250 is already more than the budget.
-- Which funding or equipment can FAU engineering or IEEE provide? See [lab-access.md](lab-access.md).
 - Do you already own an ELRS-compatible transmitter? It is the largest placeholder in the drone passes ($60 to $120).
-- What can FAU engineering and IEEE provide: a PCB mill or etching setup, soldering and hot-air stations, a bench power supply, a load cell, magnet wire, or funding? See [lab-access.md](lab-access.md).
+- What tools can FAU engineering and IEEE lend or book: a PCB mill or etching setup, soldering and hot-air stations, a bench power supply, a load cell, a laser cutter? See [lab-access.md](lab-access.md). (Money is not on this list: the owner does not like asking for it.)
+- How many is "tons" of drones, what would count as success, and how should the first flying drone be paid for without asking for money? See [vision.md](vision.md).
 - Repo license (still unset; see the README).

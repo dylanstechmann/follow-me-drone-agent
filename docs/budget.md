@@ -7,7 +7,7 @@ Working budget: **$100 total**. This is a hobby project, so the plan is built ar
 - A commercial follow-me drone costs far more than $100, so the project cannot buy one and adapt it.
 - Most of the software has to be written from scratch: detection and tracking, the follow controller, and the telemetry logging.
 - Simulation (PX4 or ArduPilot SITL, Gazebo) is free and comes first. It is where most of the budget-free work happens.
-- Hardware is the last and most constrained step. The bench kit fits the $100 at low and high prices with a made tag (pass 5 in [cost-reduction.md](cost-reduction.md)). A flying drone does not, and needs a separate funding source. Test on the bench before any flight.
+- Hardware is the last and most constrained step. The bench kit fits the $100 at low and high prices with a made tag (pass 5 in [cost-reduction.md](cost-reduction.md)). A flying drone does not fit, and how it would be paid for is an open question (see [vision.md](vision.md)). Test on the bench before any flight.
 - Use free and open-source tools and pretrained models where licenses allow. Record the license of each dependency in docs/references.md.
 
 ## Spending log
@@ -19,7 +19,9 @@ Working budget: **$100 total**. This is a hobby project, so the plan is built ar
 
 The cost passes and what each one buys are in [cost-reduction.md](cost-reduction.md). Prices carry the date they were seen on their source. Most are undated or older than 12 months, so check each one at the seller before buying. See [price-audit.md](price-audit.md).
 
-## Possible funding
+## Funding (optional, not planned)
 
-- FAU / FAU IEEE (Florida Atlantic University and its IEEE student chapter) may be a funding source. This is not confirmed. Eligibility, amounts and whether a personal hobby project qualifies all need checking with them. No contact has been made.
+The owner does not like asking for money. The plan does not depend on outside funding, and agents must not draft funding requests unless asked. [vision.md](vision.md) lists routes that need none: staged builds, owned and free tools, salvage, used parts, cost-sharing group orders and simulation.
+
+- Early notes said FAU or the FAU IEEE chapter might be a funding source. That is only a possibility the owner may never use. Nothing was confirmed and no contact was made.
 - The lab and club resources (printers, tools, parts) are listed in [lab-access.md](lab-access.md). None are confirmed.

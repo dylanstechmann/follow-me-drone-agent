@@ -1,18 +1,31 @@
 # follow-me-drone-agent
 
-A personal hobby and learning project: a drone that follows a skater (pennyboarding) and records footage. Right now it is a planning skeleton. There is no flight code yet.
+A personal hobby and learning project: a drone that follows a skater (pennyboarding) and records footage. Today it is a planning and modelling repo. There is no flight code, and nothing has flown.
+
+## Start here
+
+- **AI agents:** read [AGENTS.md](AGENTS.md) for the rules, then [docs/project-context.md](docs/project-context.md) for what exists, what is only a plan, and how to continue.
+- **Why this exists and where it is going:** [docs/vision.md](docs/vision.md).
+- **What was decided, and what was corrected:** [docs/decisions.md](docs/decisions.md).
+- **What was discussed and done, in order:** [docs/history.md](docs/history.md).
+
+## Direction
+
+The owner's stated direction (2026-10-24): to be curious about building many drones, and the software that may power them, by getting each part themselves, somewhat, instead of using off-the-shelf components. The owner expects that to bring more control, power, money, understanding and capabilities. This is a direction for choosing between options, not a plan of record. See [docs/vision.md](docs/vision.md).
+
+The owner does not like asking for money. Nothing in the plan depends on outside funding.
 
 ## Status
 
-- The follow controller exists: a pure-Python module that turns a person's box in the frame into yaw, forward and climb commands. It has unit tests (`python3 -m pytest`) and no hardware dependency.
-- Also built: fusion of several sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, and a cost model built from raw materials, with cost passes and a supplier-dependency check. These run on recorded or synthetic data only. Run `python3 -m pytest` (184 tests). The routes to make each part, with price dates, are in [docs/make-own-ladder.md](docs/make-own-ladder.md). Factory, minimum-order and lab routes are in [docs/supply-side.md](docs/supply-side.md). The IEEE group order plan, kept current from [bom/group_order.json](bom/group_order.json), is in [docs/group-order.md](docs/group-order.md).
-- Not built yet: person detection and tracking, the simulator bridge, and any flight adapter.
-- Nothing here has flown, and nothing here has been tested against hardware.
+- **Built and tested (standard-library Python plus pytest):** the follow controller, fusion of several position sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, and a data-driven cost and supply model with a dependency check. These run on recorded or synthetic data only.
+- **Planned and documented:** the routes to make each part ([docs/make-own-ladder.md](docs/make-own-ladder.md)), the factory and lab routes ([docs/supply-side.md](docs/supply-side.md)), and a public IEEE group order plan ([docs/group-order.md](docs/group-order.md)) that nobody has acted on yet.
+- **Not built:** person detection and tracking, the simulator bridge, any flight adapter, and any CAD, PCB or firmware file.
+- **Never done:** flying, building or testing hardware, contacting a supplier, or placing an order.
 - Do not use this code to fly anything near people until the safety plan in [docs/safety.md](docs/safety.md) is met.
 
-## Budget and funding
+## Budget
 
-The working budget is $100 for the bench and pipeline work, so most of the software is written from scratch and simulation comes first. See [docs/budget.md](docs/budget.md). The cost passes in [docs/cost-reduction.md](docs/cost-reduction.md) show that a bench kit with a made tag fits $100 at both ends, but a flying drone does not. [docs/pipeline.md](docs/pipeline.md) explains what the owner can make and what must be bought. Prices are in [docs/parts-catalog.md](docs/parts-catalog.md). FAU's engineering building and the IEEE club have 3D printers ([docs/lab-access.md](docs/lab-access.md)). FAU / FAU IEEE funding is a possible source; this is not confirmed.
+The working budget is $100 for the bench and pipeline work, so simulation comes first. The cost passes in [docs/cost-reduction.md](docs/cost-reduction.md) show on paper that a bench kit with a made tag fits $100, and that a flying drone does not. Prices carry their own dates, and most are older than 12 months or undated ([docs/price-audit.md](docs/price-audit.md)). See [docs/budget.md](docs/budget.md) and [docs/pipeline.md](docs/pipeline.md).
 
 ## Planned scope
 
@@ -23,11 +36,13 @@ The working budget is $100 for the bench and pipeline work, so most of the softw
 
 ## Development
 
-So far the code is pure Python 3.10+ with pytest only (`python3 -m pytest`). Docker Compose and uv, which the owner's other repos use, are planned but not added yet. Rules for coding agents are in [AGENTS.md](AGENTS.md).
+The code is Python 3.10 or later with pytest only. Run `python3 -m pytest`. Docker Compose and uv, which the owner's other repos use, are planned and not added yet. Tables in the docs are generated from the data under `bom/`: run `PYTHONPATH=src python3 -m follow_me.docs_sync` after changing it. The commands are in [docs/project-context.md](docs/project-context.md).
 
 ## How this was built
 
-This is an AI-assisted hobby project. Code and docs are drafted with coding agents (Claude Code) and reviewed by the owner. Agent-generated analyses are labelled as such. Design research draws on public PX4, ArduPilot, and MAVSDK documentation; links will be added to [docs/references.md](docs/references.md) as they are used.
+This is an AI-assisted hobby project. All the code, tests and docs so far were written by AI coding agents (Claude Code, with several assistant models over the sessions) at the owner's direction. The owner supplied the direction, the decisions and the real-world facts: the budget, access to 3D printers, that the IEEE club can run group orders, and the preference not to ask for money. No review of the code by the owner is recorded.
+
+The agents ran the web research. Search snippets and fetched pages are not verified, and the prices and licence notes drawn from them are provisional. Design research draws on public PX4, ArduPilot and MAVSDK documentation. Sources are in [docs/references.md](docs/references.md).
 
 ## License
 

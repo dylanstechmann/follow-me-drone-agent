@@ -11,7 +11,7 @@ The owner has access to 3D printers at FAU's engineering building and at the IEE
 
 ## Framing
 
-This is a personal hobby and learning project, built with AI coding assistants and reviewed by the owner. It is not a company, a product, or a university project unless the lab or club decides to make it one. Describe it that way in any request.
+This is a personal hobby and learning project, written by AI coding assistants at the owner's direction. It is not a company, a product, or a university project unless the lab or club decides to make it one. Describe it that way in any request.
 
 ## Printers (first priority)
 
@@ -41,17 +41,19 @@ Ask about:
 - A load cell, a scale that reads grams, and calipers.
 - A laser cutter (for stator laminations or stencils) and a CNC router.
 - Motor winding tools, or a space to build them.
-- Magnet wire, N52 magnets, and bearings, bought or donated.
+- Magnet wire, N52 magnets, and bearings, bought or already in stock.
 
-## Funding and parts
+## Parts and tools, not money
+
+The owner does not like asking for money. Nothing here asks for funding, and no agent should draft a funding, sponsorship or grant request unless the owner asks for one. Funding is optional and is not part of the plan.
 
 Ask about:
 
-- Whether the lab or club has parts budgets, or project grants that a personal hobby project can use. Eligibility is unconfirmed.
-- Whether the IEEE student branch has project funds or a sponsor, and what it needs in return.
 - Whether surplus or old lab parts can be used.
+- Whether tools can be booked or borrowed, and what training they need.
+- Whether a group order can run through the club. It is cost-sharing: each member pays for the parts they receive.
 
-The owner should not assume funding exists. Nothing in this repo has been confirmed with FAU or IEEE.
+Nothing in this repo has been confirmed with FAU or IEEE.
 
 ## Rules to check before any flight
 

@@ -43,7 +43,7 @@ From [cost-reduction.md](cost-reduction.md):
 
 ## Group orders through the IEEE club
 
-- One order meets the minimum, and members pay per unit.
+- One order meets the minimum, and members pay per unit. This is cost-sharing, not fundraising.
 - Good candidates: magnets (1,000), bearings (100), boards (five per design), assembly setup fees (one per design), and later stator cores (1,000).
 - One customs entry for the whole order keeps duty fees down.
 - Keep a written allocation of who paid for what, in the club's private channel, not on GitHub.

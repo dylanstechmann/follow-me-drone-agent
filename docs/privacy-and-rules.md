@@ -28,5 +28,5 @@ The IEEE group order plan ([group-order.md](group-order.md)) is public. It names
 
 ## Honest framing
 
-- This is a hobby and learning project, built with AI coding assistants and reviewed by the owner.
+- This is a hobby and learning project, written by AI coding assistants at the owner's direction. No review of the code by the owner is recorded.
 - Nothing here is tested on real hardware or certified for flight. Do not present it as safe or autonomous.

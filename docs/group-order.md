@@ -4,6 +4,8 @@ A shared plan for buying the parts that only make sense in bulk: factory magnets
 
 Nothing here has been ordered. No supplier has been contacted, and no quote exists yet. Every price below is a listing, an estimate or a placeholder until a supplier quote replaces it.
 
+A group order is cost-sharing: each member pays for the parts they receive. It is not fundraising, and nobody is asked for a donation.
+
 ## Privacy
 
 This repository is public. The plan uses roles only. Never add names, email addresses, phone numbers, delivery addresses, payment records, or screenshots of orders or invoices. Keep those in the club's private channel. A test scans the plan and this page for email-like text.
