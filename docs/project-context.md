@@ -97,7 +97,7 @@ Headline results at the 2026-10-10 prices, core cost per drone in USD, low to hi
 | 3 | Bench kit, no flying drone | 67.36 to 101.23 |
 | 5 | Bench kit with a made tag | 63.87 to 98.99 (fits $100) |
 | 8 | Own autopilot board, ESC, transmitter and tag battery | 275.09 to 623.11 |
-| 10 | Factory-assembled own boards, factory magnets and bearings, lab-etched stators | 207.86 to 534.21, with 332.20 to 934.98 of cash at minimum orders |
+| 10 | Factory-assembled own boards, factory magnets and bearings, lab-etched stators | 207.86 to 534.21, with 332.20 to 960.45 of cash at minimum orders |
 
 Main findings:
 

@@ -319,10 +319,11 @@ def cash_outlay(
 
     Per-unit cost hides minimum orders: 1,000 magnets are cheap each and still
     cost real money up front. Shared minimums are counted once per pass; boards
-    and assembly fees are counted once per design.
+    and assembly fees are counted once per design. The high end includes a made
+    item's waste allowance, as its per-drone cost does.
     """
     low = high = 0.0
-    shared: dict[str, float] = {}
+    shared: dict[str, list[float]] = {}  # material -> [used at low, used at high]
     for iid in ids:
         item = catalog[iid]
         if item.optional:
@@ -332,20 +333,21 @@ def cash_outlay(
             low += n * item.low
             high += n * item.high
             continue
+        waste = item.make.get("waste_high", 1.0)
         for key, quantity in item.make["inputs"].items():
             m = materials[key]
             used = quantity * item.qty
             if m.moq_per_item:
-                n = max(used, m.moq)
-                low += n * m.low
-                high += n * m.high
+                low += max(used, m.moq) * m.low
+                high += max(used * waste, m.moq) * m.high
             else:
-                shared[key] = shared.get(key, 0.0) + used
-    for key, used in shared.items():
+                acc = shared.setdefault(key, [0.0, 0.0])
+                acc[0] += used
+                acc[1] += used * waste
+    for key, (used_low, used_high) in shared.items():
         m = materials[key]
-        n = max(used, m.moq)
-        low += n * m.low
-        high += n * m.high
+        low += max(used_low, m.moq) * m.low
+        high += max(used_high, m.moq) * m.high
     return round(low, 2), round(high, 2)
 
 

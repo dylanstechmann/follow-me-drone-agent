@@ -35,7 +35,7 @@ Path (how the part is obtained):
 Two cash numbers:
 
 - **Core cost** is per drone, at the price for the quantity needed.
-- **Cash at minimum orders** is what it takes to place every order at its minimum quantity: 1,000 magnets, five boards per design, one assembly setup per design, and so on.
+- **Cash at minimum orders** is what it takes to place every order at its minimum quantity: 1,000 magnets, five boards per design, one assembly setup per design, and so on. Its high end includes the waste allowance on made items, as the core cost does.
 
 ## Pass results
 
@@ -50,12 +50,12 @@ The table is generated from the data files and kept in sync by `PYTHONPATH=src p
 | pass3_bench_first Bench-first kit (no flying drone yet) | pass2_print_structure | 67.36 | 101.23 | -401.57 to -584.29 | 75.44 to 118.04 | 1% | 1% | fits budget at low prices only | 2 | 0 of 6 |
 | pass4_pixel_onboard Used feature-rich phone replaces the Pi and camera on the drone (example) | pass2_print_structure | 683.93 | 895.52 | +215.00 to +210.00 | 704.31 to 935.85 | 1% | 1% | over budget | 9 | 0 of 9 |
 | pass5_made_tag Bench kit with a made tag: bulk ESP32-C3 and outsourced board | pass3_bench_first | 63.87 | 98.99 | -3.49 to -2.24 | 71.95 to 115.80 | 1% | 1% | fits budget at low and high prices | 2 | 1 of 7 |
-| pass6_diy_motor_rnd Printed structure with DIY motor research and a thrust stand | pass2_print_structure | 480.05 | 782.12 | +11.12 to +96.60 | 509.96 to 825.42 | 16% | 16% | over budget | 9 | 2 of 15 |
-| pass7_owned_pipeline Owned pipeline: printed structure, made tag, DIY motor research | pass6_diy_motor_rnd | 471.96 | 765.58 | -8.09 to -16.54 | 501.87 to 808.88 | 16% | 16% | over budget | 8 | 3 of 17 |
-| pass8_own_most Own most: made autopilot board, ESC, transmitter and tag battery | pass7_owned_pipeline | 275.09 | 623.11 | -196.87 to -142.47 | 316.85 to 752.24 | 48% | 48% | over budget | 7 | 6 of 26 |
-| pass9_own_most_target_motors Own most, with the by-weight and salvage motor target | pass8_own_most | 238.17 | 516.23 | -36.92 to -106.88 | 373.44 to 834.95 | 38% | 38% | over budget | 7 | 5 of 25 |
-| pass10_factory_and_lab Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators | pass8_own_most | 207.86 | 534.21 | -67.23 to -88.90 | 332.20 to 934.98 | 20% | 51% | over budget | 10 | 7 of 28 |
-| pass11_factory_stators Factory stator cores at a 1,000-piece minimum | pass10_factory_and_lab | 210.86 | 539.05 | +3.00 to +4.84 | 1,319.96 to 2,918.89 | 21% | 51% | over budget | 10 | 6 of 28 |
+| pass6_diy_motor_rnd Printed structure with DIY motor research and a thrust stand | pass2_print_structure | 480.05 | 782.12 | +11.12 to +96.60 | 509.96 to 855.04 | 16% | 16% | over budget | 9 | 2 of 15 |
+| pass7_owned_pipeline Owned pipeline: printed structure, made tag, DIY motor research | pass6_diy_motor_rnd | 471.96 | 765.58 | -8.09 to -16.54 | 501.87 to 838.50 | 16% | 16% | over budget | 8 | 3 of 17 |
+| pass8_own_most Own most: made autopilot board, ESC, transmitter and tag battery | pass7_owned_pipeline | 275.09 | 623.11 | -196.87 to -142.47 | 316.85 to 808.82 | 48% | 48% | over budget | 7 | 6 of 26 |
+| pass9_own_most_target_motors Own most, with the by-weight and salvage motor target | pass8_own_most | 238.17 | 516.23 | -36.92 to -106.88 | 373.44 to 864.31 | 38% | 38% | over budget | 7 | 5 of 25 |
+| pass10_factory_and_lab Closer to the factory: factory-assembled boards, factory magnets and bearings, lab-etched stators | pass8_own_most | 207.86 | 534.21 | -67.23 to -88.90 | 332.20 to 960.45 | 20% | 51% | over budget | 10 | 7 of 28 |
+| pass11_factory_stators Factory stator cores at a 1,000-piece minimum | pass10_factory_and_lab | 210.86 | 539.05 | +3.00 to +4.84 | 1,319.96 to 2,943.16 | 21% | 51% | over budget | 10 | 6 of 28 |
 <!-- generated:passes:end -->
 
 Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later include the optional CNC mill ($115 to $200). Neither is in the core totals.
@@ -80,7 +80,7 @@ Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later i
 - **The bench kit fits $100 at both ends with a made tag** (pass 5: $63.87 to $98.99).
 - **Going upstream is the biggest cut so far.** Pass 10 is $207.86 to $534.21 per drone, against $275.09 to $623.11 for pass 8. The largest single saving is the GPS: an own factory-assembled board at $15.54 to $28.59 replaces a $54.99 to $74.90 retail board.
 - **Motors only beat retail with factory parts.** With retail magnets and bearings, a DIY motor is $11.91 to $35.17. With factory magnets and bearings and a lab-etched stator, it is $2.57 to $12.40. A T-Motor is $10 to $13.50.
-- **Cheaper per drone needs more cash up front.** Pass 10 needs $332.20 to $934.98 at minimum orders. Factory stator cores (pass 11) push that to $1,319.96 to $2,918.89. Group orders through the IEEE club are how this becomes affordable.
+- **Cheaper per drone needs more cash up front.** Pass 10 needs $332.20 to $960.45 at minimum orders. Factory stator cores (pass 11) push that to $1,319.96 to $2,943.16. Group orders through the IEEE club are how this becomes affordable.
 - **Still over $100 for a flying drone.** The 4S battery, charger, LiPo bag, camera, Pi and ESC MOSFETs remain.
 - **The data is weak.** Only 10 of 51 sourced prices are dated within 12 months, and 16 inputs are placeholders. The totals compare routes. They are not a quote.
 

@@ -52,7 +52,7 @@ The owner is curious about "tons" of drones. No number has been given.
 What a larger number changes, according to the cost model:
 
 - Fixed costs spread out. One order of 1,000 magnets covers about 17 drones. One order of 1,000 stator cores covers about 250. Per-design PCB and assembly fees fall per board.
-- Cash to start rises. Factory stator cores raise the cash at minimum orders from $332 to $935 (pass 10) to $1,320 to $2,919 (pass 11).
+- Cash to start rises. Factory stator cores raise the cash at minimum orders from $332 to $960 (pass 10) to $1,320 to $2,943 (pass 11).
 - Quality control matters more. Every factory part needs an inspection step, and the inspection results feed back into the cost model.
 
 What a larger number changes for the software. These are ideas, none are built:

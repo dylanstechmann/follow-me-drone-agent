@@ -112,7 +112,7 @@ Salvage is a real source: crashed flight controllers (MCU, IMU, regulators), pho
 From [cost-reduction.md](cost-reduction.md):
 
 - **Pass 8, own most (hand-assembled):** $275.09 to $623.11 per drone, 48 percent made in-house.
-- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone. The cash at minimum orders is $332.20 to $934.98, and 51 percent of the cost is the owner's design. Still over $100.
+- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone. The cash at minimum orders is $332.20 to $960.45, and 51 percent of the cost is the owner's design. Still over $100.
 - **The levers left, in order:**
   1. The ESC MOSFET price.
   2. The charger and LiPo bag (placeholders).

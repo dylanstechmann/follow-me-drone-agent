@@ -538,6 +538,27 @@ def test_cash_outlay_pays_shared_minimums_once_and_per_design_minimums_per_desig
     assert high == pytest.approx(1000 * 0.10 + 2 * 5 * 0.70 + 2 * 9.71 + 10 * 4)
 
 
+def test_cash_outlay_high_end_includes_the_waste_allowance(tmp_path):
+    # The per-drone high end allows for waste, so the cash to buy the material must too.
+    items = [
+        raw_item(id="board", low=0, high=0, status="estimate", path="make",
+                 make={"inputs": {"fr4": 100}, "waste_high": 1.2}),
+        raw_item(id="motor", low=0, high=0, status="estimate", path="make", qty=4,
+                 make={"inputs": {"magnet": 14}, "waste_high": 1.3}),
+    ]
+    mats = {**MATS, **MOQ_MATS}
+    catalog = load_catalog(write_json(tmp_path, "c.json", {"items": items}), mats)
+    from follow_me.bom import cash_outlay
+
+    low, high = cash_outlay(catalog, ["board", "motor"], mats)
+    # 100 cm2 of FR4 is above its 1 cm2 minimum, so waste shows at the high end. 56 magnets
+    # with waste are still under the 1,000 minimum, so the minimum decides both ends.
+    assert low == pytest.approx(100 * 0.01 + 1000 * 0.02)
+    assert high == pytest.approx(100 * 1.2 * 0.1 + 1000 * 0.10)
+    t = totals(catalog, ["board"], mats)
+    assert cash_outlay(catalog, ["board"], mats) == (t.core_low, t.core_high)
+
+
 def test_moq_below_one_is_rejected(tmp_path):
     path = write_json(tmp_path, "c.json", {"items": [raw_item(moq=0)]})
     with pytest.raises(ValueError, match="moq"):

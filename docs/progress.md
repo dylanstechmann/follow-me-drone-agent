@@ -209,6 +209,10 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Fixed C13: the example log now walks tracking (5 ticks), degraded (2), dead reckoning (10), hold (90), return-home requested (4) and tracking again (2) at default settings. A test checks the whole sequence, and a second test keeps the shortened-threshold case.
 - Found while doing it: the mode thresholds count ticks, not seconds. At this log's 2 ticks per second, return-home is requested after 50 s without an estimate; at 30 ticks per second it would be under 4 s. Listed under the next candidates.
 
+## Iteration 17: the cost model (in progress)
+
+- Fixed C14: the cash at minimum orders now includes the waste allowance at the high end. Pass 10 is $332.20 to $960.45 (was $934.98 at the high end), pass 11 is $1,319.96 to $2,943.16 (was $2,918.89), and passes 6 to 9 rise by $29 to $57 at the high end. Per-drone costs did not change.
+
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.

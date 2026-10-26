@@ -29,8 +29,8 @@ Prices come from [bom/materials.json](../bom/materials.json) and [bom/catalog.js
 
 From [cost-reduction.md](cost-reduction.md):
 
-- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone, $67 to $89 cheaper than pass 8. The cash needed at minimum orders is $332.20 to $934.98. 20 percent of the cost is made in-house and 51 percent is the owner's own design, since the factory assembles boards the owner designed. Still over $100.
-- **Pass 11, factory stator cores:** about the same per drone ($210.86 to $539.05), but $1,319.96 to $2,918.89 of cash to start.
+- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone, $67 to $89 cheaper than pass 8. The cash needed at minimum orders is $332.20 to $960.45. 20 percent of the cost is made in-house and 51 percent is the owner's own design, since the factory assembles boards the owner designed. Still over $100.
+- **Pass 11, factory stator cores:** about the same per drone ($210.86 to $539.05), but $1,319.96 to $2,943.16 of cash to start.
 - **Cheapest per drone is not cheapest to start.** Minimum orders turn small unit prices into large up-front orders. A group order spreads them: 1,000 magnets cover about 17 drones' worth of motors.
 
 ## What going upstream costs
