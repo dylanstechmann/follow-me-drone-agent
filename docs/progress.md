@@ -400,6 +400,16 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 
   The iteration 21 findings stay as tests of the old controller.
 
+## Iteration 28: the website and docs (done: 309 tests pass)
+
+- The replay page has a third example: the same made-up ride with the controller as it was before feed-forward (`data/sim-example-before.json`). The median distance is 20.4 m before and 7.0 m after, and the time in the band is 7% and 17%. A test checks that the new controller is closer.
+- The tick panel shows the rider's estimated speed over the ground, its uncertainty, and the share fed forward. The first tile adds the closest approach.
+- Checked in a headless browser at 1280 px in the light theme and 390 px in the dark theme: all three examples load with no errors or sideways scrolling, and the made-up GPX opens. Feed-forward brought the GPX ride's median distance from 53.5 m to 21.3 m; it is still degraded throughout at a phone's accuracy.
+- Fixed what the screenshots and code review showed:
+  - The distance chart's axis labels used quarter steps such as 37.5 m, which were clipped. They now use round steps.
+  - The tick panel would have printed "null" for ticks without motion, because the DOM's `append` turns a null into text.
+- [simulation.md](simulation.md) has the before and after table, and the history has a new phase.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

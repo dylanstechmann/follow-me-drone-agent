@@ -71,6 +71,14 @@ The owner asked whether anything else could be done before going to the printers
 - **Iteration 23:** a GPX importer that keeps only meters and seconds from the first fix. Reading the apps' code showed that `hdop` means different things in GPSLogger and OsmAnd.
 - **Iteration 24:** the replay page runs the same Python in the visitor's browser with Pyodide, so a recording can be simulated without uploading it. It also shows a made-up simulated ride, with the distance to the rider over time and a top-down view of both paths.
 
+## Phase 12: the simulated drone keeps up (iterations 26 to 28, 2026-10-26)
+
+The owner asked what else could be done before work away from the computer. The agent recommended fixing the follow logic the simulation had exposed, then the camera batch, then two-phone support, and started the first.
+
+- **Iteration 26:** a Kalman filter estimates the rider's velocity over the ground from the fused estimates and the drone's pose. Readings now carry their measurement's age, so a 1 Hz phone fix on a 2 Hz loop is used once.
+- **Iteration 27:** the rider's speed is fed forward into the forward command. In simulation, riders at 2 to 7 m/s are followed 6 to 10 m behind instead of 8 to 31 m. A sudden stop brought the drone within 2 m, so the approaching part now fades out across the follow band (3.4 m). The simulation also found that 3 m noisy fixes bring the drone within 0.3 to 1.8 m of a standing rider, with or without the change. That is recorded as open.
+- **Iteration 28:** the website shows the made-up ride with the new controller and the old one side by side, and the replay panel shows the rider's estimated speed and how much of it was fed forward.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

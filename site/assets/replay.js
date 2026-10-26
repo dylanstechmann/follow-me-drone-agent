@@ -491,6 +491,10 @@ function renderPanel(tick) {
       h("span", { class: "small muted" }, `gain ${fixed(tick.gain, 1)} · tick ${state.index + 1} of ${n}`),
     ),
     h("div", { class: "panel-block" }, h("h3", {}, "Fused estimate"), h("p", { class: "small" }, estimate)),
+    // The DOM's append would print a null, so add the block only when there is motion.
+    ...(tick.motion ? [h("div", { class: "panel-block" }, h("h3", {}, "Rider's motion"), h("p", { class: "small" },
+      `${fixed(Math.hypot(tick.motion.forward, tick.motion.left), 1)} m/s over the ground (± ${fixed(tick.motion.sigma, 1)}), ` +
+      `${fixed(tick.motion.forward, 1)} along the drone's nose. Fed forward: ${signed(tick.motion.feed)} of full speed.`))] : []),
     h("div", { class: "panel-block" }, h("h3", {}, "Command"), h("div", { class: "cmd" }, commandRows(tick.command))),
     h("div", { class: "panel-block" },
       h("h3", {}, "Sources"),
@@ -619,7 +623,9 @@ function drawFollow() {
   const lost = LOSS_MODES.reduce((sum, m) => sum + (seconds[m] || 0), 0);
   const detail = LOSS_MODES.filter((m) => seconds[m]).map((m) => `${modeInfo(m).label} ${fixed(seconds[m], 1)} s`).join(", ");
   clear(els.kpis).append(
-    tile("Median distance to the rider", `${fixed(s.median_distance_m, 1)} m`, `The most was ${fixed(s.max_distance_m, 1)} m.`),
+    tile("Median distance to the rider", `${fixed(s.median_distance_m, 1)} m`,
+      s.min_distance_m === undefined ? `The most was ${fixed(s.max_distance_m, 1)} m.`
+        : `Closest ${fixed(s.min_distance_m, 1)} m, farthest ${fixed(s.max_distance_m, 1)} m.`),
     tile("Time inside the follow band", percent(s.in_band_share), `${fixed(near, 2)} to ${fixed(far, 2)} m from the rider.`),
     tile("Time below full tracking", percent(total ? lost / total : 0), detail || "Tracking the whole time."),
     tile("Return-home requested", s.return_home_requested ? "Yes" : "No", "Recorded, not flown."),
@@ -643,7 +649,7 @@ function drawDistance() {
   // Draw at the rendered size, so 12 px text stays 12 px on a phone.
   const width = Math.max(300, Math.round(chart.getBoundingClientRect().width || 640));
   const height = 230;
-  const pad = { left: 46, right: 12, top: 12, bottom: 28 };
+  const pad = { left: 50, right: 12, top: 12, bottom: 28 };
   chart.setAttribute("viewBox", `0 0 ${width} ${height}`);
   const t0 = ticks[0].t;
   const t1 = Math.max(ticks[ticks.length - 1].t, t0 + 1);
@@ -651,9 +657,10 @@ function drawDistance() {
   const x = (t) => pad.left + ((t - t0) / (t1 - t0)) * (width - pad.left - pad.right);
   const y = (d) => height - pad.bottom - (d / top) * (height - pad.top - pad.bottom);
 
-  for (const f of [0, 0.25, 0.5, 0.75, 1]) {
-    const d = f * top;
-    svg("line", { x1: pad.left, x2: width - pad.right, y1: y(d), y2: y(d), stroke: f ? "var(--grid)" : "var(--axis)" }, chart);
+  // Gridlines on a round step, so the labels stay short.
+  const ystep = niceMax(top / 4);
+  for (let d = 0; d <= top + 1e-9; d += ystep) {
+    svg("line", { x1: pad.left, x2: width - pad.right, y1: y(d), y2: y(d), stroke: d ? "var(--grid)" : "var(--axis)" }, chart);
     svg("text", { x: pad.left - 6, y: y(d) + 4, "text-anchor": "end" }, chart).textContent = `${trim(d)} m`;
   }
   const step = stepFor(t1 - t0);
@@ -905,12 +912,17 @@ async function main() {
   } catch (error) {
     showMessage(`Could not load the example trace (${error.message}). Build the site with: PYTHONPATH=src python3 -m follow_me.website`, true);
   }
-  try {
-    const trace = await fetchJSON("data/sim-example.json");
-    traces.set("sim-example", { trace, note: trace.note });
-    els.select.appendChild(h("option", { value: "sim-example" }, "Example: a simulated follow, made up"));
-  } catch (error) {
-    // The first example still works without it.
+  for (const [key, file, label] of [
+    ["sim-example", "data/sim-example.json", "Example: a simulated follow, made up"],
+    ["sim-before", "data/sim-example-before.json", "Example: the same ride, before feed-forward"],
+  ]) {
+    try {
+      const trace = await fetchJSON(file);
+      traces.set(key, { trace, note: trace.note });
+      els.select.appendChild(h("option", { value: key }, label));
+    } catch (error) {
+      // The first example still works without these.
+    }
   }
 }
 
