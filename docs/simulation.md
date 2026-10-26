@@ -52,12 +52,45 @@ Other cases:
   - it is in the band 17% of the time, against 7%;
   - it tracks for 98 s of 145, against 64.5 s, because staying close keeps the range term small.
 
+**Iteration 27 also found that noisy fixes bring the drone too close.** A standing rider with made-up 3 m errors on each fix was approached to between 0.3 and 1.8 m in five runs, with or without feed-forward. The drone held 4 to 5 m from where the fixes said the rider was, which can be next to where the rider really was.
+
+## The safety margin (iteration 29)
+
+The council now shows the controller the rider closer than estimated, by 2.5 times the estimate's one-sigma uncertainty (`margin_sigmas`). The drone therefore holds back further when it is less sure where the rider is. If the reported accuracy is honest, 2.5 one-sided sigmas keep the real rider outside the band's near edge about 99% of the time.
+
+Where the drone settles behind a rider moving in a straight line, one fix a second:
+
+| Rider | Fix accuracy | Original | Feed-forward | Feed-forward and margin (now) |
+|---|---|---|---|---|
+| 2 m/s | 1 m | 8.0 to 8.2 m | 6.2 to 6.5 m | 8.9 to 9.3 m |
+| 3 m/s | 1 m | 10.9 m | 6.3 to 6.9 m | 9.1 to 9.6 m |
+| 4 m/s | 1 m | 16.2 m | 6.7 to 7.4 m | 9.4 to 10.1 m |
+| 5 m/s | 1 m | 31.2 to 31.6 m | 7.1 to 8.0 m | 9.8 to 10.7 m |
+| 7 m/s | 1 m | Falls behind without limit | 7.7 to 10.0 m | 10.4 to 12.5 m |
+| 2 m/s | 4 m, like a phone | 15.7 m | 10.9 m | 21.3 m |
+| 3 m/s | 4 m, like a phone | Falls behind without limit | 16.3 m | 27.0 m |
+
+The closest the drone came, after the first 10 s where noted:
+
+| Case | Original | Feed-forward | Now |
+|---|---|---|---|
+| Standing rider, 3 m errors reported honestly, five runs, after 10 s | 0.3 to 1.8 m | 0.4 to 1.5 m | 8.2 to 9.5 m |
+| The same errors reported as 2 m, after 10 s | 0.3 to 1.2 m | 0.0 to 0.7 m | 2.9 to 4.9 m |
+| Sudden stop from 4 m/s | 5.1 m | 3.4 m | 6.1 m |
+| 90 degree turn at 4 m/s | 11.1 m | 5.1 m | 7.3 m |
+
+What this shows:
+- **The margin fixes the close approach when the accuracy is honest.**
+- **It is only as good as the reported accuracy.** When a receiver reports 2 m for 3 m errors, the clearance falls to 3 to 5 m. Phones are often optimistic, so the reported accuracy needs checking against real data. Recording the same walk on two phones at once would show how far apart they really are.
+- **It costs distance.** Clean following moves about 2.7 m further back, and a phone alone (degraded) is followed 21 to 27 m back.
+
 **Still open:**
-- **Noisy fixes bring the drone too close.** A standing rider with made-up 3 m errors on each fix was approached to between 0.3 and 1.8 m in five runs, with or without feed-forward. The drone holds 4 to 5 m from where the fixes say the rider is, which can be next to where the rider really is. A follow band this tight needs better than metre-level positions. Candidates, each needing simulation tests first:
-  - keep the follow distance above the estimate's uncertainty;
-  - follow the filtered position instead of the raw estimate;
-  - require the camera to confirm before following this close.
-- **A phone alone is still degraded.** Review the degraded threshold with real phone and tag data.
+- Check reported accuracy against real recordings.
+- Follow the filtered position instead of the raw estimate.
+- Require the camera to confirm before following close.
+- Review the degraded threshold with real phone and tag data.
+
+Each is a change to the follow logic, so it needs simulation tests first.
 
 ## Replaying your own recording
 
@@ -101,8 +134,9 @@ The recording is not uploaded. See [website.md](website.md).
 - the follow band's edges, and turning toward a rider off to one side;
 - stale fixes, the dead-reckoning hold, and fallback timing at two loop rates;
 - the trace format and the summary, including the closest approach;
-- for the old controller (`feed_forward=False`), the iteration 21 findings: the trailing distance against the controller's arithmetic, the speed ceiling, and the phone case;
-- with feed-forward:
+- for the original controller (`feed_forward=False, margin_sigmas=0`), the iteration 21 findings: the trailing distance against the controller's arithmetic, the speed ceiling, and the phone case;
+- the safety margin: noisy fixes kept at a distance, the limit when accuracy is under-reported, following and stopping with the margin, and the margin's size;
+- with feed-forward and no margin:
   - riders at 2 to 7 m/s are kept close;
   - a sudden stop is never approached closer than 3 m;
   - a turn is followed without a large overshoot;

@@ -172,11 +172,11 @@ def replay_data(root: Path = ROOT) -> dict:
 
 def sim_example_data(feed_forward: bool = True) -> dict:
     """The made-up ride, followed by the simulated drone, with the controller as it is
-    or, for comparison, as it was before feed-forward."""
+    or, for comparison, as it was before feed-forward and the safety margin."""
     if feed_forward:
         return trace_track(example_track(), note=EXAMPLE_NOTE)
-    note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward, for comparison."
-    return trace_track(example_track(), council=Council(feed_forward=False), note=note)
+    note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward and the safety margin, for comparison."
+    return trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=note)
 
 
 def _catalog_grams(item: bom.Item | None) -> dict | None:

@@ -22,6 +22,13 @@ from follow_me.sim import (
 )
 
 
+# The controller as it was before iteration 27: no feed-forward and no safety margin.
+# These tests keep the findings of iteration 21 as a record and for the website's comparison.
+P_ONLY = dict(feed_forward=False, margin_sigmas=0.0)
+# Feed-forward without the safety margin: the controller of iteration 27.
+FEED_ONLY = dict(margin_sigmas=0.0)
+
+
 def standing(east, north, seconds=60.0, accuracy=1.0, every=0.5):
     return [RiderFix(k * every, east, north, accuracy) for k in range(int(seconds / every) + 1)]
 
@@ -61,8 +68,8 @@ def test_follow_band_comes_from_the_controller_deadband():
     assert far == pytest.approx(5.05, abs=0.01)
 
 
-def test_standing_rider_is_approached_and_held_at_the_band_edge():
-    ticks = simulate(standing(0.0, 20.0), start=DroneState(0.0, 0.0, 0.0))
+def test_without_the_margin_a_standing_rider_is_held_at_the_band_edge():
+    ticks = simulate(standing(0.0, 20.0), council=Council(**P_ONLY), start=DroneState(0.0, 0.0, 0.0))
     near, far = follow_band(Council())
     assert ticks[0].distance == pytest.approx(20.0)
     settled = [s.distance for s in ticks if s.t >= 20.0]
@@ -79,9 +86,6 @@ def test_rider_to_one_side_is_turned_toward():
     assert abs(math.degrees(ticks[-1].result.estimate.bearing)) == pytest.approx(4.5, abs=0.01)
 
 
-# Without feed-forward: the controller as it was before iteration 27. These tests keep
-# the findings of iteration 21 as a record and for the website's comparison.
-P_ONLY = dict(feed_forward=False)
 
 
 @pytest.mark.parametrize("speed", [2.0, 3.0, 4.0])
@@ -171,7 +175,7 @@ def test_trace_carries_the_world_and_a_summary():
 
 
 def test_summary_counts_seconds_and_the_share_in_the_band():
-    council = Council()
+    council = Council(**P_ONLY)  # no margin, so a rider 4.4 m away stays in the band
     ticks = simulate(standing(0.0, 4.4, seconds=10.0), council=council, start=DroneState(0.0, 0.0, 0.0))
     summary = summarize(ticks, council, 0.5)
     assert summary["duration_s"] == 10.0
@@ -209,14 +213,14 @@ def test_fallback_timing_is_the_same_at_two_loop_rates():
 @pytest.mark.parametrize("speed", [2.0, 3.0, 4.0, 5.0])
 def test_feed_forward_keeps_a_moving_rider_near_the_band(speed):
     near, far = follow_band(Council())
-    late = [s.distance for s in simulate(legs((150, speed, 0))) if s.t >= 100]
+    late = [s.distance for s in simulate(legs((150, speed, 0)), council=Council(**FEED_ONLY)) if s.t >= 100]
     assert far <= min(late) and max(late) <= 8.5  # was 8 to 31 m behind without it
     old = [s.distance for s in simulate(legs((150, speed, 0)), council=Council(**P_ONLY)) if s.t >= 100]
     assert max(late) < min(old)
 
 
 def test_feed_forward_keeps_up_past_the_old_ceiling():
-    late = [s.distance for s in simulate(legs((120, 7.0, 0))) if s.t >= 60]
+    late = [s.distance for s in simulate(legs((120, 7.0, 0)), council=Council(**FEED_ONLY)) if s.t >= 60]
     assert max(late) < 12.0  # without it the drone falls behind without limit
 
 
@@ -224,14 +228,14 @@ def test_a_rider_who_stops_suddenly_is_not_run_into():
     # The speed estimate takes a moment to fall after a stop. The approaching part of
     # the feed-forward fades across the band, so the drone stays clear of the rider.
     near, far = follow_band(Council())
-    ticks = simulate(legs((40, 4.0, 0), (30, 0.0, 0)))
+    ticks = simulate(legs((40, 4.0, 0), (30, 0.0, 0)), council=Council(**FEED_ONLY))
     after = [s for s in ticks if s.t >= 40]
     assert min(s.distance for s in after) >= 3.0
     assert near - 0.1 <= after[20].distance <= far + 0.1  # settled 10 s after the stop
 
 
 def test_a_turning_rider_is_followed_without_a_large_overshoot():
-    ticks = simulate(legs((40, 4.0, 0), (60, 4.0, 90)))
+    ticks = simulate(legs((40, 4.0, 0), (60, 4.0, 90)), council=Council(**FEED_ONLY))
     after = [s.distance for s in ticks if s.t >= 40]
     assert max(after) < 9.0 and min(after) > 3.5
 
@@ -241,7 +245,7 @@ def test_feed_forward_does_not_make_noisy_fixes_much_worse():
     # with or without feed-forward (see simulation.md); feed-forward may add a little.
     fixes = [RiderFix(float(k), 0.0, 20.0, 3.0) for k in range(121)]
     for seed in range(3):
-        new = path_length(simulate(fixes, noise_m=3.0, seed=seed))
+        new = path_length(simulate(fixes, council=Council(**FEED_ONLY), noise_m=3.0, seed=seed))
         old = path_length(simulate(fixes, council=Council(**P_ONLY), noise_m=3.0, seed=seed))
         assert new <= 1.25 * old
 
@@ -267,3 +271,58 @@ def test_summary_reports_the_closest_approach():
     council = Council()
     ticks = simulate(standing(0.0, 20.0), council=council, start=DroneState(0.0, 0.0, 0.0))
     assert summarize(ticks, council, 0.5)["min_distance_m"] == pytest.approx(min(s.distance for s in ticks), abs=0.01)
+
+
+# With the safety margin (iteration 29), the default.
+
+def noisy_standing(reported, seed, noise=3.0):
+    fixes = [RiderFix(float(k), 0.0, 20.0, reported) for k in range(121)]
+    return [s.distance for s in simulate(fixes, noise_m=noise, seed=seed) if s.t >= 10]
+
+
+def test_the_margin_keeps_noisy_fixes_from_bringing_the_drone_close():
+    # Made-up 3 m errors, honestly reported: without the margin the drone came within
+    # 0.2 to 1.8 m of the standing rider.
+    for seed in range(5):
+        assert min(noisy_standing(reported=3.0, seed=seed)) >= 4.5
+
+
+def test_the_margin_is_only_as_good_as_the_reported_accuracy():
+    # The same 3 m errors reported as 2 m: the margin shrinks, and so does the clearance.
+    for seed in range(5):
+        honest, overconfident = noisy_standing(3.0, seed), noisy_standing(2.0, seed)
+        assert min(overconfident) >= 2.5
+        assert min(overconfident) < min(honest)
+
+
+@pytest.mark.parametrize("speed", [2.0, 4.0, 5.0])
+def test_with_the_margin_a_moving_rider_is_still_followed(speed):
+    near, far = follow_band(Council())
+    late = [s.distance for s in simulate(legs((150, speed, 0))) if s.t >= 100]
+    assert far <= min(late) and max(late) <= 11.5  # about 2.5 m further back than without it
+
+
+def test_with_the_margin_a_sudden_stop_stays_well_clear():
+    after = [s.distance for s in simulate(legs((40, 4.0, 0), (30, 0.0, 0))) if s.t >= 40]
+    assert min(after) >= 5.0
+
+
+def test_the_margin_is_the_estimates_sigma_times_the_setting():
+    from follow_me.context import Conditions
+    from follow_me.fusion import Estimate, Reading
+
+    reading = [Reading("tag_gnss", Estimate(12.0, 0.0, 4.0))]
+    assert Council().tick(reading, Conditions(), now=0.0).margin == pytest.approx(2.5 * 2.0)
+    assert Council(margin_sigmas=0.0).tick(reading, Conditions(), now=0.0).margin == 0.0
+    with pytest.raises(ValueError):
+        Council(margin_sigmas=-1.0)
+
+
+def test_closer_moves_the_estimate_toward_the_drone_but_not_past_the_minimum():
+    from follow_me.council import MIN_RANGE_M, closer
+    from follow_me.fusion import Estimate
+
+    moved = closer(Estimate(6.0, 8.0, 1.0), 5.0)  # 10 m away, at the same bearing
+    assert moved.range == pytest.approx(5.0) and moved.bearing == pytest.approx(math.atan2(8.0, 6.0))
+    assert closer(Estimate(3.0, 0.0, 1.0), 5.0).range == pytest.approx(MIN_RANGE_M)
+    assert closer(Estimate(0.0, 0.0, 1.0), 5.0).range == pytest.approx(MIN_RANGE_M)

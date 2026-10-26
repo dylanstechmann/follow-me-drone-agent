@@ -226,6 +226,7 @@ def summarize(ticks: list[SimTick], council: Council, dt: float) -> dict:
         "seconds_in_mode": {mode: round(v, 3) for mode, v in seconds.items()},
         "band_m": [round(near, 2), round(far, 2)],
         "in_band_share": round(sum(near <= d <= far for d in distances) / len(distances), 4),
+        "too_close_share": round(sum(d < near for d in distances) / len(distances), 4),
         "median_distance_m": round(statistics.median(distances), 2),
         "min_distance_m": round(min(distances), 2),
         "max_distance_m": round(max(distances), 2),

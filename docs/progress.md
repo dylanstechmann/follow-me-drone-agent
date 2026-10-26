@@ -410,6 +410,38 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - The tick panel would have printed "null" for ticks without motion, because the DOM's `append` turns a null into text.
 - [simulation.md](simulation.md) has the before and after table, and the history has a new phase.
 
+## Iterations 29 and 30 plan: hold back when the position is uncertain (2026-10-26)
+
+- Owner input (2026-10-26): the owner replied "yeah" to the agent's question about pushing iterations 26 to 28 and its proposed next step: fixing the close approach with noisy fixes.
+- Iteration 29, a safety margin:
+  - The council shows the controller the rider closer than estimated, by 2.5 times the estimate's one-sigma uncertainty, so the drone holds back further when it is less sure where the rider is.
+  - If the reported accuracy is honest, 2.5 one-sided sigmas keep the real rider outside the band's near edge about 99% of the time.
+  - `margin_sigmas=0` gives the iteration 27 controller.
+  - Tried in a prototype first:
+    - With honest 3 m fixes on a standing rider, the closest approach after the start rises from 0.2 to 1.5 m to 8 to 10 m.
+    - With 3 m errors reported as 2 m, it is 3 to 5 m. The margin is only as good as the reported accuracy.
+    - Clean following moves about 2.7 m further back.
+  - Tests in the simulation, as the safety rule asks.
+- Iteration 30, the website and docs:
+  - The distance chart shows the band the controller aims for, pushed out by the margin.
+  - A tile shows the time spent closer than the band's near edge.
+  - The panel shows each tick's margin.
+  - The "before" example becomes the controller without feed-forward or the margin.
+- Stop point: ask the owner before pushing.
+
+## Iteration 29: a safety margin (done: 317 tests pass)
+
+- The council shows the controller the rider closer than estimated, by 2.5 times the estimate's one-sigma uncertainty, but never closer than 0.25 m (decision D23). The drone holds back further when it is less sure. `Council(margin_sigmas=0)` gives the iteration 27 controller. Each tick's margin goes into the trace, the settings record `margin_sigmas`, and the simulation summary reports the share of time closer than the band's near edge.
+- Results, with the full tables in [simulation.md](simulation.md):
+  - **Honest 3 m errors:** a standing rider is no longer approached closer than 8.2 m after the start, against 0.3 to 1.8 m before.
+  - **The same errors reported as 2 m:** 2.9 to 4.9 m. The margin is only as good as the reported accuracy. Feed-forward alone had made this case worse, at 0.0 to 0.7 m.
+  - **A sudden stop:** stays 6.1 m clear.
+  - **The cost:** clean following sits at 9 to 12.5 m instead of 6 to 10 m, and the example ride's median distance is 12.2 m, against 7.0 m with feed-forward alone and 20.4 m originally.
+- Tests:
+  - the earlier controllers are pinned with `P_ONLY` and `FEED_ONLY`, so their findings stay checked;
+  - new tests cover noisy fixes with honest and under-reported accuracy, following and stopping with the margin, the margin's size, and the geometry of moving the estimate closer.
+- Also changed: the replay tool's commands for the example log now include the margin, as every caller of the council does.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

@@ -124,6 +124,8 @@ def trace_tick(tick: dict, t: float, r: TickResult) -> dict:
             "climb": _round(r.command.climb),
         },
     }
+    if r.margin:
+        out["margin"] = _round(r.margin)
     if r.motion is not None:  # only when the drone's pose was known
         out["motion"] = {
             "forward": _round(r.motion.forward_mps),
@@ -142,6 +144,7 @@ def trace_settings(council: Council) -> dict:
         "degraded_variance": machine.degraded_variance,
         "dead_reckon_s": machine.dead_reckon_s,
         "return_home_s": machine.return_home_s,
+        "margin_sigmas": council.margin_sigmas,
         "hfov_deg": _round(math.degrees(council.hfov_rad)),
         "vfov_deg": _round(math.degrees(council.vfov_rad)),
     }

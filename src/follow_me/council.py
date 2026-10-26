@@ -1,5 +1,6 @@
 """The council: one tick of sense -> context -> fusion -> mode -> control."""
 
+import math
 from dataclasses import dataclass, field
 
 from follow_me.context import Conditions, apply_attention, attention
@@ -14,6 +15,22 @@ DEFAULT_VFOV = 1.0472  # 60 degrees, a placeholder camera
 # The speed an adapter would give a forward command of 1.0. A placeholder, the same
 # as the simulation's limit; a real autopilot sets it.
 DEFAULT_SPEED_SCALE_MPS = 10.0
+# The controller sees the rider this many sigmas of the estimate's uncertainty closer
+# than estimated, so the drone holds back further when it is less sure where the rider
+# is. If the reported accuracy is honest, 2.5 one-sided sigmas keep the real rider
+# outside the band's near edge about 99% of the time. An overconfident receiver
+# defeats it, so the accuracy needs checking against real data.
+DEFAULT_MARGIN_SIGMAS = 2.5
+MIN_RANGE_M = 0.25  # the closest the controller is ever told the rider is
+
+
+def closer(est: Estimate, margin_m: float) -> Estimate:
+    """The estimate moved margin_m toward the drone along its bearing, but not past MIN_RANGE_M."""
+    r = est.range
+    if r == 0.0:
+        return Estimate(MIN_RANGE_M, 0.0, est.variance)
+    s = max(r - margin_m, MIN_RANGE_M) / r
+    return Estimate(est.x * s, est.y * s, est.variance)
 
 
 def forward_feed(motion: Motion | None, speed_scale_mps: float) -> float:
@@ -45,6 +62,7 @@ class TickResult:
     # The rider's estimated velocity, when the caller gave the drone's pose.
     motion: Motion | None = None
     feed: float = 0.0  # the share of the forward command that came from the rider's speed
+    margin: float = 0.0  # meters the controller was told the rider might be closer than estimated
 
 
 class Council:
@@ -57,6 +75,7 @@ class Council:
         tracker: RiderTracker | None = None,
         speed_scale_mps: float = DEFAULT_SPEED_SCALE_MPS,
         feed_forward: bool = True,  # False gives the controller as it was before, for comparison
+        margin_sigmas: float = DEFAULT_MARGIN_SIGMAS,  # 0 gives the controller before the margin
     ) -> None:
         self.controller = controller or FollowController()
         self.machine = machine or ModeMachine()
@@ -67,6 +86,9 @@ class Council:
             raise ValueError("speed_scale_mps must be positive")
         self.speed_scale_mps = speed_scale_mps
         self.feed_forward = feed_forward
+        if margin_sigmas < 0:
+            raise ValueError("margin_sigmas must not be negative")
+        self.margin_sigmas = margin_sigmas
 
     def tick(
         self,
@@ -92,8 +114,10 @@ class Council:
             motion = self.tracker.step(now, pose, fused, measured_at)
         detection = None
         feed = 0.0
+        margin = 0.0
         if fused is not None:
-            detection = estimate_to_detection(fused, self.hfov_rad, self.vfov_rad)
+            margin = self.margin_sigmas * math.sqrt(fused.variance)
+            detection = estimate_to_detection(closer(fused, margin), self.hfov_rad, self.vfov_rad)
             if self.feed_forward:
                 feed = forward_feed(motion, self.speed_scale_mps)
         raw = self.controller.update(detection, feed)
@@ -113,4 +137,5 @@ class Council:
             hold_last_command=status.hold_last_command,
             motion=motion,
             feed=feed,
+            margin=margin,
         )

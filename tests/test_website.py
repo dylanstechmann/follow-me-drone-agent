@@ -86,7 +86,7 @@ def test_sim_example_is_the_made_up_ride_followed_by_the_simulated_drone(site):
     modes = {t["mode"] for t in data["ticks"]}
     assert modes == {"tracking", "degraded", "dead_reckoning", "hold"}  # the example shows each step
     before = json.loads((site / "data" / "sim-example-before.json").read_text(encoding="utf-8"))
-    assert before == trace_track(example_track(), council=Council(feed_forward=False), note=before["note"])
+    assert before == trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=before["note"])
     assert data["summary"]["median_distance_m"] < before["summary"]["median_distance_m"]
     assert "motion" in data["ticks"][-1]
 

@@ -206,7 +206,8 @@ python3 -m http.server -d _site 8000                   # preview it
 - **Tag:** the small device the rider carries, with a GNSS receiver and a radio.
 - **Kinematic simulation:** `sim.py`'s point drone, which turns and moves as commanded within placeholder limits, with no physics, wind, autopilot or camera. It is a step before the SITL gate, not the gate.
 - **Measurement age:** how long ago a reading's measurement was taken. A slow source repeats its last measurement with a growing age, and the motion filter uses each measurement only once.
-- **Follow band:** the distances between which the controller asks neither to approach nor to back off: 3.79 to 5.05 m with the default settings.
+- **Follow band:** the distances between which the controller asks neither to approach nor to back off: 3.79 to 5.05 m with the default settings, plus the safety margin.
+- **Safety margin:** 2.5 times the estimate's one-sigma uncertainty. The controller is shown the rider that much closer than estimated, so the drone holds back further when it is unsure. It is only as good as the reported accuracy.
 - **Print card:** a printable part's entry in `cad/parts.json`: material, settings, the test to do before relying on it, safety notes, status and, once printed, the measured grams and minutes.
 - **Trace:** the replay as data, one entry per tick with the inputs, attention, gate decisions, estimate, mode and command. The website's replay viewer draws it.
 
