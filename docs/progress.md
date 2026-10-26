@@ -202,9 +202,17 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - Every part stays unprinted and untested until it is printed and measured. Measured grams and times replace the catalog estimates when the owner reports them.
 - Stop point: ask the owner before pushing and before turning on GitHub Pages, because both publish.
 
+## Iteration 16: owner facts and the replay example (done: 191 tests pass)
+
+- Recorded, as rules to confirm with FAU and the FAA: FAU's safety page prohibits recreational drone use on university property, and the Boca Raton campus borders Boca Raton Airport's Class D airspace. Added TRUST, LAANC and the FAU rule to [privacy-and-rules.md](privacy-and-rules.md), [lab-access.md](lab-access.md) and the safety plan. Public text names "FAU's engineering building", not a more exact place, following the location rule.
+- Recorded the drone club as owner-reported, with the questions worth asking it, none of them money.
+- Fixed C13: the example log now walks tracking (5 ticks), degraded (2), dead reckoning (10), hold (90), return-home requested (4) and tracking again (2) at default settings. A test checks the whole sequence, and a second test keeps the shortened-threshold case.
+- Found while doing it: the mode thresholds count ticks, not seconds. At this log's 2 ticks per second, return-home is requested after 50 s without an estimate; at 30 ticks per second it would be under 4 s. Listed under the next candidates.
+
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
+- Express the mode machine's thresholds in seconds rather than ticks, so their timing does not depend on the loop rate. Found in iteration 16.
 
 ## Open questions for the owner
 

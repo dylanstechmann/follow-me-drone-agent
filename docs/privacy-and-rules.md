@@ -22,9 +22,11 @@ The IEEE group order plan ([group-order.md](group-order.md)) is public. It names
 - No flights over people, roads, or busy skate areas.
 - Check local drone rules before any flight. Verify these with official sources:
   - In the US, drones over 250 g generally need FAA registration and Remote ID.
+  - Recreational flyers need to pass the FAA's free Recreational UAS Safety Test (TRUST).
+  - Controlled airspace near airports needs FAA authorization. LAANC gives it through approved apps, including to recreational flyers.
   - Flying over people and commercial use (for example, paid footage) have their own rules.
   - Cellular-connected drones may need checking against carrier and FCC rules.
-- FAU is in Florida, so the US rules apply if flying there.
+- FAU is in Florida, so the US rules apply if flying there. FAU's own safety page says recreational drone use on university property is strictly prohibited, and its Boca Raton campus borders Boca Raton Airport's Class D airspace. See [lab-access.md](lab-access.md). Plan flights off campus unless FAU approves one.
 
 ## Honest framing
 

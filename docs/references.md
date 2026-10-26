@@ -11,3 +11,10 @@ Sources used for design. Add a line for each source actually used.
 - PX4 Pixhawk hardware designs, reported as CC BY-SA 3.0. Verify in the official repository before reusing anything: https://github.com/pixhawk/Hardware
 - JLCPCB, the low-markup PCB fab used as the planned production route: https://jlcpcb.com/
 - Holybro, Heltec, RadioMaster, u-blox, Raspberry Pi, LCSC, DigiKey, Newark, Mouser, JC-Magnetics and other vendors appear in [parts-catalog.md](parts-catalog.md) with their price sources.
+
+Rules and places (found by agent web searches on 2026-10-26, not confirmed with the organisations):
+
+- FAU Environmental Health and Safety, drone safety page (undated): https://www.fau.edu/ehs/info/drone-safety.pdf
+- Boca Raton Airport, drone notification procedures (LAANC): https://bocaairport.com/drone-notification-procedures/
+- Boca Raton Airport overview: https://en.wikipedia.org/wiki/Boca_Raton_Airport
+- FAU Lab Schools' drone teams (the only FAU drone club the search found, at K-12 level): https://www.fau.edu/newsdesk/articles/fau-lab-schools-drone-teams-fly-high-in-state-national-competitions.php

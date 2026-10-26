@@ -41,6 +41,7 @@ Mistakes found and fixed. Each one is a trap for the next agent.
 | C10 | Used-autopilot pass | A used autopilot was expected to save a lot. Its price matched the new board at the low end. | The saving was traced to dropping the Pi 5 and the ToF sensor. |
 | C11 | Pixel pass | The phone was first modelled as an owned $0 device. It was a $250 purchase. | The cost is shown as a purchase. |
 | C12 | This pass | The README, privacy and lab docs said the code was "reviewed by the owner". No review is recorded. | Reworded to "written by AI coding agents at the owner's direction". |
+| C13 | Replay example (2026-10-26) | The progress log said the example log exercises hold, return-home and the full fallback ladder. At default settings the replay tool showed only tracking and dead reckoning: the log had 4 empty ticks against a 10-tick dead-reckoning window. Only the tests, with shortened thresholds, reached hold and return-home, and degraded never appeared. | The example now has a degraded stretch and a long loss, and a test checks that it walks every mode at default settings. |
 
 ## Lessons for agents
 

@@ -2,7 +2,7 @@
 
 Read [AGENTS.md](../AGENTS.md) first for the rules, then this page. It is written for any coding agent (Claude Code, Codex, Grok, Cline or another) that picks up this repo with no memory of earlier sessions. It tells you what the project is, what exists, what is only a plan, what the owner wants, and what to avoid.
 
-Facts here are a snapshot dated 2026-10-24. Where a number comes from a generated table, the table is the source of truth, not this page.
+Facts here are a snapshot dated 2026-10-26. Where a number comes from a generated table, the table is the source of truth, not this page.
 
 ## 1. What this is
 
@@ -38,6 +38,9 @@ The wider direction, set by the owner on 2026-10-24, is in [vision.md](vision.md
 | The owner bought a used Pixel 8a for $250, as an example of a cheap used phone. | Owner | Owner's figure |
 | The owner does not like asking for money. | Owner | Stated preference |
 | FAU's architecture FabLab has laser cutters, 3D printers and a CNC. | A web search | Not visited |
+| The owner can work with a drone club. | Owner (2026-10-26) | Not confirmed. A web search found no university-level FAU drone club, only the K-12 club at FAU's lab schools. |
+| FAU prohibits recreational drone use on university property. Other flights need approval through FAU Risk Management. | FAU's environmental health and safety drone page, found by web search | The page is undated. Not confirmed with FAU. |
+| FAU's Boca Raton campus borders Boca Raton Airport, which has Class D airspace with LAANC available. | Web search and the airport's site | Check the FAA's B4UFLY app before any flight. |
 | Web prices, lead times, licence summaries and duty claims | Web search snippets and fetched pages | Mostly not verified. Only 10 of 51 sourced prices are dated within 12 months of the 2026-10-10 cutoff. |
 
 ## 4. How the code fits together
@@ -140,6 +143,7 @@ Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.m
 2. Ask the IEEE officers: who coordinates, what the university allows for student-organization purchases and parcels, and how many members want each line.
 3. Request quotes with the template in [group-order.md](group-order.md), and report the results.
 4. Ask the FabLab or the lab: is any laser a fiber laser, is there an etching setup, what tools are available.
+5. Ask the drone club the questions in [lab-access.md](lab-access.md), and plan any flight off FAU property unless FAU approves one.
 
 **For an agent:**
 

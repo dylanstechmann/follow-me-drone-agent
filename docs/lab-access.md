@@ -43,6 +43,16 @@ Ask about:
 - Motor winding tools, or a space to build them.
 - Magnet wire, N52 magnets, and bearings, bought or already in stock.
 
+## Drone club
+
+The owner reports access to a drone club (2026-10-26). It is not confirmed here: an agent web search on 2026-10-26 found no university-level FAU drone club, only the K-12 drone club at FAU's lab schools. Things worth asking, none of them money:
+
+- Whether an experienced pilot would act as safety pilot for the later gates (tethered or caged, then free flight), and where the club flies legally.
+- Whether a transmitter can be borrowed. It is the largest placeholder in the drone passes ($60 to $120).
+- Whether crashed or retired drones can be salvaged for parts.
+- Whether members would test the follow logic as riders who agree to it, or try the website and the replay viewer.
+- Whether members want to join a group order. It is cost-sharing: each member pays for the parts they receive.
+
 ## Parts and tools, not money
 
 The owner does not like asking for money. Nothing here asks for funding, and no agent should draft a funding, sponsorship or grant request unless the owner asks for one. Funding is optional and is not part of the plan.
@@ -57,7 +67,8 @@ Nothing in this repo has been confirmed with FAU or IEEE.
 
 ## Rules to check before any flight
 
-- Check the university's drone (UAS) rules before flying on or near campus. This repo does not know them.
+- FAU's environmental health and safety drone page (undated, found by an agent web search on 2026-10-26) says recreational drone use on university property is strictly prohibited, and that other flights need approval through FAU Risk Management, pending a formal university policy. Printing parts at FAU does not make flying there allowed. Confirm the current rule with FAU before any flight on university property.
+- FAU's Boca Raton campus borders Boca Raton Airport, which has Class D airspace. Flying near it needs FAA authorization, which LAANC gives through approved apps, including to recreational flyers. Check the FAA's B4UFLY app or UAS facility map before any flight.
 - Check local and federal drone rules. The privacy and rules doc lists what to verify.
 - Lithium battery charging and storage rules for the lab.
 - After-hours access and insurance, if any.

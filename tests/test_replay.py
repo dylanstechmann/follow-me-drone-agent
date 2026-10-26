@@ -1,3 +1,4 @@
+import itertools
 import json
 from pathlib import Path
 
@@ -53,24 +54,36 @@ def test_council_scales_command_by_mode_gain():
     assert result.command.yaw == pytest.approx(full.command.yaw * 0.5)
 
 
-def test_replay_example_walks_through_expected_modes():
+def test_replay_example_walks_the_whole_ladder_at_default_settings():
+    # The docs say the example shows every mode, so check it with the defaults the
+    # replay tool uses, not with shortened thresholds.
     log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
-    # Small thresholds so the 10-tick example reaches every rung of the ladder.
+    modes = [r.mode for _, r in replay(log)]
+    runs = [(mode, len(list(group))) for mode, group in itertools.groupby(modes)]
+    assert runs == [
+        # Rain, a wrong camera reading, a trouble spot and a phone link loss: tracking holds.
+        (Mode.TRACKING, 5),
+        # Only a weak tag fix is left.
+        (Mode.DEGRADED, 2),
+        # No readings at all, for the default 10 and 100 tick windows.
+        (Mode.DEAD_RECKONING, 10),
+        (Mode.HOLD, 90),
+        (Mode.RETURN_HOME_REQUESTED, 4),
+        # Recovered at the end.
+        (Mode.TRACKING, 2),
+    ]
+
+
+def test_short_thresholds_reach_hold_and_return_home_sooner():
+    log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
     council = Council(machine=ModeMachine(dead_reckon_ticks=2, hold_ticks=3))
     modes = [r.mode for _, r in replay(log, council)]
-    # Rain: camera is wrong, both companions agree, so tracking holds.
-    assert modes[:5] == [Mode.TRACKING] * 5
-    # Phone link dropped, tag still carries the estimate: still tracking.
-    assert modes[4] is Mode.TRACKING
-    # No readings at all: dead reckoning, hold, then return-home request.
-    assert modes[5:9] == [
+    assert modes[7:11] == [
         Mode.DEAD_RECKONING,
         Mode.DEAD_RECKONING,
         Mode.HOLD,
         Mode.RETURN_HOME_REQUESTED,
     ]
-    # Recovered at the end.
-    assert modes[-1] is Mode.TRACKING
 
 
 def test_rain_tick_estimate_follows_the_companions():
@@ -97,7 +110,8 @@ def test_replay_never_chases_while_lost():
 def test_main_prints_one_line_per_tick(capsys):
     assert main(["replay", str(EXAMPLE)]) == 0
     lines = capsys.readouterr().out.strip().splitlines()
-    assert len(lines) == 10
+    log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    assert len(lines) == len(log["ticks"])
 
 
 def test_main_usage_error(capsys):

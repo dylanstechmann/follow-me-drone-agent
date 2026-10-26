@@ -52,6 +52,12 @@ The owner said the IEEE club can run group orders, and asked for the details to 
 
 The owner asked for everything discussed to be saved for other AI agents, and stated the money stance and the interest in many drones and in making each part, somewhat. Built: [project-context.md](project-context.md), [vision.md](vision.md), [decisions.md](decisions.md) and this history, with consistency updates to older docs.
 
+## Phase 10: a website, printable parts and new facts (iterations 16 to 19, 2026-10-26)
+
+The owner asked what else could be done for the repo: visualizations and easy dashboards, 3D, databases, AI models, and a website on GitHub Pages where the 3D runs in the visitor's browser, with heavy work on the owner's laptop or a cloud sandbox if needed. The owner added that they can use the printers in FAU's engineering building and can work with a drone club. The agent proposed a menu and a first batch, and the owner said "ok".
+
+- **Iteration 16:** an agent web search found that FAU's safety office prohibits recreational drone use on university property, and that the Boca Raton campus borders Boca Raton Airport's Class D airspace. Both are recorded as rules to confirm. The drone club is recorded as owner-reported, because the search found no university-level FAU drone club. Found C13: the replay example did not reach the modes the progress log said it did. The example now walks every mode at default settings.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.
