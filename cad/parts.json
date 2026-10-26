@@ -1,0 +1,73 @@
+{
+  "notes": "Printable parts. Each part is an OpenSCAD source in this folder with its print card. Nothing here has been printed or tested. When a part is printed, set status to printed (or tested once its test is done), fill in measured with the grams, minutes, material and date, and replace the estimate in bom/catalog.json that the part feeds. Record roles, not names.",
+  "parts": [
+    {
+      "id": "flex_test_bars",
+      "file": "flex_test_bars.scad",
+      "title": "Test bars for a break test",
+      "purpose": "Compare materials and print settings before trusting a printed part, as docs/3d-printing.md asks: three bars per setting, bent until they break.",
+      "gate": "Before any printed part is trusted",
+      "material": "The material under test: PLA, PETG or another",
+      "layer_mm": 0.2,
+      "walls": 3,
+      "infill": "20 percent, or the setting under test",
+      "orientation": "Flat, as modelled. Print a second set on edge to see how much the layer direction matters.",
+      "supports": "None",
+      "test": "Rest each bar on two supports 64 mm apart and press in the middle until it breaks. Record the peak force (a luggage scale works, or the thrust stand's load cell) and how it broke: across the layers, or split between them.",
+      "safety": "Wear eye protection. Printed bars can shatter.",
+      "catalog_item": null,
+      "status": "unprinted"
+    },
+    {
+      "id": "fit_gauge",
+      "file": "fit_gauge.scad",
+      "title": "Hole-size gauge for M2 to M4 screws",
+      "purpose": "Find how much clearance this printer needs on screw holes, then set the hole sizes in the other parts to match.",
+      "gate": "Before the thrust stand and the tag case",
+      "material": "The material the other parts will be printed in",
+      "layer_mm": 0.2,
+      "walls": 3,
+      "infill": "20 percent",
+      "orientation": "Flat, as modelled.",
+      "supports": "None",
+      "test": "Push each screw into its row. The first column where it slides in without forcing gives the clearance to use. Columns start at the smallest clearance, marked by the notch on the front edge.",
+      "safety": "None beyond normal printer care.",
+      "catalog_item": null,
+      "status": "unprinted"
+    },
+    {
+      "id": "thrust_stand",
+      "file": "thrust_stand.scad",
+      "title": "Thrust-stand jig",
+      "purpose": "Hold a straight-bar load cell and one motor on the bench, to measure thrust and thrust per watt (docs/motors-plan.md). A bench tool, not a flight part.",
+      "gate": "Gate 4, the bench",
+      "material": "PETG, which takes vibration better than PLA",
+      "layer_mm": 0.2,
+      "walls": 4,
+      "infill": "40 percent",
+      "orientation": "Flat, as modelled: the base on its bottom face and the motor plate on its flat face.",
+      "supports": "None",
+      "test": "Before any power, check that the cell and motor bolts fit (print the gauge first). First runs with no prop, at low throttle, with the base clamped and a current-limited supply. Check for cracks after each run.",
+      "safety": "A spinning prop cuts. Clamp the base down, keep everyone out of the prop's plane, use a guard, and take the prop off for every test that does not need it. Never leave it running.",
+      "catalog_item": "thrust_stand_make",
+      "status": "unprinted"
+    },
+    {
+      "id": "tag_enclosure",
+      "file": "tag_enclosure.scad",
+      "title": "Case for the rider's tag",
+      "purpose": "Protect the tag board and its battery on the rider. The board is not drawn yet, so its size here is a placeholder to set from the real board.",
+      "gate": "Gate 4, the bench, once a tag board exists",
+      "material": "PLA indoors, PETG outdoors (PLA softens in a hot car or a warm pocket)",
+      "layer_mm": 0.2,
+      "walls": 3,
+      "infill": "20 percent",
+      "orientation": "As modelled: the base on its floor and the lid on its flat face, so neither needs supports.",
+      "supports": "None",
+      "test": "Check that the board fits and that the lid pushes on with its notch over the USB slot. With the battery in, charge it and check that the case and the cell stay cool. Check for sharp edges.",
+      "safety": "Never charge a cell without protection, and never charge one unattended (docs/pcb-plan.md). Keep the lid plastic over the GNSS antenna.",
+      "catalog_item": "tag_enclosure_printed",
+      "status": "unprinted"
+    }
+  ]
+}

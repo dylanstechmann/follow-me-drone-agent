@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Printable parts · Follow-me drone</title>
+  <meta name="description" content="Adjustable OpenSCAD parts for the follow-me drone's bench stage, shown in 3D in the browser, with STL downloads. Unprinted and untested.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="importmap">{"imports": {"three": "./assets/vendor/three/three.module.js", "three/addons/": "./assets/vendor/three/addons/"}}</script>
+  <script type="module" src="assets/parts.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="replay.html">Replay</a>
+        <a href="costs.html">Costs</a>
+        <a href="parts.html" aria-current="page">Parts</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h1>Printable parts</h1>
+      <p class="lede">Adjustable models for the bench stage, written in OpenSCAD, for any desktop FDM printer. Move the sliders to fit your hardware, check the result in 3D, and download the STL for the slicer.</p>
+      <div class="notice" role="note">
+        <p><strong>None of these has been printed or tested.</strong> They are first designs by AI coding agents. Print the hole gauge and the test bars first, check every fit, and do each part's test before relying on it. None of them is a flight part.</p>
+      </div>
+    </section>
+
+    <section class="part-tabs" id="part-tabs" aria-label="Parts"></section>
+
+    <section class="grid-2 parts-grid">
+      <div class="card">
+        <div class="viewer" id="viewer" role="img" aria-label="3D view of the selected part. Drag to turn it, scroll or pinch to zoom."></div>
+        <p class="message" id="render-status"></p>
+        <div class="controls" style="margin-top: 10px">
+          <button class="btn" type="button" id="download-stl" disabled>Download STL</button>
+          <button class="btn" type="button" id="download-scad">Download OpenSCAD source</button>
+          <button class="btn" type="button" id="reset-view">Reset view</button>
+        </div>
+      </div>
+      <div class="card" id="part-card" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <h2>Adjust</h2>
+      <p class="small muted" id="params-note"></p>
+      <form id="params" class="params" onsubmit="return false"></form>
+      <div class="controls" style="margin-top: 12px">
+        <button class="btn" type="button" id="reset-params">Back to the defaults</button>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Before you print</h2>
+        <ul class="small" style="padding-left: 1.1em; margin: 0">
+          <li>Print the hole gauge first, and set the hole sizes in the other parts from it.</li>
+          <li>Print the test bars in each material you plan to use, and break them.</li>
+          <li>Weigh each print and note its print time. Those numbers replace the guesses in the parts catalog, which drive the cost model.</li>
+          <li>Keep anything near a spinning prop guarded, and never leave a charging battery alone.</li>
+        </ul>
+        <p class="small muted" style="margin-top: 10px">More in <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/3d-printing.md">the 3D printing notes</a>.</p>
+      </div>
+      <div class="card">
+        <h2>How these are made</h2>
+        <p class="small">Each part is an OpenSCAD file in <a href="https://github.com/dylanstechmann/follow-me-drone-agent/tree/main/cad">cad/</a> with a print card. The STL files on this page were rendered when the site was built, with OpenSCAD 2025.01.19 compiled to WebAssembly and its Manifold geometry engine. When you move a slider, that same OpenSCAD runs inside your browser, so nothing is sent anywhere.</p>
+        <p class="small muted">The 3D view uses <a href="https://threejs.org/">three.js</a> (MIT licence). OpenSCAD is free software under the GPL, version 2 or later; this site serves an unmodified build of <a href="https://github.com/lorenzowritescode/openscad-wasm">openscad-wasm</a> with its <a href="assets/vendor/openscad/COPYING">licence</a>, and OpenSCAD's own source is at <a href="https://github.com/openscad/openscad">github.com/openscad/openscad</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs, models and this site were written by AI coding agents (Claude Code) at the owner's direction. No review of the code by the owner is recorded.</p>
+    <p>No part here has been printed or tested. Nothing here claims the drone is safe, autonomous or ready to fly.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

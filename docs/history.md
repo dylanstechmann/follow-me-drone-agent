@@ -6,7 +6,7 @@ A plain account for agents and for the owner. It follows the order of events. Th
 
 - **The owner** gave the direction and the decisions, and supplied facts only the owner knows: the $100 budget, access to 3D printers at FAU's engineering building and the IEEE club, that the IEEE club can run group orders, the purchase of a used Pixel 8a for $250, the preference not to ask for money, and the interest in building many drones.
 - **AI coding agents** (Claude Code) wrote all the code, tests and docs, ran the web research, and did the calculations. The assistant model changed over the session: the commit trailers show Claude Haiku 5.5 for the first thirteen commits, Claude Opus 5.5 for one, and Claude Sonnet 5.5 for one.
-- **Not done by anyone yet:** building or testing any hardware, contacting any supplier, ordering anything, reading the licence files, visiting a lab, running a flight, or opening a CAD or PCB file. No review of the code by the owner is recorded.
+- **Not done by anyone yet:** building or testing any hardware, contacting any supplier, ordering anything, reading the licence files, visiting a lab, running a flight, printing a part, or opening a PCB file. The only CAD files are the four OpenSCAD parts an agent wrote and rendered on 2026-10-26. No review of the code by the owner is recorded.
 
 ## Phase 0: origin
 
@@ -59,6 +59,7 @@ The owner asked what else could be done for the repo: visualizations and easy da
 - **Iteration 16:** an agent web search found that FAU's safety office prohibits recreational drone use on university property, and that the Boca Raton campus borders Boca Raton Airport's Class D airspace. Both are recorded as rules to confirm. The drone club is recorded as owner-reported, because the search found no university-level FAU drone club. Found C13: the replay example did not reach the modes the progress log said it did. The example now walks every mode at default settings.
 - **Iteration 17:** found C14, the cash at minimum orders leaving out the waste allowance, and fixed it. Added the cost per drone for any number of drones, with the PCB assembly fees paid once per order. It is for exploring; the owner has not set a number.
 - **Iteration 18:** built the website: an overview, a replay viewer and a cost explorer, built from the repo's data by `follow_me.website` and published by a GitHub Actions workflow. Fusion now reports its gate decisions, and the replay tool writes them into a JSON trace. The agent checked every page in a headless browser at desktop and phone widths, in light and dark themes.
+- **Iteration 19:** wrote four printable parts as adjustable OpenSCAD models (test bars, a hole-size gauge, a thrust-stand jig and the tag case) with print cards, and a parts page that shows them in 3D and re-renders them in the browser. OpenSCAD's WebAssembly build made this possible without installing anything, and its Manifold engine renders a part in about 0.15 s. Nothing has been printed.
 
 ## Standing instructions from the owner
 

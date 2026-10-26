@@ -35,6 +35,23 @@ The owner has access to 3D printers at FAU's engineering building and at the IEE
 | Tag enclosure | Protects the tag on the rider | PLA indoors, PETG outdoors | Low, but sharp edges hurt on a fall | No sharp edges. Check the battery stays cool while charging. |
 | Bench jigs | Motor thrust stand, holders for testing | PLA | None | None |
 
+## Parametric parts in `cad/`
+
+Four parts exist as OpenSCAD models, each with a print card in [cad/parts.json](../cad/parts.json). None has been printed or tested. They are first designs by AI coding agents, checked only by rendering them.
+
+| Part | File | What it is for | Solid volume at the defaults |
+|---|---|---|---|
+| Test bars | `flex_test_bars.scad` | Break three bars per material or setting before trusting a printed part. The bars follow the 80 x 10 x 4 mm shape of the ISO 178 bending test, as a home comparison, not a standard test. | 9.6 cm³ |
+| Hole-size gauge | `fit_gauge.scad` | Find the clearance this printer needs for M2 to M4 screws, then set the other parts' hole sizes from it. | 5.1 cm³ |
+| Thrust-stand jig | `thrust_stand.scad` | Hold a straight-bar load cell and one motor on the bench (gate 4). Bar cells vary, so measure yours and set the cell values first. | 44.4 cm³ |
+| Tag case | `tag_enclosure.scad` | A base with board posts, a USB slot and strap ears, and a push-fit lid. The tag board is not drawn yet, so its size is a placeholder. | 11.6 cm³ |
+
+- **Print order.** The gauge first, then the test bars in each material, then the parts. Follow each card's test before relying on a part.
+- **Adjusting.** Each file starts with its adjustable values in OpenSCAD's Customizer format. They show as sliders in OpenSCAD's Customizer panel and on the website's parts page, which renders the change in the browser.
+- **Rendering.** The website's build renders each part's default STL with OpenSCAD 2025.01.19 compiled to WebAssembly, using its Manifold geometry engine (about 0.15 s a part, against 10 to 17 s with the older engine). Locally: `node tools/render_parts.mjs OPENSCAD_JS cad OUT_DIR` with a fetched `openscad.js`, or open the `.scad` file in desktop OpenSCAD. `PYTHONPATH=src python3 -m follow_me.parts` lists the parts and their values.
+- **After printing.** Set the part's `status` to `printed`, add `measured` (grams, minutes, material, date) to its card, and replace the estimate in [catalog.json](../bom/catalog.json) that the part feeds. Then run the docs sync.
+- **A finding to check.** The catalog costs the tag case at 25 g of PLA and the thrust stand at 80 g. These designs come to at most about 14 g and 55 g of PLA even printed solid, so the estimates look high for them. The catalog keeps its estimates until a slicer or a scale gives real numbers, following the rule below.
+
 ## Print settings (starting points)
 
 - Layer height of 0.2 mm is a common starting point.

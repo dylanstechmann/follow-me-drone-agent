@@ -1,7 +1,9 @@
 name: Tests and website
 
-# Runs the tests on every push and pull request. On main, it also builds the
-# website from the repo's data and publishes it to GitHub Pages.
+# Runs the tests and builds the website on every push and pull request. On main,
+# it also publishes the website to GitHub Pages. The build downloads three.js and
+# OpenSCAD's WebAssembly build from the npm registry, pinned and hash-checked, and
+# renders each printable part with Node.js.
 on:
   push:
     branches: [main]
@@ -27,8 +29,11 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends python3-pytest
       - name: Tests
         run: python3 -m pytest -q
-      - name: Build the website
-        run: PYTHONPATH=src python3 -m follow_me.website _site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build the website, with its pinned libraries and the rendered parts
+        run: PYTHONPATH=src python3 -m follow_me.website _site --vendor --render-parts
       - name: Upload the website
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v4

@@ -173,9 +173,9 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Tests: a check that the doc map lists every file in docs/, so the briefing cannot silently fall behind.
 - Honesty rules for the new docs: report the owner's statements as the owner's. Mark what the model supports and what it does not. Do not turn an aspiration into a plan, and do not add a business case or a number of drones the owner has not given.
 
-## Iteration 14: KiCad board and OpenSCAD enclosure (planned, needs tools)
+## Iteration 14: KiCad board and OpenSCAD enclosure (enclosure done in iteration 19; the board still needs KiCad)
 
-- The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project and the OpenSCAD enclosure both need tools that are not installed here.
+- The tag board plan is written in [pcb-plan.md](pcb-plan.md). The KiCad project needs a tool that is not installed here. The enclosure was done in iteration 19 with OpenSCAD's WebAssembly build.
 
 ## Iteration 15: range-only sources, such as BLE RSSI (planned)
 
@@ -226,6 +226,15 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Checked in a headless browser (Chromium through Playwright, in the agent's scratch space) at 1280, 1024, 900 and 390 px wide, in light and dark themes: no script errors and no sideways scrolling. Fixed what the screenshots showed: a cramped plot, colliding labels, a mode strip where dead reckoning and hold looked like one bar, and a drop-down wider than a phone.
 - Tests: the site builds; its data matches the cost model and the replay; every local link and import resolves; every page carries the hobby framing, the AI disclosure and the no-review statement; there is no email-like or phone-like text and no place data.
 - Not done: a playground that runs raw logs in the browser (Pyodide), a group-order page, and a 3D view of the replay.
+
+## Iteration 19: printable parts (done: 229 tests pass)
+
+- Wrote four parts as adjustable OpenSCAD models in `cad/`, each with a print card in `cad/parts.json`: test bars for a break test, a hole-size gauge for M2 to M4 screws, a thrust-stand jig for a bar load cell and one motor, and the tag case. All are unprinted and untested, and each card names the test to do before relying on the part.
+- Unblocked the enclosure half of iteration 14 without installing anything: OpenSCAD's WebAssembly build (openscad-wasm-prebuilt 1.2.0, OpenSCAD 2025.01.19) runs under Node.js here and in browsers. Its Manifold engine renders each part in about 0.15 s, against 10 to 17 s with the older engine, which makes live sliders practical.
+- Added a parts page: each part in 3D (three.js), sliders that re-render it in a web worker in the visitor's browser, its print card, the solid-volume mass, and STL and OpenSCAD downloads. The build fetches three.js and OpenSCAD from the npm registry, pinned and hash-checked, so no library code is kept in git; `tools/render_parts.mjs` renders the default STLs. Checked in a headless browser: the prebuilt STLs load, a slider change re-renders in 0.2 to 0.3 s, and the size follows the values (a 60 mm board gives a 65.6 mm case).
+- `follow_me.parts` reads each file's Customizer values and checks that every default sits on its slider's steps. A printed part must record its measured grams, minutes, material and date.
+- Finding to check: the catalog costs the tag case at 25 g of PLA and the thrust stand at 80 g. These designs come to at most about 14 g and 55 g of PLA even printed solid, so the estimates look high. The catalog keeps them until a slicer or a scale gives real numbers.
+- Not done: the KiCad tag board (iteration 14's other half, still needs KiCad), a camera mount for the bench kit, and any print. The workflow's build step runs Node.js on GitHub's runner, which has not run yet.
 
 ## Next candidates (not started)
 

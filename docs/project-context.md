@@ -14,9 +14,9 @@ The repo holds five things today:
 2. **A data-driven cost and supply model** that prices building the drone in different ways, from retail parts to parts the owner designs and has made closer to the maker.
 3. **A public group-order plan** for the owner's IEEE club.
 4. **Documents**: plans, findings, decisions and this record.
-5. **A website** built from the repo's data and published by GitHub Actions: a replay viewer and a cost explorer ([website.md](website.md)).
+5. **A website** built from the repo's data and published by GitHub Actions: a replay viewer, a cost explorer and the printable parts in 3D ([website.md](website.md)).
 
-Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. No CAD, PCB or firmware file exists.
+Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. Four printable parts exist as OpenSCAD models, rendered by an agent but never printed or tested. No PCB or firmware file exists.
 
 The wider direction, set by the owner on 2026-10-24, is in [vision.md](vision.md): curiosity about building many drones and the software that may power them, with the owner getting each part themselves, somewhat, instead of using off-the-shelf components.
 
@@ -70,7 +70,8 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
-| `website.py` | Builds the website from `site/` and data written by the modules above. | `test_website.py` |
+| `parts.py` | The printable parts: print cards in `cad/parts.json` and each `.scad` file's adjustable values. | `test_parts.py` |
+| `website.py` | Builds the website from `site/` and data written by the modules above; fetches its pinned browser libraries and renders the parts on request. | `test_website.py` |
 
 Everything is standard-library Python 3.10 or later, plus pytest. There is no package install step. Every module has tests, and the suite also checks that the generated docs are current and that this page lists every doc.
 
@@ -125,7 +126,7 @@ Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.m
 - **No unmade claims.** Do not say an order is placed, a supplier is contacted, a quote exists, a club has decided, or a design works, unless the data says so.
 - **No money asks** on the owner's behalf.
 - **Generated blocks.** Never edit text between `<!-- generated:... -->` markers. Change the data and run the sync.
-- **CAD, PCB and firmware** are unverified until opened, rendered or run. The sandbox used so far has no KiCad or OpenSCAD.
+- **CAD, PCB and firmware** are unverified until opened, rendered or run. The parts in `cad/` are rendered (OpenSCAD's WebAssembly build runs here through Node.js) but not printed, so they are unverified as parts. The sandbox has no KiCad.
 
 ## 8. Traps
 
@@ -154,7 +155,7 @@ Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.m
 2. Price 30 V power MOSFETs on LCSC. This is the largest open placeholder.
 3. Read the LICENSE files named above.
 4. Update the group-order plan when the owner reports news.
-5. When a KiCad or OpenSCAD install exists, build the tag board and enclosure (iteration 14 in the progress log).
+5. When a KiCad install exists (the owner's laptop, or KiCad's Docker image in CI), draw the tag board (iteration 14), then set the tag case's board values from it. The case itself exists as `cad/tag_enclosure.scad`.
 6. Then the range-only source (iteration 15), and later person detection and a simulator bridge.
 
 **In the lab or the field**, when equipment exists:
@@ -175,6 +176,8 @@ PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
 PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
+PYTHONPATH=src python3 -m follow_me.website --render-parts  # with the 3D libraries and rendered parts (needs the network and Node.js)
+PYTHONPATH=src python3 -m follow_me.parts              # list the printable parts and their values
 python3 -m http.server -d _site 8000                   # preview it
 ```
 
@@ -197,6 +200,7 @@ python3 -m http.server -d _site 8000                   # preview it
 - **Fresh:** a price seen with month precision within 12 months of the cutoff.
 - **Owner-designed:** a composed item, whoever builds it.
 - **Tag:** the small device the rider carries, with a GNSS receiver and a radio.
+- **Print card:** a printable part's entry in `cad/parts.json`: material, settings, the test to do before relying on it, safety notes, status and, once printed, the measured grams and minutes.
 - **Trace:** the replay as data, one entry per tick with the inputs, attention, gate decisions, estimate, mode and command. The website's replay viewer draws it.
 
 ## 12. Documentation map

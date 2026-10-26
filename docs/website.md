@@ -9,6 +9,7 @@ A static website for the project on GitHub Pages: https://dylanstechmann.github.
 | `index.html` | The project, the six gates, what exists and how it was built | Hand-written text, plus the README's "Status" and "How this was built" sections, copied in at each build |
 | `replay.html` | One tick at a time: each source's reading and uncertainty, attention, trust, the gate's decision, the fused estimate, the mode and the command | A trace of [examples/replay.example.json](../examples/replay.example.json) from `python -m follow_me.replay --json` |
 | `costs.html` | Each pass's core cost, minimum-order cash and shares; cost per drone by number of drones; price freshness; single-supplier parts | The cost model in `src/follow_me/bom.py`, reading `bom/` |
+| `parts.html` | Each printable part in 3D, with sliders that re-render it in the browser, its print card, and STL and OpenSCAD downloads | `cad/*.scad` and `cad/parts.json` through `src/follow_me/parts.py`, with STLs rendered at build time |
 
 The replay viewer can also open a trace file the visitor makes from their own log. The file is read in the browser and is not uploaded anywhere:
 
@@ -22,21 +23,25 @@ A raw log is not enough: the trace carries the council's results, so the page ne
 
 ```
 PYTHONPATH=src python3 -m follow_me.website          # build into _site/ (ignored by git)
+PYTHONPATH=src python3 -m follow_me.website --render-parts   # also fetch the libraries and render the parts
 python3 -m http.server -d _site 8000                 # preview at http://localhost:8000
 ```
 
-- The pages, styles and scripts live in `site/`. They are plain HTML, CSS and JavaScript modules with no libraries and no build step.
-- `follow_me.website` copies `site/`, writes `data/costs.json`, `data/replay-example.json` and `data/build.json` (the commit and build time), copies the example log, and fills the README sections into `index.html`. It uses only the standard library.
-- The workflow in [.github/workflows/site.yml](../.github/workflows/site.yml) runs the tests on every push and pull request. On `main` it builds the site and publishes it to GitHub Pages. The data is regenerated at every build, so the published site cannot fall behind the repo, and nothing generated is committed.
+- The pages, styles and scripts live in `site/`. They are plain HTML, CSS and JavaScript modules with no build step. Only the parts page uses libraries: three.js 0.186.1 (MIT) for the 3D view and openscad-wasm-prebuilt 1.2.0, an unmodified WebAssembly build of OpenSCAD 2025.01.19 (GPL-2.0-or-later), for rendering.
+- `follow_me.website` copies `site/` and the `.scad` files, writes `data/costs.json`, `data/replay-example.json`, `data/parts.json` and `data/build.json` (the commit and build time), copies the example log, and fills the README sections into `index.html`. It uses only the standard library.
+- `--vendor` downloads the two libraries from the npm registry, pinned to exact versions and checked against the registry's sha512 hashes, caches them under `~/.cache/follow-me-site`, and copies only the files the page needs into `assets/vendor/`. No library code is kept in git, and the published site makes no requests to other servers. `--render-parts` (which implies `--vendor`) then runs `tools/render_parts.mjs` with Node.js to render each part's default STL with that same OpenSCAD build. Without these flags the parts page still lists the parts and offers the `.scad` downloads, but has no 3D view.
+- The workflow in [.github/workflows/site.yml](../.github/workflows/site.yml) runs the tests and builds the site, with the libraries and the rendered parts, on every push and pull request. On `main` it publishes the site to GitHub Pages. The data is regenerated at every build, so the published site cannot fall behind the repo, and nothing generated is committed.
 - **Turning Pages on** is a one-time repo setting: Settings, Pages, Source "GitHub Actions" (or `gh api -X POST repos/dylanstechmann/follow-me-drone-agent/pages -f build_type=workflow`). It publishes the site, so it is the owner's call. Until then the deploy step fails and the tests still run.
 - `tests/test_website.py` builds the site and checks that the data matches the model and the replay, every local link and import resolves, the honesty statements are on every page, there is no email-like or phone-like text, and no place data or coordinates are shipped.
 
 ## Rules for the site
 
-- **Privacy.** No analytics, cookies, trackers or third-party requests. The theme choice is kept in the browser's local storage. Never put real coordinates, routes, names, contact details or order records on the site; the tests check for some of these.
+- **Privacy.** No analytics, cookies, trackers or third-party requests: the libraries are served from the site itself. The theme choice is kept in the browser's local storage. The parts page renders in the visitor's browser and sends nothing anywhere. Never put real coordinates, routes, names, contact details or order records on the site; the tests check for some of these.
 - **Honesty.** Keep the hobby framing, the AI disclosure and "nothing has flown" on every page. Label made-up data as made up. Every price on the site carries the model's cutoff date and its freshness.
 - **No money asks.** No donate buttons, sponsorship links or funding appeals.
 - **No fleet or product claims.** The drone-count view is for exploring. The owner has not set a number of drones.
+- **Parts are unprinted and untested** until a card records a print. Never call a part a flight part, and keep the safety notes on the cards.
+- **Licences.** Keep OpenSCAD's GPL licence file next to its build and the links to its source on the parts page. Keep three.js's MIT licence file next to it.
 
 ## Design notes
 

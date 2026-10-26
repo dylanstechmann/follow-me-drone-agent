@@ -444,3 +444,30 @@ body.dragging .drop-hint { border-color: var(--accent); }
 .supplier-list { margin: 0; padding-left: 1.1em; font-size: 0.9rem; }
 .badge { font-size: 0.75rem; border: 1px solid var(--border); border-radius: 6px; padding: 0 5px; color: var(--ink-2); white-space: nowrap; }
 .badge.guess { border-color: var(--serious); }
+
+/* Parts page */
+
+.part-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.viewer {
+  min-height: 240px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--grid);
+  touch-action: none;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.viewer canvas { display: block; width: 100%; }
+.facts.parts-facts { grid-template-columns: max-content minmax(0, 1fr); }
+.facts.parts-facts dd { white-space: normal; text-align: left; }
+.params { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px 20px; }
+.params fieldset { border: 1px solid var(--grid); border-radius: 8px; margin: 0; padding: 8px 12px 10px; min-width: 0; }
+.params legend { font-weight: 600; font-size: 0.9rem; padding: 0 4px; }
+.param { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: 0 10px; align-items: center; padding: 6px 0; }
+.param label { grid-column: 1 / -1; font-size: 0.86rem; color: var(--ink-2); }
+.param output { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.param input[type="range"]:disabled { opacity: 0.5; }
+

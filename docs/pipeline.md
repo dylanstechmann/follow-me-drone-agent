@@ -99,4 +99,4 @@ FAU's engineering building and the IEEE club have 3D printers. That is the first
 
 - The prices are search snapshots. Confirm them before buying.
 - Not priced: the DIY motor's steel core, the tag battery, the PETG price (a placeholder), the ESC power stage, and the connectors.
-- No CAD, PCB or firmware file has been opened or checked, because this environment has no KiCad or OpenSCAD. Any design file is unverified until it is opened and rendered at the lab.
+- No PCB or firmware file has been opened or checked, because this environment has no KiCad. Four printable parts exist as OpenSCAD models in `cad/` (rendered, not printed; see [3d-printing.md](3d-printing.md)). Any design file is unverified until it is made and tested.

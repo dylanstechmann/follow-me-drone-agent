@@ -66,6 +66,10 @@ The tag board is accepted when:
 - It runs for one hour on the bench under load.
 - Its Wi-Fi range and dropouts are measured in the field, not on the bench, before any drone test.
 
+## Enclosure
+
+The tag case exists as an adjustable model, `cad/tag_enclosure.scad`, with board posts, a USB slot, strap ears and a push-fit lid (see [3d-printing.md](3d-printing.md)). Its board size, hole positions and component height are placeholders. Set them from the board once it is drawn, and print and test it before use.
+
 ## Tools and assumptions
 
 - KiCad is the planned tool. It is free and open source, but it is not installed here, so no layout exists yet.

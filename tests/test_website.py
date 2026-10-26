@@ -1,7 +1,11 @@
 """The website builds from the repo data, matches the model, and keeps the repo's rules."""
 
+import base64
+import hashlib
+import io
 import json
 import re
+import tarfile
 from html.parser import HTMLParser
 from pathlib import Path
 
@@ -9,10 +13,12 @@ import pytest
 
 from follow_me import bom
 from follow_me.replay import trace
-from follow_me.website import MARKER, build, costs_data, markdown_section, replay_data
+from follow_me.website import (
+    MARKER, VENDOR, build, check_integrity, costs_data, fetch_vendor, main, markdown_section, replay_data,
+)
 
 REPO = Path(__file__).resolve().parents[1]
-PAGES = ("index.html", "replay.html", "costs.html")
+PAGES = ("index.html", "replay.html", "costs.html", "parts.html")
 # Stricter than the group-order check: a package@version string is not an email.
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[A-Za-z]{2,}\b")
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
@@ -73,8 +79,8 @@ def test_every_local_link_and_import_resolves(site):
         parser = _Links()
         parser.feed((site / page).read_text(encoding="utf-8"))
         for link in parser.links:
-            if re.match(r"[a-z]+:", link) or link.startswith("#"):
-                continue
+            if re.match(r"[a-z]+:", link) or link.startswith("#") or link.startswith("assets/vendor/"):
+                continue  # vendor files exist only in builds made with --vendor
             target = site / link.split("#")[0].split("?")[0]
             assert target.is_file(), f"{page} links to missing {link}"
     for script in (site / "assets").glob("*.js"):
@@ -144,3 +150,68 @@ def test_markdown_section_converts_links_bold_code_and_lists():
     assert "ignored" not in out
     with pytest.raises(ValueError):
         markdown_section(md, "Missing")
+
+
+def test_parts_data_lists_each_part_with_its_source(site):
+    data = json.loads((site / "data" / "parts.json").read_text(encoding="utf-8"))
+    ids = [p["id"] for p in data["parts"]]
+    assert ids == ["flex_test_bars", "fit_gauge", "thrust_stand", "tag_enclosure"]
+    for part in data["parts"]:
+        assert (site / part["scad"]).is_file()
+        assert part["stl"] is None  # rendering needs --render-parts
+        assert part["params"] and part["status"] == "unprinted"
+    stand = next(p for p in data["parts"] if p["id"] == "thrust_stand")
+    assert stand["catalog"] == {"id": "thrust_stand_make", "name": stand["catalog"]["name"], "grams": 80.0, "material": "PLA"}
+    assert data["viewer"] is False and data["openscad"] is False
+
+
+def _fake_package(files):
+    buffer = io.BytesIO()
+    with tarfile.open(fileobj=buffer, mode="w:gz") as tar:
+        for name, text in files.items():
+            body = text.encode("utf-8")
+            info = tarfile.TarInfo(name)
+            info.size = len(body)
+            tar.addfile(info, io.BytesIO(body))
+    data = buffer.getvalue()
+    return data, "sha512-" + base64.b64encode(hashlib.sha512(data).digest()).decode("ascii")
+
+
+def test_fetch_vendor_checks_the_hash_and_copies_only_listed_files(tmp_path):
+    data, integrity = _fake_package({"package/lib.js": "export const x = 1;", "package/../../evil.js": "no"})
+    spec = {"lib": {"url": "https://registry.example/lib-1.0.0.tgz", "integrity": integrity,
+                    "files": {"package/lib.js": "lib/lib.js"}}}
+    calls = []
+
+    def download(url):
+        calls.append(url)
+        return data
+
+    written = fetch_vendor(tmp_path / "out", tmp_path / "cache", spec, download)
+    assert written == ["lib/lib.js"]
+    assert (tmp_path / "out" / "lib" / "lib.js").read_text(encoding="utf-8") == "export const x = 1;"
+    assert not any(p.name == "evil.js" for p in tmp_path.rglob("*"))
+    fetch_vendor(tmp_path / "out2", tmp_path / "cache", spec, download)
+    assert len(calls) == 1  # the second build used the cached, re-checked tarball
+
+    bad = {"lib": {**spec["lib"], "integrity": "sha512-" + base64.b64encode(b"x" * 64).decode("ascii")}}
+    with pytest.raises(ValueError, match="pinned"):
+        fetch_vendor(tmp_path / "out3", tmp_path / "cache", bad, download)
+
+
+def test_check_integrity_needs_sha512():
+    with pytest.raises(ValueError, match="unsupported"):
+        check_integrity(b"data", "sha1-abc")
+
+
+def test_vendor_pins_exact_versions_and_hashes():
+    for spec in VENDOR.values():
+        assert re.search(r"-\d+\.\d+\.\d+\.tgz$", spec["url"]), spec["url"]
+        assert spec["integrity"].startswith("sha512-") and len(spec["integrity"]) > 80
+        assert spec["license"]
+
+
+def test_main_rejects_unknown_flags(capsys):
+    assert main(["website", "--deploy"]) == 2
+    assert "usage" in capsys.readouterr().err
+

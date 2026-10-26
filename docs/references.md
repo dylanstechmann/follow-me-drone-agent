@@ -15,6 +15,11 @@ Sources used for design. Add a line for each source actually used.
 Website ([website.md](website.md)):
 
 - GitHub Pages and GitHub Actions host and build the site: https://docs.github.com/en/pages
+- three.js 0.186.1 (MIT licence), the 3D view on the parts page: https://threejs.org/
+- OpenSCAD 2025.01.19 (GPL-2.0-or-later), the modelling language and renderer for the parts: https://openscad.org/ and https://github.com/openscad/openscad
+- openscad-wasm-prebuilt 1.2.0, the WebAssembly build of OpenSCAD the site and `tools/render_parts.mjs` run: https://github.com/lorenzowritescode/openscad-wasm
+- Manifold, the geometry engine inside that OpenSCAD build: https://github.com/elalish/manifold
+- ISO 178 (plastics, flexural properties) is the source of the test bars' 80 x 10 x 4 mm shape. Only the shape is borrowed; the home test is not the standard's method.
 - The chart colours, status colours and freshness ramp follow a colour-blind-checked palette from the data-visualization guidance the coding agent used, checked with its validator on 2026-10-26.
 
 Rules and places (found by agent web searches on 2026-10-26, not confirmed with the organisations):

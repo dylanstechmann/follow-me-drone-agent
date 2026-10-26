@@ -40,7 +40,7 @@ Start with whichever has a core source you can actually get. Do not start with a
 
 ## Measurement plan
 
-Build the thrust stand first. It is in the catalog as a printed base plus a 1 kg load cell with an HX711 amplifier. Calibrate it with a known mass before any motor test.
+Build the thrust stand first. It is in the catalog as a printed base plus a 1 kg load cell with an HX711 amplifier. Calibrate it with a known mass before any motor test. The printed jig exists as an adjustable model, `cad/thrust_stand.scad` (see [3d-printing.md](3d-printing.md)); it is unprinted, and the load cell's size and bolt holes must be measured and set before printing.
 
 For each motor:
 

@@ -75,7 +75,7 @@ Nothing in this repo has been confirmed with FAU or IEEE.
 
 ## What to prepare before asking
 
-- The printing plan in [3d-printing.md](3d-printing.md): materials, coupons, and the first parts.
+- The printing plan in [3d-printing.md](3d-printing.md): materials, coupons, and the first parts. The four parts' STL files come from the website's parts page or from `cad/`.
 - The bench plan and the replay logs.
 - The cost model in [cost-reduction.md](cost-reduction.md), so requests are specific.
 - A short description of the project as a personal hobby, with AI assistance disclosed.

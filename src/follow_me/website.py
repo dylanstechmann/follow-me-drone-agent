@@ -2,26 +2,40 @@
 
   PYTHONPATH=src python3 -m follow_me.website          # build into _site/
   PYTHONPATH=src python3 -m follow_me.website OUT_DIR  # build somewhere else
+  PYTHONPATH=src python3 -m follow_me.website --vendor --render-parts   # what CI runs
   python3 -m http.server -d _site 8000                 # preview at http://localhost:8000
 
-The data under data/ is written from the cost model and the replay tool at each
-build, and a GitHub Actions workflow builds and publishes the site on every push
-to main, so the published site cannot fall behind the repo. Standard library
-only. The pages have no backend, analytics or cookies, and a file a visitor
-opens in the replay viewer stays in their browser.
+The data under data/ is written from the cost model, the replay tool and the
+parts list at each build, and a GitHub Actions workflow builds and publishes the
+site on every push to main, so the published site cannot fall behind the repo.
+Standard library only. The pages have no backend, analytics or cookies, and a
+file a visitor opens in the replay viewer stays in their browser.
+
+--vendor downloads the two browser libraries the parts page needs (three.js and
+OpenSCAD's WebAssembly build) from the npm registry, pinned to exact versions and
+checked against the registry's published hashes, so no library code is kept in
+git and the site makes no requests to other servers. --render-parts then renders
+each part's default STL with Node.js and that same OpenSCAD build.
 """
 
+import base64
+import hashlib
 import html
+import io
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import tarfile
+import urllib.request
 from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
-from follow_me import bom
+from follow_me import bom, parts
 from follow_me.replay import trace
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,6 +47,36 @@ README_BLOCKS = {
     "<!-- build:readme-status -->": "Status",
     "<!-- build:readme-built -->": "How this was built",
 }
+
+# Browser libraries for the parts page: npm tarballs pinned by version and by the
+# registry's sha512 hash. Only the listed files are copied, under assets/vendor/.
+VENDOR = {
+    "three": {
+        "version": "0.186.1",
+        "license": "MIT",
+        "url": "https://registry.npmjs.org/three/-/three-0.186.1.tgz",
+        "integrity": "sha512-blFeqb49wRCSGUGj7gtpfnSGHy2lwDk94RhUmS1c/hTby70kvChbWpkJ4Pm1390LqzzvTmzgXKHPEafJwCb8jA==",
+        "files": {
+            "package/build/three.module.js": "three/three.module.js",
+            "package/build/three.core.js": "three/three.core.js",
+            "package/examples/jsm/controls/OrbitControls.js": "three/addons/controls/OrbitControls.js",
+            "package/examples/jsm/loaders/STLLoader.js": "three/addons/loaders/STLLoader.js",
+            "package/LICENSE": "three/LICENSE",
+        },
+    },
+    "openscad": {
+        "version": "openscad-wasm-prebuilt 1.2.0 (OpenSCAD 2025.01.19)",
+        "license": "GPL-2.0-or-later",
+        "url": "https://registry.npmjs.org/openscad-wasm-prebuilt/-/openscad-wasm-prebuilt-1.2.0.tgz",
+        "integrity": "sha512-JfXJlopHVHvsYiVYUKYDXkg8yOkABm8zclo8zPrSRBeeICR+fitesO6NRwBdAzSdbtOYh6Scmuz/XLyhllbzYA==",
+        "source": "https://github.com/lorenzowritescode/openscad-wasm",
+        "files": {
+            "package/dist/openscad.js": "openscad/openscad.js",
+            "package/COPYING": "openscad/COPYING",
+        },
+    },
+}
+OPENSCAD_JS = "assets/vendor/openscad/openscad.js"
 
 
 def costs_data(root: Path = ROOT) -> dict:
@@ -100,6 +144,36 @@ def replay_data(root: Path = ROOT) -> dict:
     return trace(log)
 
 
+def _catalog_grams(item: bom.Item | None) -> dict | None:
+    """Grams of filament a printed catalog item is costed with, from its make inputs."""
+    if item is None or not item.make:
+        return None
+    for key, kg in item.make["inputs"].items():
+        if key in ("pla_per_kg", "petg_per_kg"):
+            return {"id": item.id, "name": item.name, "grams": round(kg * 1000, 1), "material": key.split("_")[0].upper()}
+    return None
+
+
+def parts_data(root: Path = ROOT, out: Path | None = None) -> dict:
+    """The print cards and parameters, and which STL files and libraries the build has."""
+    materials = bom.load_materials(root / "bom" / "materials.json")
+    catalog = bom.load_catalog(root / "bom" / "catalog.json", materials)
+    rows = []
+    for part in parts.load_parts(root / "cad", catalog):
+        row = {k: v for k, v in asdict(part).items() if k != "params"}
+        row["params"] = [asdict(p) for p in part.params]
+        row["scad"] = f"parts/{part.file}"
+        row["stl"] = f"parts/{part.id}.stl" if out and (out / "parts" / f"{part.id}.stl").is_file() else None
+        row["catalog"] = _catalog_grams(catalog.get(part.catalog_item)) if part.catalog_item else None
+        rows.append(row)
+    return {
+        "parts": rows,
+        "density": parts.DENSITY,
+        "viewer": bool(out and (out / "assets/vendor/three/three.module.js").is_file()),
+        "openscad": bool(out and (out / OPENSCAD_JS).is_file()),
+    }
+
+
 _LINK = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)")
 _BOLD = re.compile(r"\*\*(.+?)\*\*")
 _CODE = re.compile(r"`([^`]+)`")
@@ -146,6 +220,61 @@ def _commit(root: Path) -> str:
     return result.stdout.strip() if result.returncode == 0 else ""
 
 
+def check_integrity(data: bytes, integrity: str) -> None:
+    algorithm, _, expected = integrity.partition("-")
+    if algorithm != "sha512":
+        raise ValueError(f"unsupported integrity {integrity!r}")
+    actual = base64.b64encode(hashlib.sha512(data).digest()).decode("ascii")
+    if actual != expected:
+        raise ValueError("downloaded package does not match its pinned sha512 hash")
+
+
+def _download(url: str) -> bytes:
+    with urllib.request.urlopen(url, timeout=120) as response:
+        return response.read()
+
+
+def default_cache() -> Path:
+    return Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "follow-me-site"
+
+
+def fetch_vendor(dest: Path, cache: Path, vendor: dict = VENDOR, download=_download) -> list[str]:
+    """Copy the pinned library files into dest. Tarballs are cached and checked on every use."""
+    written = []
+    for spec in vendor.values():
+        cached = cache / Path(urlparse(spec["url"]).path).name
+        data = cached.read_bytes() if cached.is_file() else download(spec["url"])
+        check_integrity(data, spec["integrity"])
+        if not cached.is_file():
+            cache.mkdir(parents=True, exist_ok=True)
+            cached.write_bytes(data)
+        with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tar:
+            for member, target in spec["files"].items():
+                handle = tar.extractfile(member)  # read named members only; nothing is unpacked
+                if handle is None:
+                    raise ValueError(f"{member} is not a file in {spec['url']}")
+                path = dest / target
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(handle.read())
+                written.append(target)
+    return written
+
+
+def render_parts(out: Path, root: Path = ROOT) -> str:
+    """Render every part's default STL into out/parts with Node.js and the fetched OpenSCAD."""
+    node = shutil.which("node")
+    openscad = out / OPENSCAD_JS
+    if node is None or not openscad.is_file():
+        raise RuntimeError("rendering parts needs Node.js on the PATH and a build made with --vendor")
+    result = subprocess.run(
+        [node, str(root / "tools" / "render_parts.mjs"), str(openscad), str(root / "cad"), str(out / "parts")],
+        capture_output=True, text=True, timeout=600,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(f"rendering parts failed:\n{result.stdout}{result.stderr}")
+    return result.stdout
+
+
 def _prepare(out: Path) -> None:
     if out.exists():
         if (out / MARKER).exists():
@@ -160,11 +289,25 @@ def _write_json(path: Path, data: dict) -> None:
     path.write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
 
 
-def build(out: Path, root: Path = ROOT) -> list[str]:
+def build(
+    out: Path,
+    root: Path = ROOT,
+    vendor: bool = False,
+    render: bool = False,
+    cache: Path | None = None,
+) -> list[str]:
     """Write the site into out and return the files written, relative to out."""
     out = Path(out)
     _prepare(out)
     shutil.copytree(root / "site", out, dirs_exist_ok=True)
+    (out / "parts").mkdir(exist_ok=True)
+    for source in sorted((root / "cad").glob("*.scad")):
+        shutil.copy2(source, out / "parts" / source.name)
+    if vendor:
+        fetch_vendor(out / "assets" / "vendor", cache or default_cache())
+    if render:
+        print(render_parts(out, root), end="")
+    _write_json(out / "data" / "parts.json", parts_data(root, out))
     _write_json(out / "data" / "costs.json", costs_data(root))
     _write_json(out / "data" / "replay-example.json", replay_data(root))
     shutil.copy2(root / "examples" / "replay.example.json", out / "data" / "replay.example.json")
@@ -187,8 +330,15 @@ def build(out: Path, root: Path = ROOT) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    out = Path(argv[1]) if len(argv) > 1 else ROOT / "_site"
-    files = build(out)
+    flags = {a for a in argv[1:] if a.startswith("--")}
+    unknown = flags - {"--vendor", "--render-parts"}
+    paths = [a for a in argv[1:] if not a.startswith("--")]
+    if unknown or len(paths) > 1:
+        print("usage: python -m follow_me.website [OUT_DIR] [--vendor] [--render-parts]", file=sys.stderr)
+        return 2
+    out = Path(paths[0]) if paths else ROOT / "_site"
+    render = "--render-parts" in flags
+    files = build(out, vendor="--vendor" in flags or render, render=render)
     print(f"built {len(files)} files into {out}")
     return 0
 

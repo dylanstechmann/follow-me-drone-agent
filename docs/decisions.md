@@ -23,6 +23,7 @@ A log for agents and for the owner. Read the decisions before proposing a change
 | D15 | 2026-10-24 | Direction: curiosity about many drones and the software that may power them, with the owner sourcing or making the parts, somewhat. This is not a plan of record. | The owner's stated interest. | [vision.md](vision.md) |
 | D16 | 2026-10-24 | Record the project, the vision and the history in the repo, so that any AI agent can pick it up. | The owner asked. | [project-context.md](project-context.md), [history.md](history.md) |
 | D17 | 2026-10-26 | A static website on GitHub Pages, built from the repo's data in GitHub Actions at every push to main. No backend, analytics or cookies. The browser draws what the tested Python computed and never re-implements the logic. | The owner asked for easy visualizations and a site for the repo. Building from the data keeps the site from falling behind. | [website.md](website.md), `src/follow_me/website.py` |
+| D18 | 2026-10-26 | Printable parts are adjustable OpenSCAD sources in `cad/` with print cards. The site renders them with OpenSCAD's WebAssembly build and its Manifold engine, in CI and in the visitor's browser. Browser libraries are fetched at build time, pinned and hash-checked, rather than kept in git. | OpenSCAD could not be installed here, but its WebAssembly build runs under Node.js and in browsers. Text sources keep the designs reviewable and owned, and pinned downloads keep library code out of git. | [3d-printing.md](3d-printing.md), [website.md](website.md) |
 
 ## Corrections
 
