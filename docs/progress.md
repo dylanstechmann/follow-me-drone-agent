@@ -181,6 +181,27 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 
 - A BLE or RSSI reading gives range but no bearing, so it cannot be a fused position vote. Plan: `range_only.py` with a log-distance path-loss model, used as a consistency check on the fused estimate, with tests.
 
+## Iterations 16 to 19 plan (2026-10-26)
+
+- Owner input (2026-10-26): the owner asked what could be added: visualizations and easy dashboards, 3D, databases, AI models, and a website on GitHub Pages where the 3D runs in the visitor's browser, with heavy work on the owner's laptop or a cloud sandbox if needed. The owner said "ok" to the first batch proposed: the site with a status page, a replay viewer and a cost explorer; printable parts shown in 3D and ready for FAU's printers; and recording the new facts. New facts from the owner: the printers are in FAU's engineering building, and the owner can work with a drone club.
+- Iteration 16, facts and the replay example:
+  - Record the rules found by an agent web search, to verify with FAU and the FAA: FAU's environmental health and safety drone page (undated) says recreational drone use on university property is strictly prohibited, and other flights need approval through FAU Risk Management. The Boca Raton campus borders Boca Raton Airport, which has Class D airspace with LAANC available to recreational flyers. Recreational flyers also need the free TRUST test, FAA registration for drones over 250 g, and Remote ID.
+  - Record the drone club as owner-reported. The same search found no university-level FAU drone club, only the K-12 club at FAU's lab schools.
+  - Fix: this log says the replay example exercises hold, return-home and the full fallback ladder. At default settings the replay tool shows only tracking and dead reckoning: the example has 4 empty ticks against a 10-tick dead-reckoning window. Only the tests, with shortened thresholds, reach hold and return-home, and degraded never appears. Extend the example so it reaches every mode at default settings, test that it does, and record the correction.
+- Iteration 17, the cost model:
+  - Fix: cash at minimum orders leaves out the waste allowance on the high end, while the per-drone cost includes it. Passes 6 to 11 understate the high end by $24 to $57.
+  - Add cash and cost per drone for any number of drones, honouring minimum orders. Fees paid once per order (the PCB assembly setup fee, the extended-part loading fee, and the import-duty allowance per consolidated entry) get a `per_order` flag and do not grow with the count. This is for exploring only: the owner has not set a number of drones.
+- Iteration 18, the website:
+  - A static site on GitHub Pages, built from the repo's data by `python -m follow_me.site` (standard library only) and deployed by a GitHub Actions workflow on each push to main. No backend, analytics or cookies, and nothing a visitor opens is uploaded.
+  - Pages: an overview with the gates, what is built and what is not, the AI disclosure and credits; a replay viewer for the example log and for trace files a visitor opens locally; and a cost explorer with the passes, the drone-count view, price freshness and single-supplier parts.
+  - Code: a JSON trace from the replay tool, and a fusion report (the gate centre and which readings were kept, rejected or switched off), exposed through the council without changing its results.
+  - Tests: the site builds, its data matches the model and the replay, every local link resolves, there is no email-like or phone-like text, and the honesty statements are present.
+- Iteration 19, printable parts:
+  - The enclosure half of iteration 14, now possible with OpenSCAD's WebAssembly build: parametric test coupons, a thrust-stand jig and the tag enclosure, each with a print card.
+  - A parts page: each part in 3D in the browser (three.js), sliders that re-render it with OpenSCAD in the browser, and STL downloads for the printers.
+  - Every part stays unprinted and untested until it is printed and measured. Measured grams and times replace the catalog estimates when the owner reports them.
+- Stop point: ask the owner before pushing and before turning on GitHub Pages, because both publish.
+
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
