@@ -66,7 +66,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `geo.py`, `places.py` | Geodesy helpers. Place profiles and approach detection. | `test_places.py` |
 | `mode.py` | The mode machine. | `test_mode.py` |
 | `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs. | `test_pipeline.py`, `test_replay.py` |
-| `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders. | `test_bom.py` |
+| `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
 
@@ -88,6 +88,7 @@ Concepts:
 - **Checked** is the date the price was seen on its source. A price is fresh only with month precision and a date within 12 months of the cutoff `AS_OF` in `bom.py` (2026-10-10). Move `AS_OF` when prices are re-checked.
 - **Composed items** have no price of their own. Their cost is the sum of their materials, with a waste allowance on the high end.
 - **Cash at minimum orders** is separate from per-drone cost, because a cheap unit price can sit behind a large minimum order.
+- **Cost per drone for a number of drones** divides the cash for that many drones by the count. Fees marked `per_order` (the PCB assembly setup and loading fees) are paid once per order. It is for exploring: the owner has not set a number of drones.
 
 Headline results at the 2026-10-10 prices, core cost per drone in USD, low to high. The generated table in [cost-reduction.md](cost-reduction.md) is current:
 

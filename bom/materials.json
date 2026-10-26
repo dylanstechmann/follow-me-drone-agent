@@ -1,5 +1,5 @@
 {
-  "notes": "Raw inputs, components and service fees for composed items. checked is the date the price was seen on its source: YYYY-MM-DD, YYYY-MM, or YYYY (year only). Empty means the source shows no date. A price is fresh only with month precision and a date within 12 months before 2026-10-10. moq is the minimum order in the material's unit. moq_per_item means each design pays its own minimum (PCBs and assembly fees); otherwise the minimum is shared across the pass. Placeholders are guesses. Unpriced inputs count as $0.",
+  "notes": "Raw inputs, components and service fees for composed items. checked is the date the price was seen on its source: YYYY-MM-DD, YYYY-MM, or YYYY (year only). Empty means the source shows no date. A price is fresh only with month precision and a date within 12 months before 2026-10-10. moq is the minimum order in the material's unit. moq_per_item means each design pays its own minimum (PCBs and assembly fees); otherwise the minimum is shared across the pass. per_order marks a fee paid once per order, so it does not grow with the number of drones. Placeholders are guesses. Unpriced inputs count as $0.",
   "materials": {
     "pla_per_kg": {
       "unit": "kg", "low": 8.55, "high": 18.0, "status": "snapshot", "checked": "2026",
@@ -172,7 +172,7 @@
       "note": "10 x 10 cm, 4-layer. Low: JLCPCB's promo of $7 for five (undated). High: a competitor's 2026 estimate of $8 to $15 each for 5 to 10 boards. Year-only."
     },
     "pcba_order_fixed": {
-      "unit": "order", "low": 9.71, "high": 9.71, "status": "snapshot", "checked": "2026-09", "moq": 1, "moq_per_item": true,
+      "unit": "order", "low": 9.71, "high": 9.71, "status": "snapshot", "checked": "2026-09", "moq": 1, "moq_per_item": true, "per_order": true,
       "source": "https://jlcpcb.com/help/article/pcb-assembly-price",
       "note": "JLCPCB Economic PCBA: setup $8.18 plus stencil $1.53 per order, from the help page (about a month old). Standard PCBA costs more: $25.56 or $51.12 setup."
     },
@@ -182,7 +182,7 @@
       "note": "JLCPCB Economic PCBA placement per solder joint."
     },
     "pcba_extended_part_type_each": {
-      "unit": "part type", "low": 1.5, "high": 3.0, "status": "snapshot", "checked": "", "moq": 3, "moq_per_item": true,
+      "unit": "part type", "low": 1.5, "high": 3.0, "status": "snapshot", "checked": "", "moq": 3, "moq_per_item": true, "per_order": true,
       "source": "https://www.itechguides.com/jlcpcb-smt-assembly-service-complete-guide-to-files-pricing-parts-and-ordering/",
       "note": "Loading fee per unique extended part type per order: $3 (a 2025 guide) or $1.5 (another listing). Basic parts have no loading fee in Economic PCBA. The model assumes three extended types per design."
     },

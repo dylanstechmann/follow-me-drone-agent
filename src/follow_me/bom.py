@@ -13,6 +13,7 @@ price is never mistaken for a current quote.
 Usage:
   python -m follow_me.bom                    # cost report for every pass
   python -m follow_me.bom --passes-markdown  # pass summary as a markdown table
+  python -m follow_me.bom --drones-markdown  # cost per drone as the number of drones grows
   python -m follow_me.bom --markdown         # parts catalog as a markdown table
   python -m follow_me.bom --audit            # price-date audit as a markdown table
 """
@@ -58,6 +59,7 @@ class Material:
     note: str = ""
     moq: float = 1.0  # minimum order, in the material's unit
     moq_per_item: bool = False  # each design pays its own minimum (boards, assembly fees)
+    per_order: bool = False  # a fee paid once per order, whatever the number of drones
 
 
 @dataclass(frozen=True)
@@ -148,6 +150,8 @@ def _validate_material(m: Material) -> None:
         raise ValueError(f"material {m.key}: unpriced materials must have zero prices")
     if m.moq <= 0:
         raise ValueError(f"material {m.key}: moq must be positive")
+    if not isinstance(m.per_order, bool) or not isinstance(m.moq_per_item, bool):
+        raise ValueError(f"material {m.key}: per_order and moq_per_item must be true or false")
     check_date_format(m.checked)
 
 
@@ -310,18 +314,28 @@ def totals(
     )
 
 
+DRONE_COUNTS = (1, 2, 5, 10, 20, 50, 100, 200, 500, 1000)
+
+
 def cash_outlay(
     catalog: dict[str, Item],
     ids: tuple[str, ...] | list[str],
     materials: dict[str, Material],
+    drones: int = 1,
 ) -> tuple[float, float]:
-    """Cash needed to place every order at its minimum quantity (core items only).
+    """Cash needed to build this many drones, every order at least its minimum (core items only).
 
     Per-unit cost hides minimum orders: 1,000 magnets are cheap each and still
     cost real money up front. Shared minimums are counted once per pass; boards
     and assembly fees are counted once per design. The high end includes a made
     item's waste allowance, as its per-drone cost does.
+
+    For several drones, quantities grow with the count, except fees marked
+    per_order, which are paid once: it assumes one order per design for the
+    whole batch, at unchanged unit prices.
     """
+    if not isinstance(drones, int) or drones < 1:
+        raise ValueError("drones must be a whole number of at least 1")
     low = high = 0.0
     shared: dict[str, list[float]] = {}  # material -> [used at low, used at high]
     for iid in ids:
@@ -329,14 +343,14 @@ def cash_outlay(
         if item.optional:
             continue
         if item.make is None:
-            n = max(item.qty, item.moq)
+            n = max(item.qty * drones, item.moq)
             low += n * item.low
             high += n * item.high
             continue
         waste = item.make.get("waste_high", 1.0)
         for key, quantity in item.make["inputs"].items():
             m = materials[key]
-            used = quantity * item.qty
+            used = quantity * item.qty * (1 if m.per_order else drones)
             if m.moq_per_item:
                 low += max(used, m.moq) * m.low
                 high += max(used * waste, m.moq) * m.high
@@ -545,6 +559,34 @@ def passes_markdown(
     return "\n".join(rows)
 
 
+def per_drone_cost(
+    catalog: dict[str, Item],
+    ids: tuple[str, ...] | list[str],
+    materials: dict[str, Material],
+    drones: int,
+) -> tuple[float, float]:
+    """Cash to build this many drones, minimum orders included, divided by the count."""
+    low, high = cash_outlay(catalog, ids, materials, drones)
+    return round(low / drones, 2), round(high / drones, 2)
+
+
+def drones_markdown(
+    catalog: dict[str, Item],
+    passes: list[Pass],
+    materials: dict[str, Material],
+    counts: tuple[int, ...] = (1, 5, 20, 100, 500),
+) -> str:
+    names = [f"{n:,} drone" + ("s" if n > 1 else "") for n in counts]
+    rows = ["| Pass | " + " | ".join(names) + " |", "|---|" + "---|" * len(counts)]
+    for p in passes:
+        cells = []
+        for n in counts:
+            lo, hi = per_drone_cost(catalog, p.items, materials, n)
+            cells.append(f"{lo:,.0f} to {hi:,.0f}")
+        rows.append(f"| {p.id} | " + " | ".join(cells) + " |")
+    return "\n".join(rows)
+
+
 def _links(source: str) -> str:
     links = []
     for url in filter(None, (s.strip() for s in source.split(";"))):
@@ -606,6 +648,9 @@ def main(argv: list[str]) -> int:
     passes = resolve(catalog, raw)
     if "--passes-markdown" in argv:
         print(passes_markdown(catalog, passes, budget, materials))
+        return 0
+    if "--drones-markdown" in argv:
+        print(drones_markdown(catalog, passes, materials))
         return 0
     print(report(catalog, passes, budget, materials))
     last = passes[-1]

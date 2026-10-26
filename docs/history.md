@@ -57,6 +57,7 @@ The owner asked for everything discussed to be saved for other AI agents, and st
 The owner asked what else could be done for the repo: visualizations and easy dashboards, 3D, databases, AI models, and a website on GitHub Pages where the 3D runs in the visitor's browser, with heavy work on the owner's laptop or a cloud sandbox if needed. The owner added that they can use the printers in FAU's engineering building and can work with a drone club. The agent proposed a menu and a first batch, and the owner said "ok".
 
 - **Iteration 16:** an agent web search found that FAU's safety office prohibits recreational drone use on university property, and that the Boca Raton campus borders Boca Raton Airport's Class D airspace. Both are recorded as rules to confirm. The drone club is recorded as owner-reported, because the search found no university-level FAU drone club. Found C13: the replay example did not reach the modes the progress log said it did. The example now walks every mode at default settings.
+- **Iteration 17:** found C14, the cash at minimum orders leaving out the waste allowance, and fixed it. Added the cost per drone for any number of drones, with the PCB assembly fees paid once per order. It is for exploring; the owner has not set a number.
 
 ## Standing instructions from the owner
 

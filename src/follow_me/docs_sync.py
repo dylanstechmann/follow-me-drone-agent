@@ -69,6 +69,10 @@ def default_blocks() -> list[Block]:
         materials, cat, budget, ps = _data()
         return bom.passes_markdown(cat, ps, budget, materials)
 
+    def drones() -> str:
+        materials, cat, _, ps = _data()
+        return bom.drones_markdown(cat, ps, materials)
+
     def group_order() -> str:
         return group_order_markdown(load_group_order())
 
@@ -76,6 +80,7 @@ def default_blocks() -> list[Block]:
         Block("docs/parts-catalog.md", "catalog", catalog),
         Block("docs/price-audit.md", "audit", audit),
         Block("docs/cost-reduction.md", "passes", passes),
+        Block("docs/cost-reduction.md", "drones", drones),
         Block("docs/group-order.md", "group_order", group_order),
     ]
 

@@ -209,9 +209,13 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Fixed C13: the example log now walks tracking (5 ticks), degraded (2), dead reckoning (10), hold (90), return-home requested (4) and tracking again (2) at default settings. A test checks the whole sequence, and a second test keeps the shortened-threshold case.
 - Found while doing it: the mode thresholds count ticks, not seconds. At this log's 2 ticks per second, return-home is requested after 50 s without an estimate; at 30 ticks per second it would be under 4 s. Listed under the next candidates.
 
-## Iteration 17: the cost model (in progress)
+## Iteration 17: the cost model (done: 198 tests pass)
 
 - Fixed C14: the cash at minimum orders now includes the waste allowance at the high end. Pass 10 is $332.20 to $960.45 (was $934.98 at the high end), pass 11 is $1,319.96 to $2,943.16 (was $2,918.89), and passes 6 to 9 rise by $29 to $57 at the high end. Per-drone costs did not change.
+- Added the cost per drone for any number of drones: `cash_outlay(..., drones=N)` and `per_drone_cost()`, with a generated table in [cost-reduction.md](cost-reduction.md) (`python -m follow_me.bom --drones-markdown`). The PCB assembly setup and extended-part loading fees are marked `per_order` and paid once per order.
+- Changed from the plan: the import-duty allowance is not marked `per_order`. Duty grows with an order's value, so keeping it per drone is the cautious choice; only an entry fee would be paid once.
+- Results, at the 2026-10-10 prices, per drone, low to high: pass 10 goes from $332 to $960 for one drone to $197 to $519 at 100 drones, below its core cost because the setup fees spread out. Pass 11's 1,000 stator cores make one drone cost $1,320 to $2,943, and wash out to $200 to $523 at 500. The bench kit (pass 5) costs $72 to $116 for one, because minimum orders round up, against its $63.87 to $98.99 core cost.
+- Not claimed: no number of drones, no volume discounts, and no labour, tooling, failures, storage or shipping.
 
 ## Next candidates (not started)
 

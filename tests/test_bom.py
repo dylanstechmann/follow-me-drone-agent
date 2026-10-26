@@ -559,6 +559,92 @@ def test_cash_outlay_high_end_includes_the_waste_allowance(tmp_path):
     assert cash_outlay(catalog, ["board"], mats) == (t.core_low, t.core_high)
 
 
+PER_ORDER_MATS = {
+    **MOQ_MATS,
+    "setup": Material("setup", "order", 9.71, 9.71, "snapshot", moq=1, moq_per_item=True,
+                      per_order=True),
+}
+
+
+def drone_catalog(tmp_path):
+    items = [
+        raw_item(id="motor", low=0, high=0, status="estimate", path="make", qty=4,
+                 make={"inputs": {"magnet": 14}}),
+        raw_item(id="board", low=0, high=0, status="estimate", path="buy_service",
+                 make={"inputs": {"board": 1, "setup": 0.2}}),
+        raw_item(id="bought", low=3, high=4, qty=2, moq=10),
+    ]
+    return load_catalog(write_json(tmp_path, "c.json", {"items": items}), PER_ORDER_MATS)
+
+
+def test_cash_for_more_drones_honours_minimums_and_pays_per_order_fees_once(tmp_path):
+    from follow_me.bom import cash_outlay
+
+    catalog = drone_catalog(tmp_path)
+    ids = ["motor", "board", "bought"]
+    one = cash_outlay(catalog, ids, PER_ORDER_MATS)
+    assert cash_outlay(catalog, ids, PER_ORDER_MATS, drones=1) == one
+    low, _ = cash_outlay(catalog, ids, PER_ORDER_MATS, drones=10)
+    # Magnets: 560 still under the 1,000 minimum. Boards: 10, over the 5 minimum. The setup
+    # fee is paid once. Bought item: 20 needed, over its minimum of 10.
+    assert low == pytest.approx(1000 * 0.02 + 10 * 0.40 + 9.71 + 20 * 3)
+    low, _ = cash_outlay(catalog, ids, PER_ORDER_MATS, drones=20)
+    assert low == pytest.approx(1120 * 0.02 + 20 * 0.40 + 9.71 + 40 * 3)
+
+
+def test_cost_per_drone_falls_toward_the_unit_cost_as_minimums_spread(tmp_path):
+    from follow_me.bom import per_drone_cost
+
+    catalog = drone_catalog(tmp_path)
+    ids = ["motor", "board", "bought"]
+    one = per_drone_cost(catalog, ids, PER_ORDER_MATS, 1)
+    many = per_drone_cost(catalog, ids, PER_ORDER_MATS, 1000)
+    assert many[0] < one[0] and many[1] < one[1]
+    # With minimums covered, only the once-per-order fee is still spread: 9.71 / 1000.
+    t = totals(catalog, ids, PER_ORDER_MATS)
+    assert many[0] == pytest.approx(t.core_low - 0.2 * 9.71 + 9.71 / 1000, abs=0.01)
+
+
+def test_drone_count_must_be_a_whole_number_of_at_least_one(tmp_path):
+    from follow_me.bom import cash_outlay
+
+    catalog = drone_catalog(tmp_path)
+    for bad in (0, -3, 2.5):
+        with pytest.raises(ValueError, match="drones"):
+            cash_outlay(catalog, ["motor"], PER_ORDER_MATS, drones=bad)
+
+
+def test_per_order_flag_must_be_true_or_false(tmp_path):
+    path = write_json(tmp_path, "m.json", {"materials": {
+        "fee": {"unit": "order", "low": 1, "high": 1, "status": "snapshot", "per_order": "yes"},
+    }})
+    with pytest.raises(ValueError, match="per_order"):
+        load_materials(path)
+
+
+def test_shipped_factory_passes_get_cheaper_per_drone_with_more_drones():
+    from follow_me.bom import per_drone_cost
+
+    materials = load_materials(DEFAULT_MATERIALS)
+    catalog = load_catalog(DEFAULT_CATALOG, materials)
+    _, raw = load_passes(DEFAULT_PASSES)
+    passes = {p.id: p for p in resolve(catalog, raw)}
+    for pid in ("pass10_factory_and_lab", "pass11_factory_stators"):
+        ids = passes[pid].items
+        costs = [per_drone_cost(catalog, ids, materials, n) for n in (1, 5, 20, 100, 500)]
+        assert all(a[0] >= b[0] and a[1] >= b[1] for a, b in zip(costs, costs[1:]))
+    # The 1,000 stator cores dominate one drone and wash out across 500.
+    one = per_drone_cost(catalog, passes["pass11_factory_stators"].items, materials, 1)
+    many = per_drone_cost(catalog, passes["pass11_factory_stators"].items, materials, 500)
+    assert one[0] > 5 * many[0]
+
+
+def test_shipped_per_order_fees_are_the_assembly_setup_and_loading_fees():
+    materials = load_materials(DEFAULT_MATERIALS)
+    flagged = {key for key, m in materials.items() if m.per_order}
+    assert flagged == {"pcba_order_fixed", "pcba_extended_part_type_each"}
+
+
 def test_moq_below_one_is_rejected(tmp_path):
     path = write_json(tmp_path, "c.json", {"items": [raw_item(moq=0)]})
     with pytest.raises(ValueError, match="moq"):

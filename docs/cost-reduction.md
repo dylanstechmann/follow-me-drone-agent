@@ -32,10 +32,11 @@ Path (how the part is obtained):
 - **make**: made in-house from materials.
 - **owned** or **salvage**: already held, or reclaimed.
 
-Two cash numbers:
+Three cash numbers:
 
 - **Core cost** is per drone, at the price for the quantity needed.
 - **Cash at minimum orders** is what it takes to place every order at its minimum quantity: 1,000 magnets, five boards per design, one assembly setup per design, and so on. Its high end includes the waste allowance on made items, as the core cost does.
+- **Cost per drone for a number of drones** is the cash to build that many, minimum orders included, divided by the count. See the table below the pass results.
 
 ## Pass results
 
@@ -59,6 +60,27 @@ The table is generated from the data files and kept in sync by `PYTHONPATH=src p
 <!-- generated:passes:end -->
 
 Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later include the optional CNC mill ($115 to $200). Neither is in the core totals.
+
+## Cost per drone as the number of drones grows
+
+This is for exploring only. The owner has not set a number of drones. Each cell is the cash to build that many drones, with every order at least its minimum, divided by the count, in whole USD, low to high. It assumes one order per design for the whole batch and the same unit prices at every count, so real volume discounts would lower it. The PCB assembly setup fee and the extended-part loading fee are paid once per order (`per_order` in [materials.json](../bom/materials.json)), so at large counts the cost per drone falls below the core cost, which spreads those fees over five boards. The import-duty allowance stays per drone, because duty grows with an order's value. Like the rest of the model, it leaves out labour, tooling, failed builds, crashes, storage and shipping.
+
+<!-- generated:drones:start -->
+| Pass | 1 drone | 5 drones | 20 drones | 100 drones | 500 drones |
+|---|---|---|---|---|---|
+| pass0_retail_autopilot | 566 to 982 | 559 to 968 | 558 to 965 | 558 to 965 | 558 to 965 |
+| pass1_shop_smart | 504 to 756 | 497 to 741 | 496 to 739 | 496 to 738 | 496 to 738 |
+| pass2_print_structure | 489 to 726 | 470 to 688 | 469 to 686 | 469 to 686 | 469 to 686 |
+| pass3_bench_first | 75 to 118 | 69 to 104 | 67 to 101 | 67 to 101 | 67 to 101 |
+| pass4_pixel_onboard | 704 to 936 | 685 to 898 | 684 to 896 | 684 to 896 | 684 to 896 |
+| pass5_made_tag | 72 to 116 | 65 to 101 | 64 to 99 | 64 to 99 | 64 to 99 |
+| pass6_diy_motor_rnd | 510 to 855 | 481 to 782 | 480 to 782 | 480 to 782 | 480 to 782 |
+| pass7_owned_pipeline | 502 to 838 | 473 to 766 | 472 to 766 | 472 to 766 | 472 to 766 |
+| pass8_own_most | 317 to 809 | 276 to 623 | 275 to 623 | 275 to 623 | 275 to 623 |
+| pass9_own_most_target_motors | 373 to 864 | 253 to 540 | 238 to 516 | 238 to 516 | 238 to 516 |
+| pass10_factory_and_lab | 332 to 960 | 214 to 555 | 200 to 522 | 197 to 519 | 197 to 519 |
+| pass11_factory_stators | 1,320 to 2,943 | 411 to 947 | 248 to 616 | 206 to 534 | 200 to 523 |
+<!-- generated:drones:end -->
 
 ## What each pass does and the risk it adds
 
@@ -94,7 +116,7 @@ Pass 3 includes the optional Tello refurbished ($79 to $139). Pass 7 and later i
 
 ## Repeating the loop
 
-1. Check a price at the seller. Update its row in [catalog.json](../bom/catalog.json) or its input in [materials.json](../bom/materials.json). Record the date you saw it, its minimum order (`moq`), and whether each design pays its own minimum (`moq_per_item`).
+1. Check a price at the seller. Update its row in [catalog.json](../bom/catalog.json) or its input in [materials.json](../bom/materials.json). Record the date you saw it, its minimum order (`moq`), whether each design pays its own minimum (`moq_per_item`), and whether it is a fee paid once per order (`per_order`).
 2. If a design changes, change its path and its inputs together.
 3. Add a pass based on the latest one, with adds, removes, reason and risk.
 4. Run the reports. Regenerate [parts-catalog.md](parts-catalog.md), [price-audit.md](price-audit.md) and the table above.
