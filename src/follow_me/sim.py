@@ -18,11 +18,12 @@ from dataclasses import dataclass
 
 from follow_me.companion import offset_estimate
 from follow_me.context import Conditions
-from follow_me.controller import Command
+from follow_me.controller import Command, Detection
 from follow_me.council import Council, TickResult
 from follow_me.fusion import Reading
-from follow_me.motion import Pose
+from follow_me.motion import Pose, to_body
 from follow_me.replay import TRACE_FORMAT, trace_settings, trace_tick
+from follow_me.sources import camera_estimate
 
 PERSON_HEIGHT_M = 1.75  # the default in sources.estimate_to_detection
 EPS = 1e-9
@@ -39,6 +40,24 @@ class Limits:
 
     max_speed_mps: float = 10.0
     max_yaw_rate_dps: float = 90.0
+
+
+@dataclass(frozen=True)
+class Camera:
+    """A simulated camera on the drone's nose, standing in for a person detector.
+
+    Each tick it sees the rider only inside the council's field of view and its range
+    limit, and misses them at random `miss_rate` of the time. It makes the box a
+    detector would, with made-up error of the size sources.camera_estimate assumes,
+    and passes the box through camera_estimate. There are no other people, no wrong
+    detections and nothing in the way. The limits and errors are placeholders.
+    """
+
+    max_range_m: float = 30.0  # farther, a person is too small to detect
+    bearing_sigma_rad: float = 0.05
+    range_sigma_frac: float = 0.15
+    miss_rate: float = 0.1
+    seed: int = 1
 
 
 @dataclass(frozen=True)
@@ -146,6 +165,29 @@ def _rider_at(fixes: list[RiderFix], i: int, t: float) -> tuple[float, float]:
     return a.east + s * (b.east - a.east), a.north + s * (b.north - a.north)
 
 
+def _camera_reading(
+    camera: Camera, rng: random.Random, council: Council, drone: DroneState, rider: tuple[float, float],
+) -> Reading | None:
+    x, y = to_body(drone, rider[0] - drone.east, rider[1] - drone.north)
+    distance, bearing = math.hypot(x, y), math.atan2(y, x)
+    if distance < 0.5 or distance > camera.max_range_m or abs(bearing) > council.hfov_rad / 2.0:
+        return None
+    if rng.random() < camera.miss_rate:
+        return None
+    seen_range = distance * max(0.2, 1.0 + rng.gauss(0.0, camera.range_sigma_frac))
+    seen_bearing = bearing + rng.gauss(0.0, camera.bearing_sigma_rad)
+    box = Detection(
+        cx=0.5 - seen_bearing / council.hfov_rad,
+        cy=0.5,
+        height=PERSON_HEIGHT_M / (2.0 * seen_range * math.tan(council.vfov_rad / 2.0)),
+    )
+    est = camera_estimate(
+        box, council.hfov_rad, council.vfov_rad,
+        bearing_sigma_rad=camera.bearing_sigma_rad, range_sigma_frac=camera.range_sigma_frac,
+    )
+    return Reading("camera", est)
+
+
 def _clamp1(v: float) -> float:
     return max(-1.0, min(1.0, v))
 
@@ -171,6 +213,7 @@ def simulate(
     max_age_s: float = 2.0,
     noise_m: float = 0.0,
     seed: int = 0,
+    camera: Camera | None = None,
 ) -> list[SimTick]:
     """Fly the point drone after the rider, one council tick every dt seconds.
 
@@ -181,6 +224,7 @@ def simulate(
 
     noise_m adds made-up Gaussian error to each fix, drawn once per fix from `seed`,
     to test how the follow logic copes with a noisy receiver. The track stays the truth.
+    A `camera` adds a camera reading on each tick the rider is in view.
     """
     _check(fixes, dt)
     if noise_m < 0:
@@ -189,6 +233,7 @@ def simulate(
     drone = start or default_start(fixes, council)
     rng = random.Random(seed)
     errors = [(rng.gauss(0.0, noise_m), rng.gauss(0.0, noise_m)) if noise_m else (0.0, 0.0) for _ in fixes]
+    camera_rng = random.Random(camera.seed) if camera else None
     held = Command(0.0, 0.0, 0.0)
     ticks = []
     t0 = fixes[0].t
@@ -205,11 +250,16 @@ def simulate(
                 fix.east + de - drone.east, fix.north + dn - drone.north, fix.accuracy_m, drone.heading_deg
             )
             readings.append(Reading("phone_gnss", est, age_s=max(0.0, t - fix.t)))
+        rider = _rider_at(fixes, i, t)
+        if camera is not None:
+            seen = _camera_reading(camera, camera_rng, council, drone, rider)
+            if seen is not None:
+                readings.append(seen)
         result = council.tick(readings, Conditions(), now=t, pose=drone)
         if result.estimate is not None:
             held = result.command
         flown = held if result.hold_last_command else result.command
-        ticks.append(SimTick(t, drone, _rider_at(fixes, i, t), readings, result, flown))
+        ticks.append(SimTick(t, drone, rider, readings, result, flown))
         drone = _move(drone, flown, limits, dt)
     return ticks
 
@@ -227,6 +277,7 @@ def summarize(ticks: list[SimTick], council: Council, dt: float) -> dict:
         "band_m": [round(near, 2), round(far, 2)],
         "in_band_share": round(sum(near <= d <= far for d in distances) / len(distances), 4),
         "too_close_share": round(sum(d < near for d in distances) / len(distances), 4),
+        "camera_share": round(sum(any(r.source == "camera" for r in s.readings) for s in ticks) / len(ticks), 4),
         "median_distance_m": round(statistics.median(distances), 2),
         "min_distance_m": round(min(distances), 2),
         "max_distance_m": round(max(distances), 2),
@@ -244,10 +295,11 @@ def trace_track(
     dt: float = 0.5,
     limits: Limits = Limits(),
     note: str = "",
+    camera: Camera | None = None,
 ) -> dict:
     """Simulate a track and return a trace the replay viewer reads, with the drone's world."""
     council = council or Council()
-    ticks = simulate(fixes, council, dt, limits)
+    ticks = simulate(fixes, council, dt, limits, camera=camera)
     out = []
     for s in ticks:
         log_tick = {

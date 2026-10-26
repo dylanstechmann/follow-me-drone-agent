@@ -40,7 +40,7 @@ from urllib.parse import urlparse
 from follow_me import bom, parts
 from follow_me.council import Council
 from follow_me.replay import trace
-from follow_me.sim import EXAMPLE_NOTE, example_track, trace_track
+from follow_me.sim import EXAMPLE_NOTE, Camera, example_track, trace_track
 
 ROOT = Path(__file__).resolve().parents[2]
 REPO_URL = "https://github.com/dylanstechmann/follow-me-drone-agent"
@@ -170,13 +170,20 @@ def replay_data(root: Path = ROOT) -> dict:
     return trace(log)
 
 
-def sim_example_data(feed_forward: bool = True) -> dict:
-    """The made-up ride, followed by the simulated drone, with the controller as it is
-    or, for comparison, as it was before feed-forward and the safety margin."""
-    if feed_forward:
+def sim_example_data(variant: str = "now") -> dict:
+    """The made-up ride, followed by the simulated drone: with the controller as it is
+    ("now"), with a simulated camera as well ("camera"), or with the controller as it
+    was before feed-forward and the safety margin ("before")."""
+    if variant == "now":
         return trace_track(example_track(), note=EXAMPLE_NOTE)
-    note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward and the safety margin, for comparison."
-    return trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=note)
+    if variant == "camera":
+        note = EXAMPLE_NOTE + (" A simulated camera also sees the rider when in view and misses 10% of the"
+                               " time; there are no other people. Its error model is a placeholder.")
+        return trace_track(example_track(), note=note, camera=Camera())
+    if variant == "before":
+        note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward and the safety margin, for comparison."
+        return trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=note)
+    raise ValueError(f"unknown example {variant!r}")
 
 
 def _catalog_grams(item: bom.Item | None) -> dict | None:
@@ -346,7 +353,8 @@ def build(
     _write_json(out / "data" / "costs.json", costs_data(root))
     _write_json(out / "data" / "replay-example.json", replay_data(root))
     _write_json(out / "data" / "sim-example.json", sim_example_data())
-    _write_json(out / "data" / "sim-example-before.json", sim_example_data(feed_forward=False))
+    _write_json(out / "data" / "sim-example-camera.json", sim_example_data("camera"))
+    _write_json(out / "data" / "sim-example-before.json", sim_example_data("before"))
     shutil.copy2(root / "examples" / "replay.example.json", out / "data" / "replay.example.json")
     package = out / "py" / "follow_me"
     package.mkdir(parents=True)

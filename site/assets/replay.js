@@ -925,6 +925,7 @@ async function main() {
   }
   for (const [key, file, label] of [
     ["sim-example", "data/sim-example.json", "Example: a simulated follow, made up"],
+    ["sim-camera", "data/sim-example-camera.json", "Example: the same ride with a camera"],
     ["sim-before", "data/sim-example-before.json", "Example: the same ride, original controller"],
   ]) {
     try {

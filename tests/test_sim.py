@@ -3,6 +3,7 @@
 import itertools
 import json
 import math
+import statistics
 
 import pytest
 
@@ -326,3 +327,71 @@ def test_closer_moves_the_estimate_toward_the_drone_but_not_past_the_minimum():
     assert moved.range == pytest.approx(5.0) and moved.bearing == pytest.approx(math.atan2(8.0, 6.0))
     assert closer(Estimate(3.0, 0.0, 1.0), 5.0).range == pytest.approx(MIN_RANGE_M)
     assert closer(Estimate(0.0, 0.0, 1.0), 5.0).range == pytest.approx(MIN_RANGE_M)
+
+
+# The simulated camera (iteration 31): an idealised stand-in for a person detector.
+
+def test_the_camera_sees_the_rider_only_in_view_and_in_range():
+    from follow_me.sim import Camera
+
+    seen = lambda fixes, start: [any(r.source == "camera" for r in s.readings)
+                                 for s in simulate(fixes, start=start, camera=Camera(miss_rate=0.0),
+                                                   council=Council(**P_ONLY))]
+    assert all(seen(standing(0.0, 10.0, seconds=2.0), DroneState(0.0, 0.0, 0.0)))  # ahead
+    assert not any(seen(standing(0.0, -10.0, seconds=2.0), DroneState(0.0, 0.0, 0.0))[:1])  # behind, before turning
+    assert not any(seen(standing(0.0, 40.0, seconds=2.0), DroneState(0.0, 0.0, 0.0))[:1])  # beyond 30 m
+
+
+def test_camera_readings_carry_camera_estimates_error_model():
+    from follow_me.sim import Camera
+
+    ticks = simulate(standing(0.0, 12.0, seconds=1.0), start=DroneState(0.0, 0.0, 0.0),
+                     camera=Camera(miss_rate=0.0), council=Council(**P_ONLY))
+    camera = next(r for r in ticks[0].readings if r.source == "camera")
+    rng = camera.estimate.range
+    assert camera.estimate.variance == pytest.approx((0.15 * rng) ** 2)  # range error dominates
+
+
+def test_a_camera_turns_a_degraded_phone_follow_into_tracking():
+    from follow_me.sim import Camera
+
+    fixes = legs((150, 2.0, 0), accuracy=4.0)
+    phone = simulate(fixes)
+    both = simulate(fixes, camera=Camera())
+    tracking = sum(s.result.mode is Mode.TRACKING for s in both) / len(both)
+    assert all(s.result.mode is not Mode.TRACKING for s in phone)
+    assert tracking > 0.8
+    late = lambda ticks: statistics.median(s.distance for s in ticks if s.t >= 100)
+    assert late(both) < 13.0 < 20.0 < late(phone)
+
+
+def test_a_camera_bridges_a_gap_in_the_fixes():
+    from follow_me.sim import Camera, example_track
+
+    modes = {s.result.mode for s in simulate(example_track(), camera=Camera())}
+    assert Mode.HOLD not in modes and Mode.RETURN_HOME_REQUESTED not in modes
+
+
+def test_with_a_camera_noisy_fixes_still_never_bring_the_drone_too_close():
+    from follow_me.sim import Camera
+
+    near, _ = follow_band(Council())
+    fixes = [RiderFix(float(k), 0.0, 20.0, 3.0) for k in range(121)]
+    for seed in range(3):
+        ticks = simulate(fixes, noise_m=3.0, seed=seed, camera=Camera(seed=seed))
+        assert min(s.distance for s in ticks if s.t >= 10) > near
+
+
+def test_the_camera_misses_at_its_rate_and_repeats_with_its_seed():
+    from follow_me.sim import Camera
+
+    fixes = standing(0.0, 10.0, seconds=30.0)
+    start = DroneState(0.0, 0.0, 0.0)
+    blind = simulate(fixes, start=start, camera=Camera(miss_rate=1.0))
+    assert not any(r.source == "camera" for s in blind for r in s.readings)
+    a = simulate(fixes, start=start, camera=Camera(seed=3))
+    b = simulate(fixes, start=start, camera=Camera(seed=3))
+    assert [s.drone for s in a] == [s.drone for s in b]
+    council = Council()
+    share = summarize(simulate(fixes, council=council, start=start, camera=Camera()), council, 0.5)["camera_share"]
+    assert 0.8 < share < 0.97

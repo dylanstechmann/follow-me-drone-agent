@@ -92,6 +92,33 @@ What this shows:
 
 Each is a change to the follow logic, so it needs simulation tests first.
 
+## A simulated camera (iteration 31)
+
+`simulate(..., camera=Camera())` adds a camera on the drone's nose, as a stand-in for a person detector:
+- It sees the rider only inside the 90 degree field of view and within 30 m, and misses them at random 10% of the time.
+- It makes the box a detector would, with the error `sources.camera_estimate` assumes (0.05 rad of bearing, 15% of range), and passes the box through that function. So the simulation exercises the real camera code.
+
+It is idealised. There are no other people, no wrong detections and nothing in the way, and every number is a placeholder until a real detector is measured.
+
+Median distance behind the rider, and the share of time in full tracking:
+
+| Case | Phone only | Phone and camera |
+|---|---|---|
+| 2 m/s, phone at 4 m | 21.3 m, 0% tracking | 11.0 m, 87% |
+| 4 m/s, phone at 4 m | 38.0 m, 0% | 11.1 m, 87% |
+| 4 m/s, phone at 1 m | 10.1 m, 100% | 8.6 m, 100% |
+| Sudden stop from 4 m/s, phone at 3 m | 21.9 m | 10.0 m |
+| 90 degree turn at 4 m/s, phone at 3 m | 29.1 m | 10.4 m |
+| Standing, made-up 3 m errors | 13.1 to 13.5 m | 9.7 to 10.1 m |
+| The example ride | 12.2 m, 60% | 9.7 m, 96% |
+
+What this shows:
+- **A camera turns a degraded phone follow into tracking.** Its estimate is tighter than a phone's, so the fused uncertainty and the safety margin shrink, and the drone follows closer.
+- **It bridges gaps in the fixes.** During the example ride's 15 s without fixes, the camera keeps tracking, so there is no hold.
+- **It is never too close.** In no case did the drone come closer than the band's near edge.
+
+A real detector will miss more, and see other people. The website's camera page (iteration 33) tests the detector and the marker that tells the rider from everyone else.
+
 ## Replaying your own recording
 
 Record a walk or ride with a GPS-logging app on your phone, and export it as GPX. Keep the file outside the repo. These apps' GPX writers were read in their source code on 2026-10-26:
@@ -135,6 +162,7 @@ The recording is not uploaded. See [website.md](website.md).
 - stale fixes, the dead-reckoning hold, and fallback timing at two loop rates;
 - the trace format and the summary, including the closest approach;
 - for the original controller (`feed_forward=False, margin_sigmas=0`), the iteration 21 findings: the trailing distance against the controller's arithmetic, the speed ceiling, and the phone case;
+- the simulated camera: seen only in view and in range, readings through `camera_estimate`, a degraded phone follow turned into tracking, a gap bridged, never too close with noisy fixes, and the miss rate;
 - the safety margin: noisy fixes kept at a distance, the limit when accuracy is under-reported, following and stopping with the margin, and the margin's size;
 - with feed-forward and no margin:
   - riders at 2 to 7 m/s are kept close;

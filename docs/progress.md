@@ -450,6 +450,44 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - The comparison example is the original controller, with neither feed-forward nor the margin.
 - Checked in a headless browser at 1280 px in the light theme and 390 px in the dark theme: all pages, links and the parts slider work, with no errors or sideways scrolling. The made-up GPX ride, at a phone's accuracy, is now followed at a median of 36.9 m, the price of holding back when the position is uncertain.
 
+## Iterations 31 to 34 plan: the camera (2026-10-26)
+
+- Owner input (2026-10-26): the owner replied "ok" to the agent's question about pushing iterations 29 and 30 and its proposed next step, the camera batch agreed earlier.
+- Iteration 31, a simulated camera:
+  - The kinematic simulation gets a camera source with a 90 degree field of view and a range limit. It uses the error model already in `sources.camera_estimate` (0.05 rad of bearing, 15% of range), with seeded noise, and gives a reading only when the rider is in view.
+  - Fused with the phone, it should show how a camera shrinks the uncertainty and so the safety margin. The error model is a placeholder, not a measurement.
+- Iteration 32, a person detector:
+  - YOLOX-Nano (Apache-2.0, the authors' own ONNX export, 3.7 MB), run with onnxruntime-web 1.30.0 (MIT) in Node.js for tests and timing.
+  - Box decoding and overlap removal go in a small JavaScript module, tested with Node's own test runner, in CI too.
+  - Measure the time per frame here, and estimate the Pi Zero 2 W, labelled as an estimate, with a script the owner can run on a Pi.
+  - No AGPL or GPL models.
+- Iteration 33, a camera page on the website:
+  - The visitor's webcam, or a photo they choose, goes through the detector in their browser.
+  - The person holding a printed ArUco marker (js-aruco2, MIT) is the rider. Everyone else is blurred before anything is drawn, and is never tracked.
+  - The rider's box goes through the repo's own Python (Pyodide) for the camera estimate and the follow command.
+  - Nothing is recorded or uploaded, and the page has a marker to print.
+  - Consent and bystander privacy: only a person showing the marker is followed, and the page says to point it only at people who agree.
+- Iteration 34: docs and checks.
+- Stop point: ask the owner before pushing.
+
+## Iteration 31: a simulated camera (done: 323 tests pass)
+
+- `sim.Camera` stands in for a person detector:
+  - It sees the rider only inside the council's 90 degree view and within 30 m, and misses at random 10% of the time.
+  - It makes the box a detector would, with the error model already in `sources.camera_estimate`, and passes the box through that function.
+  - It is idealised: no other people, no wrong detections, nothing in the way. Its numbers are placeholders.
+  - The summary reports the share of ticks the camera saw the rider.
+- Results, with the table in [simulation.md](simulation.md):
+  - With a phone at 4 m accuracy, adding the camera takes the follow from degraded the whole time, 21 to 38 m behind, to tracking about 87% of the time, about 11 m behind.
+  - On the example ride, it bridges the 15 s gap in the fixes, so there is no hold, and the median distance falls from 12.2 m to 9.7 m.
+  - In no case did the drone come closer than the band's near edge.
+- Tests:
+  - the camera sees only in view and in range, and its readings carry `camera_estimate`'s error model;
+  - a degraded phone follow becomes tracking, and the gap is bridged;
+  - noisy fixes still never bring the drone too close;
+  - the miss rate holds, and the seed repeats.
+- The website has a third simulated example, the same ride with the camera (`data/sim-example-camera.json`).
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

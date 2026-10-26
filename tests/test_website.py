@@ -14,7 +14,7 @@ import pytest
 from follow_me import bom
 from follow_me.replay import trace
 from follow_me.council import Council
-from follow_me.sim import EXAMPLE_NOTE, example_track, trace_track
+from follow_me.sim import EXAMPLE_NOTE, Camera, example_track, trace_track
 from follow_me.website import (
     MARKER, PY_MODULES, VENDOR, build, check_integrity, costs_data, fetch_vendor, main, markdown_section,
     replay_data, sim_example_data,
@@ -89,6 +89,10 @@ def test_sim_example_is_the_made_up_ride_followed_by_the_simulated_drone(site):
     assert before == trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=before["note"])
     assert data["summary"]["median_distance_m"] < before["summary"]["median_distance_m"]
     assert "motion" in data["ticks"][-1]
+    camera = json.loads((site / "data" / "sim-example-camera.json").read_text(encoding="utf-8"))
+    assert camera == trace_track(example_track(), note=camera["note"], camera=Camera())
+    assert camera["summary"]["camera_share"] > 0.8
+    assert camera["summary"]["median_distance_m"] < data["summary"]["median_distance_m"]
 
 
 def test_browser_python_is_the_repo_code_and_imports_only_itself(site):
