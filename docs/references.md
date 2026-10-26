@@ -28,6 +28,8 @@ Recordings and simulation ([simulation.md](simulation.md)):
 - GPX 1.1, the track format the importer reads: https://www.topografix.com/GPX/1/1/
 - GPSLogger for Android writes `hdop` from the receiver's NMEA output, so it is the unitless dilution of precision, and it is sometimes missing (its GPX writer, `Gpx10FileLogger.java`, and its FAQ on missing fields, read on 2026-10-26): https://github.com/mendhak/gpslogger
 - OsmAnd stores the phone's location accuracy in meters in the track point's `hdop` field (`SavingTrackHelper.java`, read on 2026-10-26): https://github.com/osmandapp/OsmAnd
+- OsmAnd for iPhone does the same, from `horizontalAccuracy`, and names itself "OsmAnd Maps" in the file (`OASavingTrackHelper.mm` and `OAAppVersion.m`, read on 2026-10-26): https://github.com/osmandapp/OsmAnd-iOS
+- Open GPX Tracker for iPhone saves position, time and altitude, but no accuracy (`GPXTrackPoint+MapKit.swift`, read on 2026-10-26): https://github.com/merlos/iOS-Open-GPX-Tracker
 
 Rules and places (found by agent web searches on 2026-10-26, not confirmed with the organisations):
 

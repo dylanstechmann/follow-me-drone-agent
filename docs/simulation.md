@@ -45,7 +45,15 @@ Candidates that follow from this. Each is a change to the follow logic, so it ne
 
 ## Replaying your own recording
 
-Record a walk or ride with a GPS-logging app on your phone, and export it as GPX. GPSLogger and OsmAnd are two Android apps whose GPX output the importer understands. Keep the file outside the repo, then run:
+Record a walk or ride with a GPS-logging app on your phone, and export it as GPX. Keep the file outside the repo. These apps' GPX writers were read in their source code on 2026-10-26:
+
+| App | Phones | Accuracy in its GPX |
+|---|---|---|
+| OsmAnd | Android and iPhone | The phone's own accuracy estimate, in meters, in `hdop`. The best choice here. |
+| GPSLogger | Android | HDOP, a unitless ratio, sometimes missing. The importer turns it into a guess. |
+| Open GPX Tracker | iPhone | None, so the importer uses its 5 m guess. |
+
+Then run, or open the file on the website's replay page:
 
 ```
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx                          # a summary

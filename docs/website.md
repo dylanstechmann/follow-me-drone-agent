@@ -22,7 +22,7 @@ A raw log is not enough: the trace carries the council's results, so the page ne
 It can also open a GPX recording from a GPS-logging app. The page runs the repo's own Python in a web worker with Pyodide, which is possible because the package uses only the standard library:
 - The worker calls `follow_me.recording.run_gpx`, the same code the tests check and the command line runs, and the viewer draws the trace it returns.
 - The file never leaves the tab. The importer keeps only meters and seconds from the first fix.
-- Pyodide is about 13 MB, loaded from this site the first time a recording is opened.
+- Pyodide is about 6.4 MB to download, compressed (13.5 MB unpacked). It is loaded from this site the first time a recording is opened.
 
 ## How it is built and published
 

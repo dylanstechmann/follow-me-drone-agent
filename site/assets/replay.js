@@ -147,7 +147,7 @@ function openRecording(file) {
   reader.onload = () => {
     const id = ++jobs;
     const w = pythonWorker();
-    showMessage(`Starting Python in this tab to read ${file.name}. The first time downloads about 13 MB from this site; nothing is uploaded.`);
+    showMessage(`Starting Python in this tab to read ${file.name}. The first time downloads about 6 MB from this site; nothing is uploaded.`);
     const onMessage = (event) => {
       const msg = event.data;
       if (msg.id !== id) return;

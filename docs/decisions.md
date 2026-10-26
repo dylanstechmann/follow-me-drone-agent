@@ -58,6 +58,6 @@ Mistakes found and fixed. Each one is a trap for the next agent.
 - Licence claims from forum posts need a read of the real LICENSE file.
 - Do not claim the owner reviewed or built something unless it is recorded.
 - Mark CAD, PCB and firmware as unverified until it is opened, rendered or run.
-- GPX `hdop` means different things in different apps: GPSLogger writes the unitless dilution of precision, and OsmAnd writes the phone's accuracy in meters. Check the file's creator before reading it.
+- GPX `hdop` means different things in different apps: GPSLogger writes the unitless dilution of precision, and OsmAnd, on Android and iPhone, writes the phone's accuracy in meters. Check the file's creator before reading it.
 - Keep personal data out of this public repo.
 - Do not draft money asks.

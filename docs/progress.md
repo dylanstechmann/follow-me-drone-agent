@@ -327,6 +327,21 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - In a deep frame, the existing "camera view" label of the drone plot was clipped at the left edge.
 - To check after publishing: that GitHub Pages serves Pyodide's `.mjs` files with a JavaScript type, which module workers need.
 
+## Iteration 25: published, checked live, and iPhone apps (done: 281 tests pass)
+
+- Owner input (2026-10-26): the owner said yes to pushing iterations 21 to 24, and that they have both an Android phone and an iPhone.
+- Pushed `e404662`, and the workflow run passed and deployed.
+- Checked on the live site:
+  - GitHub Pages serves `.mjs` as `text/javascript` and `.wasm` as `application/wasm`, both compressed.
+  - In a headless browser, the made-up recording opened in 4.2 s, including downloading Pyodide from the site, and gave the same result as the local build. A bad file was refused with a readable message.
+  - Both examples render at 1280 px in the light theme and 390 px in the dark theme, with no errors or sideways scrolling.
+- Corrected the page: Pyodide is about 6.4 MB to download, compressed, not the 13 MB it said, which is its unpacked size.
+- Read the iPhone apps' GPX writers:
+  - OsmAnd for iPhone stores the phone's accuracy in meters in `hdop`, like the Android app, and writes "OsmAnd Maps" as the file's creator, so the importer's OsmAnd rule holds on both.
+  - Open GPX Tracker stores no accuracy, so its files get the 5 m guess.
+  - [simulation.md](simulation.md) now has a table of the three apps.
+- Next candidate, from having two phones: record the same walk on both at once, and run one as `phone_gnss` and the other as a stand-in for `tag_gnss`. Two receivers with independent errors would test the gate on real disagreement, which `companion.py` was designed for. Not started.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:
