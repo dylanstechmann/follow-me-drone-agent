@@ -27,18 +27,43 @@ class CompanionFix:
     t: float  # timestamp in seconds, same clock as `now`
 
 
+HEADING_SIGMA_RAD = math.radians(3.0)
+
+
+def offset_estimate(
+    east: float,
+    north: float,
+    accuracy_m: float,
+    heading_deg: float,
+    heading_sigma_rad: float = HEADING_SIGMA_RAD,
+) -> Estimate:
+    """A rider east and north of the drone, in meters, as a body-frame estimate (+x forward, +y left).
+
+    The heading error adds variance in proportion to range. The variance is
+    isotropic, a simplification.
+    """
+    if accuracy_m <= 0:
+        raise ValueError("accuracy_m must be positive")
+    h = math.radians(heading_deg)
+    # Rotate the east/north offset into the drone's frame (nose = +x, left = +y).
+    x = east * math.sin(h) + north * math.cos(h)
+    y = -east * math.cos(h) + north * math.sin(h)
+    rng = math.hypot(x, y)
+    variance = accuracy_m**2 + (rng * heading_sigma_rad) ** 2
+    return Estimate(x, y, variance)
+
+
 def companion_estimate(
     fix: CompanionFix,
     drone: DronePose,
     now: float,
     max_age_s: float = 2.0,
-    heading_sigma_rad: float = math.radians(3.0),
+    heading_sigma_rad: float = HEADING_SIGMA_RAD,
 ) -> Estimate | None:
     """Rider position relative to the drone, in the body frame (+x forward, +y left).
 
     Returns None for a stale or future fix, so old radio or cellular data is never
-    fused as if it were current. The heading error adds variance in proportion to
-    range. The variance is isotropic, a simplification.
+    fused as if it were current.
     """
     if fix.accuracy_m <= 0:
         raise ValueError("accuracy_m must be positive")
@@ -47,10 +72,4 @@ def companion_estimate(
         return None
 
     east, north = enu_offset_m(drone.lat, drone.lon, fix.lat, fix.lon)
-    h = math.radians(drone.heading_deg)
-    # Rotate the east/north offset into the drone's frame (nose = +x, left = +y).
-    x = east * math.sin(h) + north * math.cos(h)
-    y = -east * math.cos(h) + north * math.sin(h)
-    rng = math.hypot(x, y)
-    variance = fix.accuracy_m**2 + (rng * heading_sigma_rad) ** 2
-    return Estimate(x, y, variance)
+    return offset_estimate(east, north, fix.accuracy_m, drone.heading_deg, heading_sigma_rad)

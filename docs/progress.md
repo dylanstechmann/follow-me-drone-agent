@@ -251,11 +251,42 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - The deploy step prints a Node.js deprecation warning (`punycode`) from inside GitHub's deploy action, not from this repo's code.
 - Not done: nothing has been printed or measured. The phone-data batch does not depend on the prints, so it can start before them.
 
+## Iterations 21 to 24 plan: the owner's own recording through the council (2026-10-26)
+
+- Owner input (2026-10-26): the owner asked whether anything else could be done before going to the printers. The agent listed what to bring and record, and started this batch, which does not depend on the prints.
+- Iteration 21, a kinematic follow simulation (`sim.py`):
+  - A point drone in a flat local frame that turns and moves along its nose as the council commands, within placeholder limits (10 m/s, 90 degrees per second), following a rider who moves.
+  - It closes the loop, so the follow logic can be tested against a moving rider and a recorded track can be replayed. It is not a flight simulator: there is no physics, wind, autopilot or camera, and it does not stand in for the SITL gate.
+  - Phone fixes become readings through the same body-frame math as `companion.py`.
+  - Tests: a standing rider is approached and held in the follow band; a rider to one side is turned toward; a rider moving at a steady speed is trailed at the distance the controller's gain predicts; the same input gives the same output.
+- Iteration 22, mode thresholds in seconds:
+  - The mode machine counts seconds since the last estimate, so its timing no longer depends on the loop rate: dead reckoning up to 5 s, then hold, then a return-home request after 50 s, the same as today's 10 and 100 ticks at 2 ticks per second.
+  - The example log keeps its runs.
+  - The change is checked in the simulation at two loop rates, as the safety rule asks for any change to this logic.
+- Iteration 23, importing a recording (`recording.py`):
+  - Read a GPX track from a GPS-logging app. Turn each fix into an offset in metres from the first fix and a time in seconds from the first fix, and drop the coordinates and clock times at once.
+  - A CLI runs the track through the simulation and prints a summary or a trace for the replay viewer. It writes no files.
+  - `*.gpx` is ignored by git, so a recording dropped into the repo cannot be committed by accident. Tests use made-up tracks generated in the tests.
+- Iteration 24, in the browser:
+  - The replay page opens a GPX file and runs the same Python in the visitor's browser with Pyodide, in a web worker. Nothing is uploaded.
+  - A made-up example ride, computed at build time, shows a follow-distance chart with the follow band, and a top-down view of both paths relative to the start, with no map.
+- Stop point: ask the owner before pushing.
+
+## Iteration 21: a kinematic follow simulation (done: 249 tests pass)
+
+- Added `sim.py`: a point drone that turns and moves as the council commands, after a rider given as timed fixes, with placeholder limits of 10 m/s and 90 degrees per second. Fixes become `phone_gnss` readings through `companion.offset_estimate`, split out of `companion_estimate` so both use one rotation. The council now passes on the mode machine's dead-reckoning hold, and the simulation honours it. `trace_track` writes a trace in the replay viewer's format, with the drone's world added. See [simulation.md](simulation.md) and decision D20.
+- Findings, from the model with placeholder limits:
+  - The drone trails a moving rider, because the controller has no feed-forward of the rider's speed: 7.6 m behind at 2 m/s, 10.1 m at 3 m/s, 15.2 m at 4 m/s, about 30 m at 5 m/s.
+  - The forward command tops out at 0.6, so the drone never passes 6 m/s.
+  - A phone alone, at 4 m accuracy, is degraded on every tick (16 m² against the 9 m² threshold). That halves the gain, so the drone tops out at 3 m/s.
+  - Past about 54 m, the heading term makes even a 1 m fix degraded.
+- Not changed: the controller and the threshold. Each is a change to the follow logic, so it is listed in [simulation.md](simulation.md) as a candidate needing its own simulation tests.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:
   1. The owner prints the hole-size gauge and the test bars and reports which hole fits each screw, the measured grams, and the printer and settings. These set the hole sizes for the tag case and the thrust stand before those are printed.
-  2. Run the owner's own phone recording through the council: express the mode machine's thresholds in seconds rather than ticks, so their timing does not depend on the loop rate (found in iteration 16; a phone logging once a second would double every timeout); add a simple simulated drone that follows the controller's commands; and import a recording from a GPS-logging app in the browser with Pyodide, turning positions into offsets and never uploading or committing them.
+  2. (Started as iterations 21 to 24.) Run the owner's own phone recording through the council: express the mode machine's thresholds in seconds rather than ticks, so their timing does not depend on the loop rate (found in iteration 16; a phone logging once a second would double every timeout); add a simple simulated drone that follows the controller's commands; and import a recording from a GPS-logging app in the browser with Pyodide, turning positions into offsets and never uploading or committing them.
   3. A camera batch: a person detector under an open licence (not AGPL), tested on recordings; an estimate of whether the bench kit's Pi Zero 2 W runs it fast enough; and a browser demo that locks onto only the person holding a printed marker and blurs everyone else.
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
 

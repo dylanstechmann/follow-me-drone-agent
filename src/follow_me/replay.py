@@ -84,7 +84,8 @@ def _round(value: float) -> float:
     return round(value, 4)
 
 
-def _trace_tick(tick: dict, t: float, r: TickResult) -> dict:
+def trace_tick(tick: dict, t: float, r: TickResult) -> dict:
+    """One tick of a trace: a log tick and what the council decided from it."""
     readings = []
     status = r.fusion.status if r.fusion else ()
     for reading, state in zip(_parse_readings(tick), status):
@@ -122,25 +123,30 @@ def _trace_tick(tick: dict, t: float, r: TickResult) -> dict:
     }
 
 
+def trace_settings(council: Council) -> dict:
+    """The council settings a trace was made with."""
+    machine = council.machine
+    return {
+        "gate": DEFAULT_GATE,
+        "degraded_variance": machine.degraded_variance,
+        "dead_reckon_ticks": machine.dead_reckon_ticks,
+        "hold_ticks": machine.hold_ticks,
+        "hfov_deg": _round(math.degrees(council.hfov_rad)),
+        "vfov_deg": _round(math.degrees(council.vfov_rad)),
+    }
+
+
 def trace(log: dict, council: Council | None = None) -> dict:
     """The replay as data: per tick, the inputs, attention, gate decisions, estimate, mode and command."""
     council = council or Council()
     ticks = [
-        _trace_tick(tick, t, result)
+        trace_tick(tick, t, result)
         for tick, (t, result) in zip(log["ticks"], replay(log, council))
     ]
-    machine = council.machine
     return {
         "format": TRACE_FORMAT,
         "note": log.get("_note", ""),
-        "settings": {
-            "gate": DEFAULT_GATE,
-            "degraded_variance": machine.degraded_variance,
-            "dead_reckon_ticks": machine.dead_reckon_ticks,
-            "hold_ticks": machine.hold_ticks,
-            "hfov_deg": _round(math.degrees(council.hfov_rad)),
-            "vfov_deg": _round(math.degrees(council.vfov_rad)),
-        },
+        "settings": trace_settings(council),
         "ticks": ticks,
     }
 

@@ -67,6 +67,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `geo.py`, `places.py` | Geodesy helpers. Place profiles and approach detection. | `test_places.py` |
 | `mode.py` | The mode machine. | `test_mode.py` |
 | `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs, and a JSON trace of each tick (`--json`) for the website. | `test_pipeline.py`, `test_replay.py` |
+| `sim.py` | A kinematic follow simulation: a point drone that turns and moves as the council commands, after a rider who moves. Not a flight simulator, and not the SITL gate. | `test_sim.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
@@ -200,6 +201,8 @@ python3 -m http.server -d _site 8000                   # preview it
 - **Fresh:** a price seen with month precision within 12 months of the cutoff.
 - **Owner-designed:** a composed item, whoever builds it.
 - **Tag:** the small device the rider carries, with a GNSS receiver and a radio.
+- **Kinematic simulation:** `sim.py`'s point drone, which turns and moves as commanded within placeholder limits, with no physics, wind, autopilot or camera. It is a step before the SITL gate, not the gate.
+- **Follow band:** the distances between which the controller asks neither to approach nor to back off: 3.79 to 5.05 m with the default settings.
 - **Print card:** a printable part's entry in `cad/parts.json`: material, settings, the test to do before relying on it, safety notes, status and, once printed, the measured grams and minutes.
 - **Trace:** the replay as data, one entry per tick with the inputs, attention, gate decisions, estimate, mode and command. The website's replay viewer draws it.
 
@@ -218,6 +221,7 @@ Start here, then follow the question you have.
 
 - [architecture.md](architecture.md): the council design.
 - [build-plan.md](build-plan.md): the gates from software to free flight.
+- [simulation.md](simulation.md): the kinematic follow simulation, what it shows and what it does not.
 - [safety.md](safety.md): the safety plan that must be met before flight.
 - [privacy-and-rules.md](privacy-and-rules.md): privacy, consent and the rules to verify.
 - [sensors-and-companion.md](sensors-and-companion.md): sensors and the companion device.

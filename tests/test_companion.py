@@ -116,3 +116,21 @@ def test_stale_phone_fix_is_dropped_and_tag_carries_the_estimate():
     result = Council().tick(readings, Conditions())
     assert result.mode is Mode.TRACKING
     assert result.estimate.x == pytest.approx(10.0, abs=1e-3)
+
+
+def test_offset_estimate_rotates_like_a_fix():
+    from follow_me.companion import offset_estimate
+
+    by_offset = offset_estimate(10.0, 0.0, 2.0, heading_deg=90.0)
+    by_fix = companion_estimate(fix_at(east_m=10), DronePose(0.0, 0.0, 90.0), now=10.5)
+    assert by_offset.x == pytest.approx(by_fix.x, abs=1e-3)
+    assert by_offset.y == pytest.approx(by_fix.y, abs=1e-3)
+    assert by_offset.variance == pytest.approx(by_fix.variance, rel=1e-6)
+    with pytest.raises(ValueError):
+        offset_estimate(1.0, 1.0, 0.0, heading_deg=0.0)
+
+
+def test_council_passes_on_the_dead_reckoning_hold():
+    council = Council()
+    assert council.tick([Reading("phone_gnss", companion_estimate(fix_at(north_m=10), ORIGIN, now=10.5))], Conditions()).hold_last_command is False
+    assert council.tick([], Conditions()).hold_last_command is True

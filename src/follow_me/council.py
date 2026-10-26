@@ -22,6 +22,8 @@ class TickResult:
     # How the tick was decided, for logs and the replay viewer. Not used for control.
     weights: dict[str, float] = field(default_factory=dict)  # attention multiplier per source
     fusion: FuseReport | None = None
+    # The mode machine allows the caller to keep its previous command (dead reckoning).
+    hold_last_command: bool = False
 
 
 class Council:
@@ -64,4 +66,5 @@ class Council:
             command=command,
             weights=weights,
             fusion=report,
+            hold_last_command=status.hold_last_command,
         )
