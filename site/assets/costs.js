@@ -1,5 +1,5 @@
 // Cost explorer: draws data/costs.json, which the cost model in src/follow_me/bom.py writes.
-import { clear, fetchJSON, h, initPage, makeTooltip, percent, svg, usd, usdRange } from "./common.js";
+import { clear, fetchJSON, h, initPage, makeTooltip, niceMax, percent, svg, usd, usdRange } from "./common.js";
 
 const $ = (id) => document.getElementById(id);
 const tip = makeTooltip();
@@ -25,13 +25,6 @@ function shortTitle(pass) {
 function passName(pass) {
   const n = passNumber(pass);
   return n === null ? shortTitle(pass) : `Pass ${n}: ${shortTitle(pass)}`;
-}
-
-function niceMax(value) {
-  const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
-  const power = 10 ** Math.floor(Math.log10(value));
-  for (const s of steps) if (s * power >= value) return s * power;
-  return 10 * power;
 }
 
 function itemName(id) {

@@ -32,10 +32,11 @@
       <div class="controls">
         <label>Log
           <select id="log-select">
-            <option value="example">Example: a made-up ride</option>
+            <option value="example">Example: three sources, made up</option>
           </select>
         </label>
         <span class="btn file-btn">Open a trace file…<input id="file-input" type="file" accept=".json,application/json" aria-label="Open a trace file"></span>
+        <span class="btn file-btn">Open a recording (GPX)…<input id="gpx-input" type="file" accept=".gpx,application/gpx+xml" aria-label="Open a GPX recording"></span>
       </div>
       <p class="message" id="log-note"></p>
     </section>
@@ -77,12 +78,32 @@
       </details>
     </section>
 
+    <section class="card" id="follow" hidden>
+      <h2>The simulated follow</h2>
+      <p class="small muted" id="follow-note">A point drone that turns and moves as the council commands, within placeholder limits of 10 m/s and 90 degrees a second. It is not a flight simulator: there is no physics, wind, autopilot or camera, and a return-home request is recorded, not flown.</p>
+      <div class="kpis" id="follow-kpis"></div>
+      <div class="grid-2 follow-grid">
+        <figure class="follow-figure">
+          <p class="chart-title">Distance to the rider</p>
+          <p class="chart-sub">Meters, at each tick. The shaded band is where the controller asks neither to approach nor to back off. Click to jump.</p>
+          <svg id="distance-chart" role="img" aria-label="Distance from the simulated drone to the rider at each tick, with the follow band shaded"></svg>
+        </figure>
+        <figure class="follow-figure">
+          <p class="chart-title">Top-down, from the start</p>
+          <p class="chart-sub">Meters east and north of the first fix, north up. No map is drawn.</p>
+          <svg id="world-plot" role="img" aria-label="The rider's track and the simulated drone's path, seen from above"></svg>
+          <ul class="legend" id="world-legend"></ul>
+        </figure>
+      </div>
+    </section>
+
     <section class="grid-2">
       <div class="card">
-        <h2>Replay your own log</h2>
-        <p>A file you open here stays in this browser tab. Nothing is uploaded. Make a trace from a log with the replay tool, then open it above:</p>
+        <h2>Replay your own</h2>
+        <p><strong>A recording.</strong> Record a walk or ride with a GPS-logging app on your phone, export it as GPX, and open it above. This page runs the repo's own Python in this tab with Pyodide, about 13 MB to load the first time, and simulates a drone following you. The file is not uploaded, and the page keeps only meters and seconds from its first fix.</p>
+        <p><strong>A log.</strong> Make a trace with the replay tool, then open it above:</p>
         <pre>PYTHONPATH=src python3 -m follow_me.replay --json LOG.json &gt; trace.json</pre>
-        <p class="small muted">The log format is described at the top of <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/src/follow_me/replay.py">src/follow_me/replay.py</a>. Download the example: <a href="data/replay.example.json" download>the log</a> or <a href="data/replay-example.json" download>its trace</a>.</p>
+        <p class="small muted">Record only yourself, or a rider who has agreed. The log format is described at the top of <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/src/follow_me/replay.py">src/follow_me/replay.py</a>, and recordings in <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/simulation.md">docs/simulation.md</a>. Download the examples: <a href="data/replay.example.json" download>the log</a>, <a href="data/replay-example.json" download>its trace</a>, or <a href="data/sim-example.json" download>the simulated follow</a>. Python in the browser: <a href="https://github.com/pyodide/pyodide">Pyodide</a> 314.0.7 (MPL-2.0), served unmodified from this site.</p>
       </div>
       <div class="card">
         <h2>How to read it</h2>
@@ -99,7 +120,7 @@
 
   <footer class="site-footer">
     <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents (Claude Code) at the owner's direction. No review of the code by the owner is recorded.</p>
-    <p>The example log is made up. Nothing here has flown, and nothing here claims the drone is safe, autonomous or ready to fly.</p>
+    <p>Both examples are made up, and the drone in the simulated follow is a point, not a flight simulation. Nothing here has flown, and nothing here claims the drone is safe, autonomous or ready to fly.</p>
     <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
   </footer>
 </body>

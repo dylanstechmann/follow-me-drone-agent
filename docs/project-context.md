@@ -14,7 +14,7 @@ The repo holds five things today:
 2. **A data-driven cost and supply model** that prices building the drone in different ways, from retail parts to parts the owner designs and has made closer to the maker.
 3. **A public group-order plan** for the owner's IEEE club.
 4. **Documents**: plans, findings, decisions and this record.
-5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer, a cost explorer and the printable parts in 3D ([website.md](website.md)).
+5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer that also simulates a visitor's GPX recording in the browser, a cost explorer, and the printable parts in 3D ([website.md](website.md)).
 
 Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. Four printable parts exist as OpenSCAD models, rendered by an agent but never printed or tested. No PCB or firmware file exists.
 

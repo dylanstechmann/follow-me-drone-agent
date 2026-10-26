@@ -13,8 +13,10 @@ import pytest
 
 from follow_me import bom
 from follow_me.replay import trace
+from follow_me.sim import EXAMPLE_NOTE, example_track, trace_track
 from follow_me.website import (
-    MARKER, VENDOR, build, check_integrity, costs_data, fetch_vendor, main, markdown_section, replay_data,
+    MARKER, PY_MODULES, VENDOR, build, check_integrity, costs_data, fetch_vendor, main, markdown_section,
+    replay_data, sim_example_data,
 )
 
 REPO = Path(__file__).resolve().parents[1]
@@ -44,7 +46,8 @@ class _Links(HTMLParser):
 
 def test_site_builds_every_page_and_its_data(site):
     for name in (*PAGES, "assets/style.css", "assets/common.js", "data/costs.json",
-                 "data/replay-example.json", "data/replay.example.json", "data/build.json", ".nojekyll"):
+                 "data/replay-example.json", "data/replay.example.json", "data/sim-example.json",
+                 "data/build.json", "assets/replay-worker.js", "py/manifest.json", ".nojekyll"):
         assert (site / name).is_file(), name
     index = (site / "index.html").read_text(encoding="utf-8")
     assert "<!-- build:" not in index
@@ -72,6 +75,33 @@ def test_cost_data_matches_the_cost_model():
 def test_replay_data_is_the_trace_of_the_example_log():
     log = json.loads((REPO / "examples" / "replay.example.json").read_text(encoding="utf-8"))
     assert replay_data() == trace(log)
+
+
+def test_sim_example_is_the_made_up_ride_followed_by_the_simulated_drone(site):
+    assert sim_example_data() == trace_track(example_track(), note=EXAMPLE_NOTE)
+    data = json.loads((site / "data" / "sim-example.json").read_text(encoding="utf-8"))
+    assert data["kind"] == "simulation" and data["note"] == EXAMPLE_NOTE
+    assert len(data["ticks"]) == 291
+    modes = {t["mode"] for t in data["ticks"]}
+    assert modes == {"tracking", "degraded", "dead_reckoning", "hold"}  # the example shows each step
+
+
+def test_browser_python_is_the_repo_code_and_imports_only_itself(site):
+    manifest = json.loads((site / "py" / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["files"] == [f"{name}.py" for name in PY_MODULES]
+    for name in PY_MODULES:
+        source = (REPO / "src" / "follow_me" / f"{name}.py").read_text(encoding="utf-8")
+        assert (site / "py" / "follow_me" / f"{name}.py").read_text(encoding="utf-8") == source
+        for module in re.findall(r"^\s*(?:from|import) follow_me\.(\w+)", source, re.M):
+            assert module in PY_MODULES, f"{name}.py needs follow_me.{module} in the browser"
+        for module in re.findall(r"^from follow_me import ([\w, ]+)$", source, re.M):
+            for part in module.split(","):
+                assert part.strip() in PY_MODULES, f"{name}.py needs follow_me.{part.strip()} in the browser"
+
+
+def test_build_says_whether_the_browser_has_python(site):
+    build_info = json.loads((site / "data" / "build.json").read_text(encoding="utf-8"))
+    assert build_info["python"] is False  # Pyodide comes only with --vendor
 
 
 def test_every_local_link_and_import_resolves(site):

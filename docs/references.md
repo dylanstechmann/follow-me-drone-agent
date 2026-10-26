@@ -19,6 +19,7 @@ Website ([website.md](website.md)):
 - OpenSCAD 2025.01.19 (GPL-2.0-or-later), the modelling language and renderer for the parts: https://openscad.org/ and https://github.com/openscad/openscad
 - openscad-wasm-prebuilt 1.2.0, the WebAssembly build of OpenSCAD the site and `tools/render_parts.mjs` run: https://github.com/lorenzowritescode/openscad-wasm
 - Manifold, the geometry engine inside that OpenSCAD build: https://github.com/elalish/manifold
+- Pyodide 314.0.7 (MPL-2.0), CPython 3.14 compiled to WebAssembly, which runs the package's Python on the replay page: https://github.com/pyodide/pyodide and https://pyodide.org/. The Python standard library inside it is under the PSF licence: https://docs.python.org/3/license.html
 - ISO 178 (plastics, flexural properties) is the source of the test bars' 80 x 10 x 4 mm shape. Only the shape is borrowed; the home test is not the standard's method.
 - The chart colours, status colours and freshness ramp follow a colour-blind-checked palette from the data-visualization guidance the coding agent used, checked with its validator on 2026-10-26.
 

@@ -297,6 +297,36 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Tried on a made-up 4 m/s ride with turns, a stop and a 15 s gap, at HDOP 1.2 (about 5 m): degraded for 176 s, dead reckoning for 5 s and hold for 8.5 s, with the drone a median 54 m behind. That matches the iteration 21 findings.
 - Tests use made-up tracks near 0 degrees north, 0 degrees east, written inside the tests. No recording is committed.
 
+## Iteration 24: recordings in the browser (done: 281 tests pass)
+
+- The replay page opens a GPX recording, by button or by dropping the file. A module worker (`site/assets/replay-worker.js`) loads Pyodide 314.0.7 (Python 3.14) from the site itself, writes the twelve modules the simulation needs into it, and calls `follow_me.recording.run_gpx`, the same code the command line runs. The page draws the trace. Nothing is uploaded, and no logic is rewritten in JavaScript (decision D21).
+- `follow_me.website`:
+  - adds Pyodide to the pinned, hash-checked downloads;
+  - copies the modules under `py/follow_me/`, with a manifest;
+  - writes `data/sim-example.json`, a made-up 145 s ride run through the simulation. It passes through tracking, degraded, dead reckoning and hold;
+  - adds `python` to `data/build.json`, so a build without Pyodide points to the command line instead.
+
+  The tests check:
+  - that the example is the simulation's output;
+  - that the browser's modules are byte-identical to `src/`;
+  - that those modules import nothing outside the set.
+- For a simulated trace, the page adds:
+  - four tiles: the median distance, the share of time in the follow band, the share below full tracking, and whether return-home was requested;
+  - a distance-over-time chart with the band shaded, a moving marker, hover and click to jump;
+  - a top-down view of both paths from the start, with no map;
+  - a distance column in the table view.
+- Checked in a headless browser (Chromium through Playwright, in the agent's scratch space) against a local build with the libraries:
+  - Both examples load at 1280 px in the light theme and 390 px in the dark theme, with no script errors, failed requests or sideways scrolling.
+  - A made-up GPX opened in 2.7 s, including loading Python, and matched the command line's result.
+  - A second file reused the loaded Python. A bad file showed "not a GPX file".
+  - Under Node.js, Pyodide gave the same trace as CPython, in 480 ms for 379 ticks.
+- Fixed what the screenshots showed:
+  - The "time below full tracking" tile compared the summed mode times (one tick longer) with the track's duration, giving "189.5 s of 189.0 s". It now shows a share.
+  - The band label collided with the line.
+  - The scale bar sat on the start label.
+  - In a deep frame, the existing "camera view" label of the drone plot was clipped at the left edge.
+- To check after publishing: that GitHub Pages serves Pyodide's `.mjs` files with a JavaScript type, which module workers need.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

@@ -24,6 +24,11 @@ from follow_me.replay import TRACE_FORMAT, trace_settings, trace_tick
 
 PERSON_HEIGHT_M = 1.75  # the default in sources.estimate_to_detection
 EPS = 1e-9
+EXAMPLE_NOTE = (
+    "A made-up ride, not a recording: invented positions and accuracies, one fix a "
+    "second, chosen to show each mode. The drone is simulated, with placeholder limits; "
+    "it is not a flight simulator."
+)
 
 
 @dataclass(frozen=True)
@@ -91,6 +96,33 @@ def default_start(fixes: list[RiderFix], council: Council) -> DroneState:
             break
     h = math.radians(heading)
     return DroneState(first.east - d * math.sin(h), first.north - d * math.cos(h), heading)
+
+
+def example_track() -> list[RiderFix]:
+    """A made-up 145 s ride for the website: standing, riding with turns, a stretch with
+    weak fixes, a 15 s gap with no fixes, then a stop. One fix a second."""
+    # (last second of the leg, speed in m/s, heading in degrees, accuracy in m or None for no fix)
+    legs = [
+        (10, 0.0, 0.0, 2.0),
+        (50, 3.0, 0.0, 2.0),
+        (80, 3.0, 90.0, 4.0),
+        (95, 3.0, 90.0, None),
+        (130, 2.5, 135.0, 2.0),
+        (145, 0.0, 135.0, 2.0),
+    ]
+    fixes = []
+    east = north = heading = 0.0
+    leg = 0
+    for t in range(legs[-1][0] + 1):
+        while t > legs[leg][0]:
+            leg += 1
+        _, speed, target, accuracy = legs[leg]
+        heading += max(-22.5, min(22.5, (target - heading + 540.0) % 360.0 - 180.0))  # turn over a few seconds
+        east += speed * math.sin(math.radians(heading))
+        north += speed * math.cos(math.radians(heading))
+        if accuracy is not None:
+            fixes.append(RiderFix(float(t), round(east, 2), round(north, 2), accuracy))
+    return fixes
 
 
 def _check(fixes: list[RiderFix], dt: float) -> None:

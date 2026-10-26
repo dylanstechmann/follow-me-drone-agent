@@ -366,7 +366,11 @@ svg text { fill: var(--ink-2); font-size: 12px; font-family: inherit; }
 
 .plot-card svg { width: 100%; height: auto; max-height: 72vh; }
 .plot-card svg text { font-size: var(--plot-font, 14px); }
-.plot-card svg text.halo { paint-order: stroke; stroke: var(--surface); stroke-linejoin: round; }
+svg text.halo { paint-order: stroke; stroke: var(--surface); stroke-linejoin: round; }
+.key-line.dashed { border-top-style: dashed; }
+#follow .kpis { margin: 12px 0 18px; }
+.follow-figure { margin: 0; min-width: 0; }
+.follow-figure svg { width: 100%; height: auto; }
 .tick-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
 .tick-head .t { font-size: 1.25rem; font-weight: 650; }
 .cmd { display: grid; grid-template-columns: 150px minmax(0, 1fr) 52px; gap: 6px 10px; align-items: center; font-size: 0.88rem; }

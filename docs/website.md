@@ -7,7 +7,7 @@ A static website for the project on GitHub Pages: https://dylanstechmann.github.
 | Page | What it shows | Where the data comes from |
 |---|---|---|
 | `index.html` | The project, the six gates, what exists and how it was built | Hand-written text, plus the README's "Status" and "How this was built" sections, copied in at each build |
-| `replay.html` | One tick at a time: each source's reading and uncertainty, attention, trust, the gate's decision, the fused estimate, the mode and the command | A trace of [examples/replay.example.json](../examples/replay.example.json) from `python -m follow_me.replay --json` |
+| `replay.html` | One tick at a time: each source's reading and uncertainty, attention, trust, the gate's decision, the fused estimate, the mode and the command. For a simulated follow, also the distance to the rider over time and a top-down view of both paths | A trace of [examples/replay.example.json](../examples/replay.example.json) from `python -m follow_me.replay --json`, and a made-up ride run through the kinematic simulation ([simulation.md](simulation.md)) |
 | `costs.html` | Each pass's core cost, minimum-order cash and shares; cost per drone by number of drones; price freshness; single-supplier parts | The cost model in `src/follow_me/bom.py`, reading `bom/` |
 | `parts.html` | Each printable part in 3D, with sliders that re-render it in the browser, its print card, and STL and OpenSCAD downloads | `cad/*.scad` and `cad/parts.json` through `src/follow_me/parts.py`, with STLs rendered at build time |
 
@@ -17,7 +17,12 @@ The replay viewer can also open a trace file the visitor makes from their own lo
 PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json
 ```
 
-A raw log is not enough: the trace carries the council's results, so the page never re-implements the logic. A later page could run the Python itself in the browser (Pyodide), since the package uses only the standard library.
+A raw log is not enough: the trace carries the council's results, so the page never re-implements the logic.
+
+It can also open a GPX recording from a GPS-logging app. The page runs the repo's own Python in a web worker with Pyodide, which is possible because the package uses only the standard library:
+- The worker calls `follow_me.recording.run_gpx`, the same code the tests check and the command line runs, and the viewer draws the trace it returns.
+- The file never leaves the tab. The importer keeps only meters and seconds from the first fix.
+- Pyodide is about 13 MB, loaded from this site the first time a recording is opened.
 
 ## How it is built and published
 
@@ -27,9 +32,9 @@ PYTHONPATH=src python3 -m follow_me.website --render-parts   # also fetch the li
 python3 -m http.server -d _site 8000                 # preview at http://localhost:8000
 ```
 
-- The pages, styles and scripts live in `site/`. They are plain HTML, CSS and JavaScript modules with no build step. Only the parts page uses libraries: three.js 0.186.1 (MIT) for the 3D view and openscad-wasm-prebuilt 1.2.0, an unmodified WebAssembly build of OpenSCAD 2025.01.19 (GPL-2.0-or-later), for rendering.
-- `follow_me.website` copies `site/` and the `.scad` files, writes `data/costs.json`, `data/replay-example.json`, `data/parts.json` and `data/build.json` (the commit and build time), copies the example log, and fills the README sections into `index.html`. It uses only the standard library.
-- `--vendor` downloads the two libraries from the npm registry, pinned to exact versions and checked against the registry's sha512 hashes, caches them under `~/.cache/follow-me-site`, and copies only the files the page needs into `assets/vendor/`. No library code is kept in git, and the published site makes no requests to other servers. `--render-parts` (which implies `--vendor`) then runs `tools/render_parts.mjs` with Node.js to render each part's default STL with that same OpenSCAD build. Without these flags the parts page still lists the parts and offers the `.scad` downloads, but has no 3D view.
+- The pages, styles and scripts live in `site/`. They are plain HTML, CSS and JavaScript modules with no build step. Two pages use libraries. The parts page uses three.js 0.186.1 (MIT) for the 3D view and openscad-wasm-prebuilt 1.2.0, an unmodified WebAssembly build of OpenSCAD 2025.01.19 (GPL-2.0-or-later), for rendering. The replay page uses Pyodide 314.0.7 (MPL-2.0, with CPython 3.14's standard library under the PSF licence), unmodified, to run the package's Python for recordings.
+- `follow_me.website` copies `site/` and the `.scad` files, writes `data/costs.json`, `data/replay-example.json`, `data/sim-example.json`, `data/parts.json` and `data/build.json` (the commit, the build time and whether Pyodide is included), copies the example log and the twelve modules the browser runs (`PY_MODULES`, under `py/follow_me/` with a manifest), and fills the README sections into `index.html`. It uses only the standard library.
+- `--vendor` downloads the three libraries from the npm registry, pinned to exact versions and checked against the registry's sha512 hashes, caches them under `~/.cache/follow-me-site`, and copies only the files the page needs into `assets/vendor/`. No library code is kept in git, and the published site makes no requests to other servers. `--render-parts` (which implies `--vendor`) then runs `tools/render_parts.mjs` with Node.js to render each part's default STL with that same OpenSCAD build. Without these flags the parts page still lists the parts and offers the `.scad` downloads, but has no 3D view, and the replay page points to the command line for recordings.
 - The workflow in [.github/workflows/site.yml](../.github/workflows/site.yml) runs the tests and builds the site, with the libraries and the rendered parts, on every push and pull request. On `main` it publishes the site to GitHub Pages. The data is regenerated at every build, so the published site cannot fall behind the repo, and nothing generated is committed.
 - **Pages** was turned on on 2026-10-26, with the owner's agreement, with source "GitHub Actions" (Settings, Pages). Turning it off unpublishes the site, and the deploy step then fails while the tests still run. The upload action skips hidden files, so `.nojekyll` is not published; it is not needed, because Pages does not run Jekyll on Actions deploys.
 - `tests/test_website.py` builds the site and checks that the data matches the model and the replay, every local link and import resolves, the honesty statements are on every page, there is no email-like or phone-like text, and no place data or coordinates are shipped.
@@ -41,7 +46,7 @@ python3 -m http.server -d _site 8000                 # preview at http://localho
 - **No money asks.** No donate buttons, sponsorship links or funding appeals.
 - **No fleet or product claims.** The drone-count view is for exploring. The owner has not set a number of drones.
 - **Parts are unprinted and untested** until a card records a print. Never call a part a flight part, and keep the safety notes on the cards.
-- **Licences.** Keep OpenSCAD's GPL licence file next to its build and the links to its source on the parts page. Keep three.js's MIT licence file next to it.
+- **Licences.** Keep OpenSCAD's GPL licence file next to its build and the links to its source on the parts page. Keep three.js's MIT licence file next to it. Pyodide's package has no licence file, so the replay page names its licence and links to its source.
 
 ## Design notes
 

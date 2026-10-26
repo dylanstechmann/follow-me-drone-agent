@@ -62,6 +62,15 @@ The owner asked what else could be done for the repo: visualizations and easy da
 - **Iteration 19:** wrote four printable parts as adjustable OpenSCAD models (test bars, a hole-size gauge, a thrust-stand jig and the tag case) with print cards, and a parts page that shows them in 3D and re-renders them in the browser. OpenSCAD's WebAssembly build made this possible without installing anything, and its Manifold engine renders a part in about 0.15 s. Nothing has been printed.
 - **Iteration 20:** the owner asked what to do next and said "ok" to the agent's recommendation. With that agreement, the agent added the MIT licence, updated the workflow's GitHub actions to current versions, turned on GitHub Pages and pushed iterations 16 to 20. The first workflow run passed and published the site at https://dylanstechmann.github.io/follow-me-drone-agent/, and the agent checked the live pages in a headless browser. The agreed next steps: the owner prints the hole-size gauge and the test bars, then a batch that runs the owner's own phone recording through the council, then a camera batch.
 
+## Phase 11: the owner's own recording through the council (iterations 21 to 24, 2026-10-26)
+
+The owner asked whether anything else could be done before going to the printers. The agent listed what to bring and record, and started the phone-data batch the owner had agreed to, which does not depend on the prints.
+
+- **Iteration 21:** a kinematic follow simulation, a point drone flown by the council's commands. It is not a flight simulator. It found that the drone trails a moving rider (the controller has no feed-forward of the rider's speed), that its forward command tops out at 0.6, and that a phone fix alone (4 m) is degraded on every tick, which halves the speed.
+- **Iteration 22:** the mode machine's fallbacks are timed in seconds, not ticks, checked at several loop rates in the simulation.
+- **Iteration 23:** a GPX importer that keeps only meters and seconds from the first fix. Reading the apps' code showed that `hdop` means different things in GPSLogger and OsmAnd.
+- **Iteration 24:** the replay page runs the same Python in the visitor's browser with Pyodide, so a recording can be simulated without uploading it. It also shows a made-up simulated ride, with the distance to the rider over time and a top-down view of both paths.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

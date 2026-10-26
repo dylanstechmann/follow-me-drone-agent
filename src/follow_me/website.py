@@ -11,11 +11,13 @@ site on every push to main, so the published site cannot fall behind the repo.
 Standard library only. The pages have no backend, analytics or cookies, and a
 file a visitor opens in the replay viewer stays in their browser.
 
---vendor downloads the two browser libraries the parts page needs (three.js and
-OpenSCAD's WebAssembly build) from the npm registry, pinned to exact versions and
-checked against the registry's published hashes, so no library code is kept in
-git and the site makes no requests to other servers. --render-parts then renders
-each part's default STL with Node.js and that same OpenSCAD build.
+--vendor downloads the browser libraries from the npm registry, pinned to exact
+versions and checked against the registry's published hashes, so no library code is
+kept in git and the site makes no requests to other servers: three.js and OpenSCAD's
+WebAssembly build for the parts page, and Pyodide, which runs the repo's own Python
+in the replay page so a visitor's recording never leaves their browser.
+--render-parts then renders each part's default STL with Node.js and that same
+OpenSCAD build.
 """
 
 import base64
@@ -37,6 +39,7 @@ from urllib.parse import urlparse
 
 from follow_me import bom, parts
 from follow_me.replay import trace
+from follow_me.sim import EXAMPLE_NOTE, example_track, trace_track
 
 ROOT = Path(__file__).resolve().parents[2]
 REPO_URL = "https://github.com/dylanstechmann/follow-me-drone-agent"
@@ -48,8 +51,8 @@ README_BLOCKS = {
     "<!-- build:readme-built -->": "How this was built",
 }
 
-# Browser libraries for the parts page: npm tarballs pinned by version and by the
-# registry's sha512 hash. Only the listed files are copied, under assets/vendor/.
+# Browser libraries: npm tarballs pinned by version and by the registry's sha512 hash.
+# Only the listed files are copied, under assets/vendor/.
 VENDOR = {
     "three": {
         "version": "0.186.1",
@@ -75,8 +78,30 @@ VENDOR = {
             "package/COPYING": "openscad/COPYING",
         },
     },
+    "pyodide": {
+        "version": "314.0.7 (Python 3.14)",
+        "license": "MPL-2.0; the Python standard library inside it is under the PSF licence",
+        "url": "https://registry.npmjs.org/pyodide/-/pyodide-314.0.7.tgz",
+        "integrity": "sha512-0YvXxEhfEdpLfb/XkM2BFAeMROq0iMUX2bzzH9pOttyMcWkwq+HbE5uyuGD82LN7y2q+SNvi/6V5JEsOlD2R1A==",
+        "source": "https://github.com/pyodide/pyodide",
+        "files": {
+            "package/pyodide.mjs": "pyodide/pyodide.mjs",
+            "package/pyodide.asm.mjs": "pyodide/pyodide.asm.mjs",
+            "package/pyodide.asm.wasm": "pyodide/pyodide.asm.wasm",
+            "package/python_stdlib.zip": "pyodide/python_stdlib.zip",
+            "package/pyodide-lock.json": "pyodide/pyodide-lock.json",
+        },
+    },
 }
 OPENSCAD_JS = "assets/vendor/openscad/openscad.js"
+PYODIDE_JS = "assets/vendor/pyodide/pyodide.mjs"
+
+# The modules the replay page runs in the browser to simulate a recording. A test
+# checks that they import nothing else from the package.
+PY_MODULES = (
+    "__init__", "companion", "context", "controller", "council", "fusion", "geo",
+    "mode", "recording", "replay", "sim", "sources",
+)
 
 
 def costs_data(root: Path = ROOT) -> dict:
@@ -142,6 +167,11 @@ def costs_data(root: Path = ROOT) -> dict:
 def replay_data(root: Path = ROOT) -> dict:
     log = json.loads((root / "examples" / "replay.example.json").read_text(encoding="utf-8"))
     return trace(log)
+
+
+def sim_example_data() -> dict:
+    """The made-up ride, followed by the simulated drone."""
+    return trace_track(example_track(), note=EXAMPLE_NOTE)
 
 
 def _catalog_grams(item: bom.Item | None) -> dict | None:
@@ -310,10 +340,18 @@ def build(
     _write_json(out / "data" / "parts.json", parts_data(root, out))
     _write_json(out / "data" / "costs.json", costs_data(root))
     _write_json(out / "data" / "replay-example.json", replay_data(root))
+    _write_json(out / "data" / "sim-example.json", sim_example_data())
     shutil.copy2(root / "examples" / "replay.example.json", out / "data" / "replay.example.json")
+    package = out / "py" / "follow_me"
+    package.mkdir(parents=True)
+    for name in PY_MODULES:
+        shutil.copy2(root / "src" / "follow_me" / f"{name}.py", package / f"{name}.py")
+    _write_json(out / "py" / "manifest.json", {"files": [f"{name}.py" for name in PY_MODULES]})
     commit = _commit(root)
     built = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    _write_json(out / "data" / "build.json", {"commit": commit, "built": built})
+    _write_json(out / "data" / "build.json", {
+        "commit": commit, "built": built, "python": (out / PYODIDE_JS).is_file(),
+    })
 
     index = out / "index.html"
     text = index.read_text(encoding="utf-8")

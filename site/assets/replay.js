@@ -1,9 +1,12 @@
-// Replay viewer: draws one tick of a trace from `python -m follow_me.replay --json`.
-// The trace is computed by the repo's tested Python; this page only draws it.
-import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, signed, sourceInfo, svg } from "./common.js";
+// Replay viewer: draws one tick of a trace from `python -m follow_me.replay --json`,
+// or of a simulated follow from `python -m follow_me.recording --json`.
+// Traces are computed by the repo's tested Python; this page only draws them. A GPX
+// recording is simulated by that same Python, run in this tab by replay-worker.js.
+import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
 
 const TRACE_FORMAT = "follow-me-trace/1";
 const MAKE_TRACE = "PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json";
+const SIM_CMD = "PYTHONPATH=src python3 -m follow_me.recording --json RECORDING.gpx > recording.trace.json";
 const W = 640; // plot viewBox width
 
 const $ = (id) => document.getElementById(id);
@@ -21,11 +24,17 @@ const els = {
   speed: $("speed"),
   select: $("log-select"),
   file: $("file-input"),
+  gpx: $("gpx-input"),
+  follow: $("follow"),
+  kpis: $("follow-kpis"),
+  distance: $("distance-chart"),
+  world: $("world-plot"),
+  worldLegend: $("world-legend"),
 };
 
 const tip = makeTooltip();
 const traces = new Map(); // option value -> {trace, note}
-const state = { trace: null, index: 0, timer: null, frame: null, layer: null, playhead: null };
+const state = { trace: null, index: 0, timer: null, frame: null, layer: null, playhead: null, follow: null, python: false };
 
 // ---- loading -------------------------------------------------------------
 
@@ -57,9 +66,18 @@ function load(trace, note) {
   drawStrip();
   drawModeLegend();
   drawTable();
+  drawFollow();
   els.scrub.max = String(trace.ticks.length - 1);
   showMessage(note);
   seek(indexFromHash() ?? 0);
+}
+
+function addTrace(key, label, trace, note) {
+  traces.set(key, { trace, note });
+  els.select.appendChild(h("option", { value: key }, label));
+  els.select.value = key;
+  history.replaceState(null, "", location.pathname);
+  load(trace, note);
 }
 
 function openFile(file) {
@@ -77,17 +95,89 @@ function openFile(file) {
       showMessage(problem, true);
       return;
     }
-    const key = `file:${file.name}:${traces.size}`;
     const note = `Your file, ${file.name}: ${data.ticks.length} ticks. It stays in this browser tab.` +
       (data.note ? ` Its note: ${data.note}` : "");
-    traces.set(key, { trace: data, note });
-    els.select.appendChild(h("option", { value: key }, `Your file: ${file.name}`));
-    els.select.value = key;
-    history.replaceState(null, "", location.pathname);
-    load(data, note);
+    addTrace(`file:${file.name}:${traces.size}`, `Your file: ${file.name}`, data, note);
   };
   reader.onerror = () => showMessage(`Could not read ${file.name}.`, true);
   reader.readAsText(file);
+}
+
+// ---- recordings, simulated in this tab -------------------------------------
+
+let worker = null;
+let jobs = 0;
+
+function pythonWorker() {
+  if (!worker) {
+    worker = new Worker(new URL("./replay-worker.js", import.meta.url), { type: "module" });
+    worker.addEventListener("error", () => {
+      showMessage(`Python could not start in this browser. The command line gives the same trace: ${SIM_CMD}`, true);
+      worker = null;
+    });
+  }
+  return worker;
+}
+
+const ACCURACY_FROM = {
+  recorded: "recorded in the file",
+  hdop: "HDOP × 4 m, a guess",
+  default: "a 5 m default, a guess",
+};
+
+function recordingNote(name, rec) {
+  const sources = Object.entries(rec.accuracy_from)
+    .map(([key, n]) => `${ACCURACY_FROM[key] || key} for ${n}`)
+    .join("; ");
+  return `Your recording, ${name}: ${rec.fixes} fixes over ${fixed(rec.duration_s, 0)} s and ${fixed(rec.path_m, 0)} m of track, ` +
+    `simulated in this tab. It was not uploaded, and only meters and seconds from its first fix were kept. Accuracy: ${sources}.` +
+    (rec.skipped ? ` ${rec.skipped} points were skipped (no usable time or position, or a repeated time).` : "");
+}
+
+function openRecording(file) {
+  if (!state.python) {
+    showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
+    return;
+  }
+  if (file.size > 50e6) {
+    showMessage(`${file.name} is over 50 MB, more than a recording should need.`, true);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const id = ++jobs;
+    const w = pythonWorker();
+    showMessage(`Starting Python in this tab to read ${file.name}. The first time downloads about 13 MB from this site; nothing is uploaded.`);
+    const onMessage = (event) => {
+      const msg = event.data;
+      if (msg.id !== id) return;
+      if (msg.status === "running") {
+        showMessage(`Simulating a drone following ${file.name}…`);
+        return;
+      }
+      w.removeEventListener("message", onMessage);
+      if (msg.error) {
+        showMessage(`Could not use ${file.name}: ${msg.error}`, true);
+        return;
+      }
+      const data = JSON.parse(msg.trace);
+      const problem = problemWith(data);
+      if (problem) {
+        showMessage(problem, true);
+        return;
+      }
+      addTrace(`gpx:${file.name}:${traces.size}`, `Your recording: ${file.name}`, data, recordingNote(file.name, data.recording));
+    };
+    w.addEventListener("message", onMessage);
+    w.postMessage({ id, text: reader.result });
+  };
+  reader.onerror = () => showMessage(`Could not read ${file.name}.`, true);
+  reader.readAsText(file);
+}
+
+function openAny(file) {
+  if (/\.gpx$/i.test(file.name)) openRecording(file);
+  else openFile(file);
 }
 
 // ---- the top-down plot ---------------------------------------------------
@@ -169,7 +259,8 @@ function drawStatic() {
     svg("text", { x: at.x, y: at.y, "text-anchor": at.anchor, fill: "var(--muted)" }, root).textContent = `${r} m`;
   }
   svg("line", { x1: ox, y1: f.py(f.forward), x2: ox, y2: f.py(-f.back), stroke: "var(--axis)", "stroke-width": u }, root);
-  svg("text", { x: f.px(f.forward * Math.sin(half) * 0.62) + 6 * u, y: f.py(f.forward * Math.cos(half) * 0.62) }, root)
+  // In a deep frame the wedge's edge leaves the plot, so keep the label inside it.
+  svg("text", { x: Math.max(6 * u, f.px(f.forward * Math.sin(half) * 0.62) + 6 * u), y: f.py(f.forward * Math.cos(half) * 0.62) }, root)
     .textContent = `camera view, ${Math.round(hfov)}°`;
   svg("path", { d: `M${ox},${oy - 12 * u} L${ox + 8 * u},${oy + 7 * u} L${ox - 8 * u},${oy + 7 * u} Z`, fill: "var(--ink)" }, root);
   svg("text", { x: ox + 12 * u, y: oy + 6 * u }, root).textContent = "drone";
@@ -479,10 +570,12 @@ function drawModeLegend() {
 }
 
 function drawTable() {
+  const sim = isSimulation(state.trace);
   const head = h("thead", {}, h("tr", {},
     h("th", { class: "num" }, "t (s)"), h("th", {}, "Mode"), h("th", {}, "Kept, rejected, off"),
     h("th", { class: "num" }, "Estimate x, y (m)"), h("th", { class: "num" }, "σ (m)"), h("th", { class: "num" }, "Gain"),
-    h("th", { class: "num" }, "Yaw"), h("th", { class: "num" }, "Forward"), h("th", { class: "num" }, "Climb")));
+    h("th", { class: "num" }, "Yaw"), h("th", { class: "num" }, "Forward"), h("th", { class: "num" }, "Climb"),
+    sim ? h("th", { class: "num" }, "To the rider (m)") : null));
   const body = h("tbody", {}, state.trace.ticks.map((tick) => {
     const count = (s) => tick.readings.filter((r) => r.status === s).length;
     const e = tick.estimate;
@@ -495,9 +588,178 @@ function drawTable() {
       h("td", { class: "num" }, fixed(tick.gain, 1)),
       h("td", { class: "num" }, signed(tick.command.yaw)),
       h("td", { class: "num" }, signed(tick.command.forward)),
-      h("td", { class: "num" }, signed(tick.command.climb)));
+      h("td", { class: "num" }, signed(tick.command.climb)),
+      sim ? h("td", { class: "num" }, fixed(tick.world.distance, 1)) : null);
   }));
   clear(els.table).append(head, body);
+}
+
+// ---- the simulated follow --------------------------------------------------
+
+const LOSS_MODES = ["degraded", "dead_reckoning", "hold", "return_home_requested"];
+
+function isSimulation(trace) {
+  return trace.kind === "simulation" && trace.ticks.every((t) => t.world) && Boolean(trace.summary);
+}
+
+function tile(label, value, sub) {
+  return h("div", { class: "card tile" }, h("p", { class: "label" }, label), h("p", { class: "value" }, value), h("p", { class: "sub" }, sub));
+}
+
+function drawFollow() {
+  const sim = isSimulation(state.trace);
+  els.follow.hidden = !sim;
+  state.follow = null;
+  if (!sim) return;
+  const s = state.trace.summary;
+  const [near, far] = s.band_m;
+  // Each tick counts for one tick length, so shares are of the summed mode times.
+  const seconds = s.seconds_in_mode;
+  const total = Object.values(seconds).reduce((sum, v) => sum + v, 0);
+  const lost = LOSS_MODES.reduce((sum, m) => sum + (seconds[m] || 0), 0);
+  const detail = LOSS_MODES.filter((m) => seconds[m]).map((m) => `${modeInfo(m).label} ${fixed(seconds[m], 1)} s`).join(", ");
+  clear(els.kpis).append(
+    tile("Median distance to the rider", `${fixed(s.median_distance_m, 1)} m`, `The most was ${fixed(s.max_distance_m, 1)} m.`),
+    tile("Time inside the follow band", percent(s.in_band_share), `${fixed(near, 2)} to ${fixed(far, 2)} m from the rider.`),
+    tile("Time below full tracking", percent(total ? lost / total : 0), detail || "Tracking the whole time."),
+    tile("Return-home requested", s.return_home_requested ? "Yes" : "No", "Recorded, not flown."),
+  );
+  state.follow = { width: els.follow.getBoundingClientRect().width, distance: drawDistance(), world: drawWorld() };
+}
+
+function stepFor(span) {
+  // A round step that gives three to six labels.
+  return niceMax(span / 5);
+}
+
+function trim(value) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function drawDistance() {
+  const ticks = state.trace.ticks;
+  const [near, far] = state.trace.summary.band_m;
+  const chart = clear(els.distance);
+  // Draw at the rendered size, so 12 px text stays 12 px on a phone.
+  const width = Math.max(300, Math.round(chart.getBoundingClientRect().width || 640));
+  const height = 230;
+  const pad = { left: 46, right: 12, top: 12, bottom: 28 };
+  chart.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  const t0 = ticks[0].t;
+  const t1 = Math.max(ticks[ticks.length - 1].t, t0 + 1);
+  const top = niceMax(Math.max(far * 1.6, ...ticks.map((t) => t.world.distance)) * 1.05);
+  const x = (t) => pad.left + ((t - t0) / (t1 - t0)) * (width - pad.left - pad.right);
+  const y = (d) => height - pad.bottom - (d / top) * (height - pad.top - pad.bottom);
+
+  for (const f of [0, 0.25, 0.5, 0.75, 1]) {
+    const d = f * top;
+    svg("line", { x1: pad.left, x2: width - pad.right, y1: y(d), y2: y(d), stroke: f ? "var(--grid)" : "var(--axis)" }, chart);
+    svg("text", { x: pad.left - 6, y: y(d) + 4, "text-anchor": "end" }, chart).textContent = `${trim(d)} m`;
+  }
+  const step = stepFor(t1 - t0);
+  for (let t = Math.ceil(t0 / step) * step; t <= t1 + 1e-9; t += step) {
+    svg("text", { x: x(t), y: height - 8, "text-anchor": "middle" }, chart).textContent = `${trim(t)} s`;
+  }
+  svg("rect", {
+    x: pad.left, width: width - pad.left - pad.right, y: y(far), height: Math.max(1, y(near) - y(far)),
+    fill: "var(--good)", "fill-opacity": 0.16,
+  }, chart);
+  // Label the band where the line is farthest above it, so the two do not collide.
+  const farthest = ticks.reduce((best, t) => (t.world.distance > best.world.distance ? t : best), ticks[0]);
+  const labelX = Math.min(width - pad.right - 40, Math.max(pad.left + 40, x(farthest.t)));
+  svg("text", { x: labelX, y: y(far) - 5, "text-anchor": "middle", class: "halo", "stroke-width": 4 }, chart).textContent = "follow band";
+  const d = ticks.map((t, i) => `${i ? "L" : "M"}${x(t.t).toFixed(1)},${y(t.world.distance).toFixed(1)}`).join("");
+  svg("path", { d, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round" }, chart);
+
+  const line = svg("line", { y1: pad.top, y2: height - pad.bottom, stroke: "var(--accent)", "stroke-width": 1.5 }, chart);
+  const dot = svg("circle", { r: 5, fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 2 }, chart);
+  const hit = svg("rect", { x: pad.left, y: 0, width: width - pad.left - pad.right, height: height - pad.bottom, fill: "transparent" }, chart);
+  const indexAtX = (clientX) => {
+    const box = chart.getBoundingClientRect();
+    const t = t0 + (((clientX - box.left) / box.width) * width - pad.left) / (width - pad.left - pad.right) * (t1 - t0);
+    let best = 0;
+    for (let i = 1; i < ticks.length; i++) if (Math.abs(ticks[i].t - t) < Math.abs(ticks[best].t - t)) best = i;
+    return best;
+  };
+  hit.addEventListener("pointermove", (e) => {
+    const tick = ticks[indexAtX(e.clientX)];
+    const info = modeInfo(tick.mode);
+    tip.show(`t = ${fixed(tick.t, 1)} s`, [
+      { value: `${fixed(tick.world.distance, 1)} m`, label: "to the rider" },
+      { value: `${info.icon} ${info.label}`, color: info.color },
+    ], e.clientX, e.clientY);
+  });
+  hit.addEventListener("pointerleave", () => tip.hide());
+  hit.addEventListener("click", (e) => { stop(); seek(indexAtX(e.clientX)); });
+  return { x, y, line, dot };
+}
+
+function drawWorld() {
+  const ticks = state.trace.ticks;
+  const plot = clear(els.world);
+  const width = Math.max(280, Math.round(plot.getBoundingClientRect().width || 480));
+  let minE = Infinity, maxE = -Infinity, minN = Infinity, maxN = -Infinity;
+  for (const t of ticks) {
+    for (const [e, n] of [t.world.rider, t.world.drone]) {
+      minE = Math.min(minE, e); maxE = Math.max(maxE, e);
+      minN = Math.min(minN, n); maxN = Math.max(maxN, n);
+    }
+  }
+  // The paths fill the middle; a strip at the top holds the north mark and one at the
+  // bottom the scale bar, so neither lands on a path.
+  const pad = 16;
+  const top = 24;
+  const bottom = 30;
+  const spanE = Math.max(maxE - minE, 20);
+  const spanN = Math.max(maxN - minN, 20);
+  const height = Math.round(Math.min(width * 1.15, Math.max(240, ((width - 2 * pad) * spanN) / spanE + top + bottom)));
+  const scale = Math.min((width - 2 * pad) / spanE, (height - top - bottom) / spanN);
+  const midE = (minE + maxE) / 2;
+  const midN = (minN + maxN) / 2;
+  const px = (e) => width / 2 + (e - midE) * scale;
+  const py = (n) => top + (height - top - bottom) / 2 - (n - midN) * scale;
+  plot.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg("rect", { width, height, fill: "var(--surface)" }, plot);
+
+  const bar = niceMax(spanE / 5);
+  svg("line", { x1: width - pad - bar * scale, x2: width - pad, y1: height - 8, y2: height - 8, stroke: "var(--ink-2)", "stroke-width": 2 }, plot);
+  svg("text", { x: width - pad - bar * scale - 6, y: height - 4, "text-anchor": "end" }, plot).textContent = `${trim(bar)} m`;
+  svg("text", { x: width - pad, y: 16, "text-anchor": "end" }, plot).textContent = "N ↑";
+
+  const path = (key) => ticks.map((t, i) => `${i ? "L" : "M"}${px(t.world[key][0]).toFixed(1)},${py(t.world[key][1]).toFixed(1)}`).join("");
+  svg("path", { d: path("rider"), fill: "none", stroke: "var(--s-phone)", "stroke-width": 2, "stroke-linejoin": "round" }, plot);
+  svg("path", { d: path("drone"), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "5 4", "stroke-linejoin": "round" }, plot);
+  const [se, sn] = ticks[0].world.rider;
+  svg("circle", { cx: px(se), cy: py(sn), r: 4, fill: "var(--surface)", stroke: "var(--ink)", "stroke-width": 1.5 }, plot);
+  svg("text", { x: px(se) + 7, y: py(sn) + 4, class: "halo", "stroke-width": 4 }, plot).textContent = "start";
+
+  const link = svg("line", { stroke: "var(--muted)", "stroke-width": 1, "stroke-dasharray": "2 3" }, plot);
+  const rider = svg("circle", { r: 6, fill: "var(--s-phone)", stroke: "var(--surface)", "stroke-width": 2 }, plot);
+  const drone = svg("path", { d: "M0,-10 L7,7 L-7,7 Z", fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 1.5 }, plot);
+
+  clear(els.worldLegend).append(
+    h("li", {}, h("span", { class: "key-line", style: { color: "var(--s-phone)" }, "aria-hidden": "true" }), "Rider, from the track"),
+    h("li", {}, h("span", { class: "key-line dashed", style: { color: "var(--ink-2)" }, "aria-hidden": "true" }), "Drone, simulated"),
+    h("li", {}, h("span", { "aria-hidden": "true" }, "▲"), "Drone now, pointing where its nose points"),
+  );
+  return { px, py, link, rider, drone };
+}
+
+function seekFollow(tick) {
+  const f = state.follow;
+  if (!f || !tick.world) return;
+  const x = f.distance.x(tick.t);
+  f.distance.line.setAttribute("x1", x);
+  f.distance.line.setAttribute("x2", x);
+  f.distance.dot.setAttribute("cx", x);
+  f.distance.dot.setAttribute("cy", f.distance.y(tick.world.distance));
+  const w = f.world;
+  const [re, rn] = tick.world.rider;
+  const [de, dn, heading] = tick.world.drone;
+  w.rider.setAttribute("cx", w.px(re));
+  w.rider.setAttribute("cy", w.py(rn));
+  w.drone.setAttribute("transform", `translate(${w.px(de)},${w.py(dn)}) rotate(${heading})`);
+  for (const [a, v] of [["x1", w.px(de)], ["y1", w.py(dn)], ["x2", w.px(re)], ["y2", w.py(rn)]]) w.link.setAttribute(a, v);
 }
 
 // ---- playback --------------------------------------------------------------
@@ -514,6 +776,7 @@ function seek(i) {
   const tick = ticks[state.index];
   drawTick(tick);
   renderPanel(tick);
+  seekFollow(tick);
   els.scrub.value = String(state.index);
   els.count.textContent = `Tick ${state.index + 1} of ${ticks.length}`;
   state.playhead.style.left = `${((state.index + 0.5) / ticks.length) * 100}%`;
@@ -580,6 +843,12 @@ function wire() {
       drawStatic();
       seek(state.index);
     }).observe(els.plot.parentElement);
+    new ResizeObserver(() => {
+      // The follow charts are drawn at their rendered size, so redraw them when it changes.
+      if (!state.follow || Math.abs(els.follow.getBoundingClientRect().width - state.follow.width) < 8) return;
+      drawFollow();
+      seekFollow(state.trace.ticks[state.index]);
+    }).observe(els.follow);
   }
 
   document.addEventListener("keydown", (e) => {
@@ -593,8 +862,13 @@ function wire() {
 
   els.file.addEventListener("change", () => {
     const file = els.file.files && els.file.files[0];
-    if (file) openFile(file);
+    if (file) openAny(file);
     els.file.value = "";
+  });
+  els.gpx.addEventListener("change", () => {
+    const file = els.gpx.files && els.gpx.files[0];
+    if (file) openRecording(file);
+    els.gpx.value = "";
   });
   window.addEventListener("hashchange", () => {
     const i = indexFromHash();
@@ -615,13 +889,14 @@ function wire() {
     e.preventDefault();
     document.body.classList.remove("dragging");
     const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (file) openFile(file);
+    if (file) openAny(file);
   });
 }
 
 async function main() {
   initPage();
   wire();
+  fetchJSON("data/build.json").then((b) => { state.python = Boolean(b.python); }).catch(() => {});
   try {
     const trace = await fetchJSON("data/replay-example.json");
     const note = trace.note || "Example trace.";
@@ -629,6 +904,13 @@ async function main() {
     load(trace, note);
   } catch (error) {
     showMessage(`Could not load the example trace (${error.message}). Build the site with: PYTHONPATH=src python3 -m follow_me.website`, true);
+  }
+  try {
+    const trace = await fetchJSON("data/sim-example.json");
+    traces.set("sim-example", { trace, note: trace.note });
+    els.select.appendChild(h("option", { value: "sim-example" }, "Example: a simulated follow, made up"));
+  } catch (error) {
+    // The first example still works without it.
   }
 }
 

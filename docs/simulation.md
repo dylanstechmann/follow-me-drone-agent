@@ -62,6 +62,15 @@ PYTHONPATH=src python3 -m follow_me.recording --json ~/walk.gpx > ~/walk.trace.j
 
   With a phone's typical accuracy, expect most of the track to be degraded (see the findings above).
 
+## In the browser
+
+The website's replay page has the made-up example ride, and it opens a GPX recording too. It runs this same Python in the browser tab with Pyodide, and draws three things:
+- the distance to the rider over time, with the follow band shaded;
+- a top-down view of both paths, relative to the start, with no map;
+- the time in each mode.
+
+The recording is not uploaded. See [website.md](website.md).
+
 ## Tests
 
 `tests/test_sim.py` checks:

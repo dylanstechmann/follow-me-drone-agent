@@ -80,6 +80,14 @@ export function percent(share) {
   return `${Math.round(share * 100)}%`;
 }
 
+// The smallest round number at or above value, for an axis maximum or a step.
+export function niceMax(value) {
+  const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  const power = 10 ** Math.floor(Math.log10(value));
+  for (const s of steps) if (s * power >= value) return s * power;
+  return 10 * power;
+}
+
 export async function fetchJSON(url) {
   const response = await fetch(url, { cache: "no-cache" });
   if (!response.ok) throw new Error(`${url}: ${response.status}`);
