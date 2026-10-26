@@ -52,7 +52,7 @@ The owner said the IEEE club can run group orders, and asked for the details to 
 
 The owner asked for everything discussed to be saved for other AI agents, and stated the money stance and the interest in many drones and in making each part, somewhat. Built: [project-context.md](project-context.md), [vision.md](vision.md), [decisions.md](decisions.md) and this history, with consistency updates to older docs.
 
-## Phase 10: a website, printable parts and new facts (iterations 16 to 19, 2026-10-26)
+## Phase 10: a website, printable parts and new facts (iterations 16 to 20, 2026-10-26)
 
 The owner asked what else could be done for the repo: visualizations and easy dashboards, 3D, databases, AI models, and a website on GitHub Pages where the 3D runs in the visitor's browser, with heavy work on the owner's laptop or a cloud sandbox if needed. The owner added that they can use the printers in FAU's engineering building and can work with a drone club. The agent proposed a menu and a first batch, and the owner said "ok".
 
@@ -60,6 +60,7 @@ The owner asked what else could be done for the repo: visualizations and easy da
 - **Iteration 17:** found C14, the cash at minimum orders leaving out the waste allowance, and fixed it. Added the cost per drone for any number of drones, with the PCB assembly fees paid once per order. It is for exploring; the owner has not set a number.
 - **Iteration 18:** built the website: an overview, a replay viewer and a cost explorer, built from the repo's data by `follow_me.website` and published by a GitHub Actions workflow. Fusion now reports its gate decisions, and the replay tool writes them into a JSON trace. The agent checked every page in a headless browser at desktop and phone widths, in light and dark themes.
 - **Iteration 19:** wrote four printable parts as adjustable OpenSCAD models (test bars, a hole-size gauge, a thrust-stand jig and the tag case) with print cards, and a parts page that shows them in 3D and re-renders them in the browser. OpenSCAD's WebAssembly build made this possible without installing anything, and its Manifold engine renders a part in about 0.15 s. Nothing has been printed.
+- **Iteration 20:** the owner asked what to do next and said "ok" to the agent's recommendation. With that agreement, the agent added the MIT licence, updated the workflow's GitHub actions to current versions, turned on GitHub Pages and pushed iterations 16 to 20. The first workflow run passed and published the site at https://dylanstechmann.github.io/follow-me-drone-agent/, and the agent checked the live pages in a headless browser. The agreed next steps: the owner prints the hole-size gauge and the test bars, then a batch that runs the owner's own phone recording through the council, then a camera batch.
 
 ## Standing instructions from the owner
 

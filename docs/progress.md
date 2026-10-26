@@ -243,6 +243,14 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Add the MIT licence, with the same copyright line as the owner's other repos, and record it as a decision.
 - Turn on GitHub Pages with source "GitHub Actions", push iterations 16 to 20, and watch the first workflow run. Fix whatever it fails on, check the live site in a headless browser, and put the site link in the repo's About box.
 
+## Iteration 20: publishing the site (done: 229 tests pass)
+
+- Turned on GitHub Pages with source "GitHub Actions" and pushed iterations 16 to 20 (`f95e757`). The first workflow run passed in about a minute: 229 tests on GitHub's Ubuntu 24.04 runner, the four parts rendered with Node 24 in 157 to 190 ms each, and the deploy published https://dylanstechmann.github.io/follow-me-drone-agent/.
+- Checked the live site in a headless browser (Chromium through Playwright, in the agent's scratch space). All four pages, at 1280 px in the light theme and 390 px in the dark theme, load with no script errors, no failed requests and no sideways scrolling. The parts page draws the prebuilt STL in 3D, and a slider change re-rendered the thrust stand in the browser in 0.3 s. Every built file returns 200 except `.nojekyll`, which the upload action skips as a hidden file; Pages does not run Jekyll on Actions deploys, so it is not needed.
+- Added the MIT licence (D19), which GitHub now detects, and set the repo's homepage link to the site.
+- The deploy step prints a Node.js deprecation warning (`punycode`) from inside GitHub's deploy action, not from this repo's code.
+- Not done: nothing has been printed or measured. The phone-data batch does not depend on the prints, so it can start before them.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:
