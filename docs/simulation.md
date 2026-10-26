@@ -43,6 +43,25 @@ Candidates that follow from this. Each is a change to the follow logic, so it ne
 - Feed the rider's speed forward in the controller.
 - Review the degraded threshold with real phone and tag data.
 
+## Replaying your own recording
+
+Record a walk or ride with a GPS-logging app on your phone, and export it as GPX. GPSLogger and OsmAnd are two Android apps whose GPX output the importer understands. Keep the file outside the repo, then run:
+
+```
+PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx                          # a summary
+PYTHONPATH=src python3 -m follow_me.recording --json ~/walk.gpx > ~/walk.trace.json  # open it in the replay viewer
+```
+
+- **What it keeps.** `recording.py` keeps each fix's seconds and meters from the first fix, and its accuracy. It drops the coordinates, dates and names as it reads them, and writes no files. See [privacy-and-rules.md](privacy-and-rules.md).
+- **Where the drone starts.** The simulated drone starts mid-band behind the rider, against the direction of their first 10 m.
+- **How long a recording can be.** Up to 2 hours. A longer trace is too big for a browser tab.
+- **Accuracy.** GPX has no standard accuracy field, so the summary counts where each fix's accuracy came from:
+  - **Recorded:** an accuracy extension. In OsmAnd files, the `hdop` field, which OsmAnd fills with the phone's accuracy in meters.
+  - **HDOP:** in other files, `hdop` is a unitless ratio (GPSLogger writes it this way), so the accuracy is taken as HDOP times 4 m, a guess.
+  - **Default:** 5 m when the file has neither, also a guess.
+
+  With a phone's typical accuracy, expect most of the track to be degraded (see the findings above).
+
 ## Tests
 
 `tests/test_sim.py` checks:

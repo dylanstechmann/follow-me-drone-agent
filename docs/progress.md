@@ -289,6 +289,14 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - One difference from counting ticks: a loss with no estimate before it is timed from its first tick, so a log that starts with no readings gets one extra dead-reckoning tick.
 - The replay page now says that modes are timed in seconds, and the trace settings carry `dead_reckon_s` and `return_home_s`.
 
+## Iteration 23: importing a recording (done: 278 tests pass)
+
+- Added `recording.py`. It reads the track points of a GPX file (1.0 or 1.1), sorts them by time, skips points with no usable time or position, and keeps only seconds and meters from the first fix and each fix's accuracy. The coordinates, dates and names are dropped as each point is read. It refuses files with a document type (no entity tricks), files over 50 MB, tracks spanning over 200 km, and, for simulation, recordings over 2 hours.
+- Found while checking the apps' code: GPX has no standard accuracy field, and `hdop` means different things. GPSLogger writes the unitless dilution of precision from NMEA, sometimes missing; OsmAnd writes the phone's accuracy in meters. The importer reads an accuracy extension first, then `hdop` as meters for OsmAnd files or HDOP times 4 m for others (a guess), then a 5 m default (a guess), and reports how many fixes used each. Recorded as a lesson in [decisions.md](decisions.md), with the sources in [references.md](references.md).
+- `python -m follow_me.recording FILE.gpx` prints a summary of the simulated follow, and `--json` prints a trace for the replay viewer. It writes no files. `.gitignore` now excludes `*.gpx` and `*.trace.json`, and [privacy-and-rules.md](privacy-and-rules.md) says recordings and their traces stay off the repo.
+- Tried on a made-up 4 m/s ride with turns, a stop and a 15 s gap, at HDOP 1.2 (about 5 m): degraded for 176 s, dead reckoning for 5 s and hold for 8.5 s, with the drone a median 54 m behind. That matches the iteration 21 findings.
+- Tests use made-up tracks near 0 degrees north, 0 degrees east, written inside the tests. No recording is committed.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

@@ -68,6 +68,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `mode.py` | The mode machine. | `test_mode.py` |
 | `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs, and a JSON trace of each tick (`--json`) for the website. | `test_pipeline.py`, `test_replay.py` |
 | `sim.py` | A kinematic follow simulation: a point drone that turns and moves as the council commands, after a rider who moves. Not a flight simulator, and not the SITL gate. | `test_sim.py` |
+| `recording.py` | Reads a GPX recording as offsets and seconds from its first fix, dropping coordinates and dates, and runs it through the simulation. Writes no files. | `test_recording.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
@@ -176,6 +177,7 @@ PYTHONPATH=src python3 -m follow_me.docs_sync --check  # fail if any table is st
 PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
+PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
 PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
 PYTHONPATH=src python3 -m follow_me.website --render-parts  # with the 3D libraries and rendered parts (needs the network and Node.js)
 PYTHONPATH=src python3 -m follow_me.parts              # list the printable parts and their values

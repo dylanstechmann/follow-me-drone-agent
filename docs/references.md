@@ -22,6 +22,12 @@ Website ([website.md](website.md)):
 - ISO 178 (plastics, flexural properties) is the source of the test bars' 80 x 10 x 4 mm shape. Only the shape is borrowed; the home test is not the standard's method.
 - The chart colours, status colours and freshness ramp follow a colour-blind-checked palette from the data-visualization guidance the coding agent used, checked with its validator on 2026-10-26.
 
+Recordings and simulation ([simulation.md](simulation.md)):
+
+- GPX 1.1, the track format the importer reads: https://www.topografix.com/GPX/1/1/
+- GPSLogger for Android writes `hdop` from the receiver's NMEA output, so it is the unitless dilution of precision, and it is sometimes missing (its GPX writer, `Gpx10FileLogger.java`, and its FAQ on missing fields, read on 2026-10-26): https://github.com/mendhak/gpslogger
+- OsmAnd stores the phone's location accuracy in meters in the track point's `hdop` field (`SavingTrackHelper.java`, read on 2026-10-26): https://github.com/osmandapp/OsmAnd
+
 Rules and places (found by agent web searches on 2026-10-26, not confirmed with the organisations):
 
 - FAU Environmental Health and Safety, drone safety page (undated): https://www.fau.edu/ehs/info/drone-safety.pdf
