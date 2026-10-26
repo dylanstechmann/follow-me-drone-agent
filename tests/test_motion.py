@@ -117,3 +117,22 @@ def test_council_estimates_motion_only_when_given_the_drones_pose():
     council = Council()
     council.tick(reading, Conditions(), now=0.0, pose=Pose(0.0, 0.0, 0.0))
     assert council.tick(reading, Conditions(), now=0.5, pose=Pose(0.0, 0.0, 0.0)).motion is not None
+
+
+def test_forward_feed_is_the_speed_along_the_nose_shrunk_by_its_uncertainty():
+    from follow_me.council import forward_feed
+    from follow_me.motion import Motion
+
+    assert forward_feed(None, 10.0) == 0.0
+    assert forward_feed(Motion(0.0, 0.0, 1.0), 10.0) == 0.0
+    assert forward_feed(Motion(4.0, 0.0, 0.0), 10.0) == pytest.approx(0.4)
+    assert forward_feed(Motion(4.0, 0.0, 4.0), 10.0) == pytest.approx(0.2)  # as uncertain as it is fast: half
+    assert forward_feed(Motion(0.3, 0.0, 3.0), 10.0) < 0.001  # noise around standing still
+
+
+def test_without_a_pose_the_commands_are_as_before():
+    readings = [Reading("tag_gnss", Estimate(15.0, 2.0, 1.0))]
+    for t in (0.0, 0.5, 1.0):
+        new = Council().tick(readings, Conditions(), now=t)
+        old = Council(feed_forward=False).tick(readings, Conditions(), now=t)
+        assert new.command == old.command and new.feed == 0.0

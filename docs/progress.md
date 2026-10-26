@@ -378,6 +378,28 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - fusion's weighted age.
 - The controller does not use the motion yet. Iteration 27 does.
 
+## Iteration 27: feed-forward (done: 309 tests pass)
+
+- The controller adds the rider's estimated speed along the drone's nose to its forward command, as a share of a 10 m/s full-scale speed. The council computes the share from the motion estimate, shrunk by its uncertainty, and the mode's gain still scales the whole command (decision D22). `Council(feed_forward=False)` gives the old controller, for comparison.
+- Results from the simulation, with 1 Hz fixes:
+  - A rider at 2 to 7 m/s is followed 6.2 to 10.0 m behind, against 8.0 to 31.6 m and losing a 7 m/s rider before.
+  - A 90 degree turn stays within 5.1 to 7.6 m.
+  - The example ride's median distance falls from 20.4 m to 7.0 m.
+  - The full table is in [simulation.md](simulation.md).
+- Found and fixed while testing: a rider who stops suddenly from 4 m/s was approached to about 2 m, because the speed estimate takes a moment to fall. The approaching part of the feed-forward now fades out across the follow band, and the closest approach is 3.4 m. Backing away from a rider who comes toward the drone is never faded.
+- Found, not fixed, and present before this change too: with made-up 3 m errors on a standing rider's fixes, the drone came within 0.3 to 1.8 m of the true rider in five runs. A 4 to 5 m follow band needs better than metre-level positions. Candidates are listed in [simulation.md](simulation.md). Each needs simulation tests first.
+- The simulation can add seeded noise to fixes while keeping the track as the truth, and its summary reports the closest approach.
+- Tests:
+  - feed-forward keeps 2 to 5 m/s riders within 8.5 m, and closer than the old controller ever got;
+  - a 7 m/s rider is kept within 12 m;
+  - a sudden stop is never closer than 3 m and settles in the band;
+  - a turn stays within 3.5 to 9 m;
+  - noisy fixes make the drone move at most 25% more than before;
+  - degraded still halves the whole command;
+  - with no pose, the commands are unchanged.
+
+  The iteration 21 findings stay as tests of the old controller.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

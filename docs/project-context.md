@@ -59,7 +59,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 
 | Module in `src/follow_me/` | Role | Tests |
 |---|---|---|
-| `controller.py` | Follow controller: a person's box to yaw, forward and climb commands. | `test_controller.py` |
+| `controller.py` | Follow controller: a person's box to yaw, forward and climb commands, plus the rider's speed fed forward when it is known. | `test_controller.py` |
 | `fusion.py` | The estimate and reading types, the weighted-median gate, inverse-variance fusion. | `test_fusion.py` |
 | `sources.py` | Camera box to body-frame estimate, and the inverse. | `test_fusion.py` |
 | `companion.py` | Rider GNSS fix from the phone or tag to a body-frame estimate. Stale fixes are rejected. | `test_companion.py` |

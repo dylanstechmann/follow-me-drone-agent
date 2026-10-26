@@ -52,8 +52,14 @@ class FollowController:
         # Subtract the deadband so the command ramps up from zero, not from a jump.
         return error - self.deadband if error > 0 else error + self.deadband
 
-    def update(self, detection: Detection | None) -> Command:
-        """Return one command. Pass None when the person is not detected this frame."""
+    def update(self, detection: Detection | None, forward_feed: float = 0.0) -> Command:
+        """Return one command. Pass None when the person is not detected this frame.
+
+        `forward_feed` is the rider's speed along the drone's nose as a share of the
+        speed a forward command of 1.0 gives. It is added to the forward command, so
+        the drone keeps pace with a moving rider instead of trailing until the box is
+        small enough to ask for that speed.
+        """
         if detection is None:
             # Never chase a stale box: hold still on any loss. The counter is kept
             # so a later layer can escalate (e.g. return-to-home) after a long loss.
@@ -69,9 +75,16 @@ class FollowController:
         climb_err = self._apply_deadband(detection.cy - self.target_cy)
         # Box too small means too far: approach. Box too big means too close: back off.
         dist_err = self._apply_deadband(self.target_height - detection.height)
+        if forward_feed > 0:
+            # Fade the approaching part out across the deadband, so a rider who stops is
+            # not run into while the speed estimate catches up. Backing away from a rider
+            # who comes toward the drone keeps its full strength.
+            far_edge = self.target_height - self.deadband
+            near_edge = self.target_height + self.deadband
+            forward_feed *= min(1.0, max(0.0, (near_edge - detection.height) / (near_edge - far_edge)))
 
         return Command(
             yaw=_clamp(self.gain * yaw_err, self.max_command),
-            forward=_clamp(self.gain * dist_err, self.max_command),
+            forward=_clamp(self.gain * dist_err + forward_feed, self.max_command),
             climb=_clamp(-self.gain * climb_err, self.max_command),
         )

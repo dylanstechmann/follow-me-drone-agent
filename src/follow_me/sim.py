@@ -12,6 +12,7 @@ be replayed. It does not stand in for the SITL gate in docs/build-plan.md.
 """
 
 import math
+import random
 import statistics
 from dataclasses import dataclass
 
@@ -168,17 +169,26 @@ def simulate(
     limits: Limits = Limits(),
     start: DroneState | None = None,
     max_age_s: float = 2.0,
+    noise_m: float = 0.0,
+    seed: int = 0,
 ) -> list[SimTick]:
     """Fly the point drone after the rider, one council tick every dt seconds.
 
     Each tick uses the latest fix no older than max_age_s, seen from where the drone
-    is, as a phone_gnss reading. An older fix gives no reading, as in companion.py.
-    While the mode machine allows it (dead reckoning), the drone keeps flying the last
-    command from a tick that had an estimate.
+    is, as a phone_gnss reading carrying the fix's age. An older fix gives no reading,
+    as in companion.py. While the mode machine allows it (dead reckoning), the drone
+    keeps flying the last command from a tick that had an estimate.
+
+    noise_m adds made-up Gaussian error to each fix, drawn once per fix from `seed`,
+    to test how the follow logic copes with a noisy receiver. The track stays the truth.
     """
     _check(fixes, dt)
+    if noise_m < 0:
+        raise ValueError("noise_m must not be negative")
     council = council or Council()
     drone = start or default_start(fixes, council)
+    rng = random.Random(seed)
+    errors = [(rng.gauss(0.0, noise_m), rng.gauss(0.0, noise_m)) if noise_m else (0.0, 0.0) for _ in fixes]
     held = Command(0.0, 0.0, 0.0)
     ticks = []
     t0 = fixes[0].t
@@ -190,8 +200,9 @@ def simulate(
         fix = fixes[i]
         readings = []
         if t - fix.t <= max_age_s + EPS:
+            de, dn = errors[i]
             est = offset_estimate(
-                fix.east - drone.east, fix.north - drone.north, fix.accuracy_m, drone.heading_deg
+                fix.east + de - drone.east, fix.north + dn - drone.north, fix.accuracy_m, drone.heading_deg
             )
             readings.append(Reading("phone_gnss", est, age_s=max(0.0, t - fix.t)))
         result = council.tick(readings, Conditions(), now=t, pose=drone)
@@ -216,6 +227,7 @@ def summarize(ticks: list[SimTick], council: Council, dt: float) -> dict:
         "band_m": [round(near, 2), round(far, 2)],
         "in_band_share": round(sum(near <= d <= far for d in distances) / len(distances), 4),
         "median_distance_m": round(statistics.median(distances), 2),
+        "min_distance_m": round(min(distances), 2),
         "max_distance_m": round(max(distances), 2),
         "return_home_requested": any(s.result.request_return_home for s in ticks),
     }

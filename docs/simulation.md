@@ -16,32 +16,48 @@
   - While the mode machine allows it (dead reckoning), the drone keeps flying its last command.
 - **It does not replace the SITL gate** (decision D02). Passing it says nothing about flight safety.
 
-## Findings (2026-10-26, default settings)
+## Findings: before and after feed-forward (2026-10-26, default settings)
 
-These numbers come from the model with its placeholder limits. They show how the current follow logic behaves, not how a real drone would fly. They are where the drone settles behind a rider moving in a straight line, or standing still:
+These numbers come from the model with its placeholder limits. They show how the follow logic behaves, not how a real drone would fly.
 
-| Rider | Fix accuracy (one sigma) | Where the drone settles |
-|---|---|---|
-| Standing | 1 m | 5.05 m away, the far edge of the follow band |
-| 2 m/s | 1 m | 7.6 m behind |
-| 3 m/s | 1 m | 10.1 m behind |
-| 4 m/s | 1 m | 15.2 m behind |
-| 5 m/s | 1 m | About 30 m behind |
-| 7 m/s | 1 m | Falls behind without limit |
-| 2 m/s | 4 m, like a phone | 15.2 m behind, degraded at half gain |
-| 3 m/s | 4 m, like a phone | Falls behind without limit |
+**Iteration 21 found these problems with the original controller:**
+- **The drone trails a moving rider.** The controller acted on distance alone, so the drone settled where its forward command times the top speed equalled the rider's speed.
+- **There is a speed ceiling.** The forward command topped out at 0.6, the gain times the target box height minus the deadband, so the drone never passed 6 m/s with the 10 m/s placeholder.
+- **A phone alone is degraded.** A 4 m fix has a 16 m² variance, above the mode machine's 9 m² threshold, so every tick is degraded at half gain.
+- **Falling behind makes it worse.** The 3 degree heading uncertainty adds variance in proportion to range, so past about 54 m even a 1 m fix is degraded.
 
-What the table shows:
+**Iteration 27 added feed-forward.** `motion.py` estimates the rider's speed over the ground with a Kalman filter, and the controller adds the part along the drone's nose to its forward command:
+- The added share shrinks when the speed estimate is uncertain.
+- The approaching part fades out across the follow band, so it cannot push the drone inside the band.
+- The mode's gain still scales the whole command.
 
-- **The drone trails a moving rider.** The controller acts on distance alone, with no feed-forward of the rider's speed. So the drone settles where its forward command times the top speed equals the rider's speed.
-- **There is a speed ceiling.** The forward command tops out at 0.6: the gain times the target box height minus the deadband. So the drone never passes 6 m/s with the 10 m/s placeholder.
-- **A phone alone is degraded.** A 4 m fix has a 16 m² variance, above the mode machine's 9 m² threshold. Every tick is then degraded at half gain, and the drone tops out at 3 m/s.
-- **Falling behind makes it worse.** The 3 degree heading uncertainty adds variance in proportion to range. Past about 54 m, even a 1 m fix is degraded, which halves the speed again.
+The table shows where the drone settles behind a rider moving in a straight line, with one fix a second, like a phone:
 
-Candidates that follow from this. Each is a change to the follow logic, so it needs simulation tests before it is made:
+| Rider | Fix accuracy (one sigma) | Before | With feed-forward |
+|---|---|---|---|
+| Standing | 1 m | 4.4 m, where it starts, inside the band | 4.4 m |
+| 2 m/s | 1 m | 8.0 to 8.2 m | 6.2 to 6.5 m |
+| 3 m/s | 1 m | 10.9 m | 6.3 to 6.9 m |
+| 4 m/s | 1 m | 16.2 m | 6.7 to 7.4 m |
+| 5 m/s | 1 m | 31.2 to 31.6 m | 7.1 to 8.0 m |
+| 7 m/s | 1 m | Falls behind without limit | 7.7 to 10.0 m |
+| 2 m/s | 4 m, like a phone, degraded | 15.7 m | 10.9 m |
+| 3 m/s | 4 m, like a phone, degraded | Falls behind without limit | 16.3 m |
 
-- Feed the rider's speed forward in the controller.
-- Review the degraded threshold with real phone and tag data.
+Other cases:
+- **A rider who stops suddenly from 4 m/s:** the closest approach is 3.4 m, just inside the band's 3.79 m near edge, because a 1 Hz fix lags the rider. Without the fade, the drone came within 2 m.
+- **A 90 degree turn at 4 m/s:** the drone stays 5.1 to 7.6 m from the rider, against 11 to 16 m before.
+- **The made-up example ride:**
+  - the median distance is 7.0 m, against 20.4 m before;
+  - it is in the band 17% of the time, against 7%;
+  - it tracks for 98 s of 145, against 64.5 s, because staying close keeps the range term small.
+
+**Still open:**
+- **Noisy fixes bring the drone too close.** A standing rider with made-up 3 m errors on each fix was approached to between 0.3 and 1.8 m in five runs, with or without feed-forward. The drone holds 4 to 5 m from where the fixes say the rider is, which can be next to where the rider really is. A follow band this tight needs better than metre-level positions. Candidates, each needing simulation tests first:
+  - keep the follow distance above the estimate's uncertainty;
+  - follow the filtered position instead of the raw estimate;
+  - require the camera to confirm before following this close.
+- **A phone alone is still degraded.** Review the degraded threshold with real phone and tag data.
 
 ## Replaying your own recording
 
@@ -82,11 +98,15 @@ The recording is not uploaded. See [website.md](website.md).
 ## Tests
 
 `tests/test_sim.py` checks:
-- the follow band's edges;
-- turning toward a rider off to one side;
-- the trailing distance against the controller's arithmetic;
-- the speed ceiling;
-- the phone case;
-- that stale fixes give no reading;
-- the dead-reckoning hold;
-- the trace format, which adds each tick's drone position, rider position and distance to the replay viewer's format.
+- the follow band's edges, and turning toward a rider off to one side;
+- stale fixes, the dead-reckoning hold, and fallback timing at two loop rates;
+- the trace format and the summary, including the closest approach;
+- for the old controller (`feed_forward=False`), the iteration 21 findings: the trailing distance against the controller's arithmetic, the speed ceiling, and the phone case;
+- with feed-forward:
+  - riders at 2 to 7 m/s are kept close;
+  - a sudden stop is never approached closer than 3 m;
+  - a turn is followed without a large overshoot;
+  - noisy fixes make the drone move at most 25% more;
+  - degraded still halves the whole command.
+
+`tests/test_motion.py` checks the Kalman filter, and `tests/test_controller.py` the feed-forward and its fade.

@@ -72,3 +72,24 @@ def test_yaw_sign_is_antisymmetric_about_center(cx):
     left = FollowController().update(Detection(cx=cx, cy=0.5, height=0.35)).yaw
     mirror = FollowController().update(Detection(cx=1 - cx, cy=0.5, height=0.35)).yaw
     assert left == pytest.approx(-mirror)
+
+
+def test_feed_forward_adds_to_the_forward_command_beyond_the_band():
+    ctrl = FollowController()
+    far = Detection(cx=0.5, cy=0.5, height=0.2)  # well beyond the band
+    assert ctrl.update(far, forward_feed=0.3).forward == pytest.approx(ctrl.update(far).forward + 0.3)
+
+
+def test_approaching_feed_fades_out_across_the_band_but_backing_off_does_not():
+    ctrl = FollowController()
+    edge_far = Detection(cx=0.5, cy=0.5, height=0.30)  # the band's far edge: full feed
+    middle = Detection(cx=0.5, cy=0.5, height=0.35)
+    edge_near = Detection(cx=0.5, cy=0.5, height=0.40)  # the near edge: none
+    assert ctrl.update(edge_far, forward_feed=0.4).forward == pytest.approx(0.4)
+    assert ctrl.update(middle, forward_feed=0.4).forward == pytest.approx(0.2)
+    assert ctrl.update(edge_near, forward_feed=0.4).forward == pytest.approx(0.0)
+    assert ctrl.update(edge_near, forward_feed=-0.4).forward == pytest.approx(-0.4)
+
+
+def test_feed_forward_never_acts_without_a_detection():
+    assert FollowController().update(None, forward_feed=0.5) == Command(0.0, 0.0, 0.0)

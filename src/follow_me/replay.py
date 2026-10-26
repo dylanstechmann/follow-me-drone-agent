@@ -129,6 +129,7 @@ def trace_tick(tick: dict, t: float, r: TickResult) -> dict:
             "forward": _round(r.motion.forward_mps),
             "left": _round(r.motion.left_mps),
             "sigma": _round(r.motion.sigma_mps),
+            "feed": _round(r.feed),
         }
     return out
 
