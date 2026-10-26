@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Replay viewer · Follow-me drone</title>
+  <meta name="description" content="Step through a replay of the follow-me drone's position council: sources, gate decisions, fused estimate, modes and commands.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" src="assets/replay.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="replay.html" aria-current="page">Replay</a>
+        <a href="costs.html">Costs</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h1>Replay viewer</h1>
+      <p class="lede">The council combines several imperfect guesses of where the rider is. Step through a log to see what each source said, how far the council trusted it, which readings its outlier gate kept, and the mode and command that came out.</p>
+      <div class="controls">
+        <label>Log
+          <select id="log-select">
+            <option value="example">Example: a made-up ride</option>
+          </select>
+        </label>
+        <span class="btn file-btn">Open a trace file…<input id="file-input" type="file" accept=".json,application/json" aria-label="Open a trace file"></span>
+      </div>
+      <p class="message" id="log-note"></p>
+    </section>
+
+    <section class="grid-2 replay-grid drop-hint">
+      <figure class="card plot-card" style="margin: 0">
+        <p class="chart-title">Top-down view from the drone</p>
+        <p class="chart-sub">Meters. The drone is at the bottom, facing up. Circles show each reading's one-sigma uncertainty.</p>
+        <svg id="plot" role="img" aria-label="Top-down plot of the readings and the fused estimate for the current tick"></svg>
+        <ul class="legend" id="plot-legend"></ul>
+      </figure>
+      <div class="card" id="tick-panel" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <div class="transport" role="group" aria-label="Playback">
+        <button class="btn" type="button" id="btn-start" aria-label="First tick">⏮</button>
+        <button class="btn" type="button" id="btn-prev" aria-label="Back one tick">◀</button>
+        <button class="btn" type="button" id="btn-play" aria-pressed="false">▶ Play</button>
+        <button class="btn" type="button" id="btn-next" aria-label="Forward one tick">▶▏</button>
+        <button class="btn" type="button" id="btn-end" aria-label="Last tick">⏭</button>
+        <label class="small muted">Speed
+          <select id="speed">
+            <option value="1">1×</option>
+            <option value="4" selected>4×</option>
+            <option value="16">16×</option>
+          </select>
+        </label>
+        <span class="small muted" id="tick-count"></span>
+      </div>
+      <p class="chart-title">Mode at each tick</p>
+      <p class="chart-sub" id="strip-sub">Click or drag to jump. The modes are the fallback ladder, from tracking down to a return-home request.</p>
+      <div class="strip" id="strip" role="img" aria-label="Mode for each tick of the log"></div>
+      <input type="range" id="scrub" min="0" max="0" value="0" aria-label="Tick">
+      <ul class="legend" id="mode-legend"></ul>
+      <details>
+        <summary>Table view: every tick</summary>
+        <div class="table-wrap"><table id="tick-table"></table></div>
+      </details>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Replay your own log</h2>
+        <p>A file you open here stays in this browser tab. Nothing is uploaded. Make a trace from a log with the replay tool, then open it above:</p>
+        <pre>PYTHONPATH=src python3 -m follow_me.replay --json LOG.json &gt; trace.json</pre>
+        <p class="small muted">The log format is described at the top of <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/src/follow_me/replay.py">src/follow_me/replay.py</a>. Download the example: <a href="data/replay.example.json" download>the log</a> or <a href="data/replay-example.json" download>its trace</a>.</p>
+      </div>
+      <div class="card">
+        <h2>How to read it</h2>
+        <ul class="small muted" style="padding-left: 1.1em; margin: 0">
+          <li><strong>Attention</strong> scales a source's weight by conditions: rain lowers the camera, a weak link or fix lowers a companion, and a known trouble spot can switch a source off.</li>
+          <li><strong>Trust</strong> is the reading's reliability after attention. Zero means the source is off.</li>
+          <li><strong>The gate</strong> rejects a reading that sits more than about three sigma from the gate centre, a reliability-weighted median of the active readings.</li>
+          <li><strong>The fused estimate</strong> combines the kept readings, weighting each by trust divided by variance.</li>
+          <li><strong>Modes</strong> count ticks, not seconds. The example has two ticks per second, so return-home is requested about 50 s after the last estimate.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents (Claude Code) at the owner's direction. No review of the code by the owner is recorded.</p>
+    <p>The example log is made up. Nothing here has flown, and nothing here claims the drone is safe, autonomous or ready to fly.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

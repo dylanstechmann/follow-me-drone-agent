@@ -20,7 +20,7 @@ Goal: keep one rider in frame across varied conditions, on a low budget, by comb
 
 1. **Sense.** Each source produces a `Reading`: an `Estimate` (x, y, variance) plus a source name.
 2. **Context.** Weather cache, companion link quality, GNSS quality and active place profiles produce per-source attention multipliers.
-3. **Fuse.** Readings are scaled by attention, outliers are gated against a robust median reference, and the rest are combined by inverse-variance weighting. The result is one `Estimate`, or `None` when the sources do not agree.
+3. **Fuse.** Readings are scaled by attention, outliers are gated against a robust median reference, and the rest are combined by inverse-variance weighting. The result is one `Estimate`, or `None` when the sources do not agree. Fusion also reports the gate centre and which readings it kept, rejected or found switched off. The replay tool writes this into a trace (`--json`) for the website's replay viewer.
 4. **Mode.** A small state machine picks TRACKING, DEGRADED, DEAD_RECKONING, HOLD or RETURN_HOME_REQUESTED, plus a gain scale.
 5. **Control.** The existing `FollowController` turns the estimate into commands, scaled by the mode.
 6. **Act (later).** Commands go to the autopilot only after SITL tests pass.

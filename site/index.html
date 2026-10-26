@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Follow-me drone</title>
+  <meta name="description" content="A personal hobby and learning project: a drone that would follow a skater and film them. Simulation and modelling first; nothing has flown.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" src="assets/index.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html" aria-current="page">Overview</a>
+        <a href="replay.html">Replay</a>
+        <a href="costs.html">Costs</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <p class="eyebrow">Personal hobby and learning project</p>
+      <h1>A drone that follows a skater, worked out one part at a time</h1>
+      <p class="lede">The idea is a drone that keeps one rider in frame while they ride a pennyboard, and films them. Today it is plans, a cost model and tested Python that runs on recorded or made-up data, developed with AI coding agents.</p>
+      <div class="notice" role="note">
+        <p><strong>Nothing has flown.</strong> No hardware has been built or tested, and nothing has been ordered. The code has not been run on a drone or in a flight simulator yet. Nothing here should be used to fly anything near people.</p>
+      </div>
+    </section>
+
+    <section class="explore">
+      <h2>Explore</h2>
+      <div class="grid-3">
+        <a class="card" href="replay.html">
+          <h3>Replay viewer</h3>
+          <p class="muted">Step through a ride tick by tick: what each position source said, which ones the council trusted, and what it decided to do.</p>
+        </a>
+        <a class="card" href="costs.html">
+          <h3>Cost explorer</h3>
+          <p class="muted">What the cost model says a drone costs, pass by pass, how that changes with the number of drones, and how sure the prices are.</p>
+        </a>
+        <a class="card" href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/project-context.md">
+          <h3>The written record</h3>
+          <p class="muted">The plans, decisions, corrections and history, written so that any person or AI agent can pick the project up.</p>
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Where it stands</h2>
+      <div class="card">
+        <p class="muted small">Each stage starts only when the one before it passes. From <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/build-plan.md">the build plan</a>.</p>
+        <ol class="gates">
+          <li>
+            <span class="gate-num">1</span>
+            <div><p class="name">Software core</p><p>Fusion of several position sources, weather and place weights, the fallback modes, companion GNSS, the follow controller and the cost model.</p></div>
+            <span class="chip"><span class="dot" style="background: var(--good)"></span>✓ Built and tested</span>
+          </li>
+          <li>
+            <span class="gate-num">2</span>
+            <div><p class="name">Replay</p><p>Sensor logs run through the core. Only made-up logs so far; no real log has been recorded.</p></div>
+            <span class="chip"><span class="dot" style="background: var(--warning)"></span>◐ Made-up logs only</span>
+          </li>
+          <li>
+            <span class="gate-num">3</span>
+            <div><p class="name">Simulator</p><p>The follow logic against a simulated PX4 or ArduPilot drone. No real hardware.</p></div>
+            <span class="chip">○ Not started</span>
+          </li>
+          <li>
+            <span class="gate-num">4</span>
+            <div><p class="name">Bench</p><p>Sensors and the rider's tag tested on a desk, motors off and props removed.</p></div>
+            <span class="chip">○ Not started</span>
+          </li>
+          <li>
+            <span class="gate-num">5</span>
+            <div><p class="name">Tethered or caged</p><p>Only after the bench passes, with a human safety pilot.</p></div>
+            <span class="chip">— Not planned yet</span>
+          </li>
+          <li>
+            <span class="gate-num">6</span>
+            <div><p class="name">Free flight</p><p>Out of scope until stages 1 to 5 pass and the rules are checked.</p></div>
+            <span class="chip">— Out of scope</span>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card readme">
+        <h2>What exists</h2>
+        <!-- build:readme-status -->
+      </div>
+      <div class="card readme">
+        <h2>How this was built</h2>
+        <!-- build:readme-built -->
+        <h3>Credits</h3>
+        <p class="small muted">Prices come from the sellers listed in <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/parts-catalog.md">the parts catalog</a>, each with the date it was seen. The site is plain HTML, CSS and JavaScript, built with Python's standard library and hosted on GitHub Pages. Full list: <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/references.md">references</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents (Claude Code) at the owner's direction. No review of the code by the owner is recorded.</p>
+    <p>Nothing here claims the drone is safe, autonomous or ready to fly. This site has no analytics, cookies or tracking.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

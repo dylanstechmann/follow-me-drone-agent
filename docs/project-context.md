@@ -8,12 +8,13 @@ Facts here are a snapshot dated 2026-10-26. Where a number comes from a generate
 
 A personal hobby and learning project: a drone that follows the owner while pennyboarding and records footage. It is developed with AI coding assistants. The public repo is `dylanstechmann/follow-me-drone-agent`.
 
-The repo holds four things today:
+The repo holds five things today:
 
 1. **Tested Python logic** ("the council") that combines several imperfect position sources into one estimate of where the rider is, and turns it into follow commands. It runs on recorded or synthetic data only.
 2. **A data-driven cost and supply model** that prices building the drone in different ways, from retail parts to parts the owner designs and has made closer to the maker.
 3. **A public group-order plan** for the owner's IEEE club.
 4. **Documents**: plans, findings, decisions and this record.
+5. **A website** built from the repo's data and published by GitHub Actions: a replay viewer and a cost explorer ([website.md](website.md)).
 
 Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. No CAD, PCB or firmware file exists.
 
@@ -65,10 +66,11 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `context.py` | Attention weights. Weather provider (Open-Meteo, with injected fetch) and a TTL cache. | `test_context.py` |
 | `geo.py`, `places.py` | Geodesy helpers. Place profiles and approach detection. | `test_places.py` |
 | `mode.py` | The mode machine. | `test_mode.py` |
-| `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs. | `test_pipeline.py`, `test_replay.py` |
+| `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs, and a JSON trace of each tick (`--json`) for the website. | `test_pipeline.py`, `test_replay.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
+| `website.py` | Builds the website from `site/` and data written by the modules above. | `test_website.py` |
 
 Everything is standard-library Python 3.10 or later, plus pytest. There is no package install step. Every module has tests, and the suite also checks that the generated docs are current and that this page lists every doc.
 
@@ -171,6 +173,9 @@ PYTHONPATH=src python3 -m follow_me.docs_sync          # rewrite generated doc t
 PYTHONPATH=src python3 -m follow_me.docs_sync --check  # fail if any table is stale
 PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
+PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
+PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
+python3 -m http.server -d _site 8000                   # preview it
 ```
 
 - One agent at a time on the working copy. Commit or save before switching tools.
@@ -192,6 +197,7 @@ PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order t
 - **Fresh:** a price seen with month precision within 12 months of the cutoff.
 - **Owner-designed:** a composed item, whoever builds it.
 - **Tag:** the small device the rider carries, with a GNSS receiver and a radio.
+- **Trace:** the replay as data, one entry per tick with the inputs, attention, gate decisions, estimate, mode and command. The website's replay viewer draws it.
 
 ## 12. Documentation map
 
@@ -230,6 +236,10 @@ Start here, then follow the question you have.
 
 - [group-order.md](group-order.md): the IEEE group-order plan (generated).
 - [lab-access.md](lab-access.md): what to ask FAU and the IEEE club.
+
+**The website**
+
+- [website.md](website.md): the GitHub Pages site, how it is built and published, and its rules.
 
 **Sources**
 

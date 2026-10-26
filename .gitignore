@@ -9,3 +9,6 @@ footage/
 # Location data must never be committed
 places.json
 *.local.json
+
+# Built website (python -m follow_me.website)
+_site/

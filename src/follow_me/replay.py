@@ -12,16 +12,21 @@ Log format (JSON): {"ticks": [ ... ]}, each tick:
   }
 Missing optional fields take the defaults shown in the code.
 
-Usage: python -m follow_me.replay path/to/log.json
+Usage:
+  python -m follow_me.replay path/to/log.json          # one line per tick
+  python -m follow_me.replay --json path/to/log.json   # a trace for the website's replay viewer
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 
 from follow_me.context import COMPANION_GNSS_SOURCES, Conditions, WeatherReport
 from follow_me.council import Council, TickResult
-from follow_me.fusion import Estimate, Reading
+from follow_me.fusion import DEFAULT_GATE, Estimate, Reading
+
+TRACE_FORMAT = "follow-me-trace/1"
 
 
 def _per_source(value) -> dict[str, float]:
@@ -75,6 +80,71 @@ def replay(log: dict, council: Council | None = None) -> list[tuple[float, TickR
     return results
 
 
+def _round(value: float) -> float:
+    return round(value, 4)
+
+
+def _trace_tick(tick: dict, t: float, r: TickResult) -> dict:
+    readings = []
+    status = r.fusion.status if r.fusion else ()
+    for reading, state in zip(_parse_readings(tick), status):
+        trust = reading.reliability * r.weights.get(reading.source, 1.0)
+        readings.append({
+            "source": reading.source,
+            "x": _round(reading.estimate.x),
+            "y": _round(reading.estimate.y),
+            "variance": _round(reading.estimate.variance),
+            "trust": _round(trust),
+            "status": state,
+        })
+    ref = r.fusion.reference if r.fusion else None
+    est = r.estimate
+    return {
+        "t": t,
+        "weather": tick.get("weather"),
+        "link_quality": tick.get("link_quality"),
+        "gnss_quality": tick.get("gnss_quality"),
+        "overrides": tick.get("overrides"),
+        "attention": {src: _round(w) for src, w in r.weights.items()},
+        "readings": readings,
+        "reference": None if ref is None else [_round(ref[0]), _round(ref[1])],
+        "estimate": None if est is None else {
+            "x": _round(est.x), "y": _round(est.y), "variance": _round(est.variance),
+        },
+        "mode": r.mode.value,
+        "gain": r.gain_scale,
+        "return_home": r.request_return_home,
+        "command": {
+            "yaw": _round(r.command.yaw),
+            "forward": _round(r.command.forward),
+            "climb": _round(r.command.climb),
+        },
+    }
+
+
+def trace(log: dict, council: Council | None = None) -> dict:
+    """The replay as data: per tick, the inputs, attention, gate decisions, estimate, mode and command."""
+    council = council or Council()
+    ticks = [
+        _trace_tick(tick, t, result)
+        for tick, (t, result) in zip(log["ticks"], replay(log, council))
+    ]
+    machine = council.machine
+    return {
+        "format": TRACE_FORMAT,
+        "note": log.get("_note", ""),
+        "settings": {
+            "gate": DEFAULT_GATE,
+            "degraded_variance": machine.degraded_variance,
+            "dead_reckon_ticks": machine.dead_reckon_ticks,
+            "hold_ticks": machine.hold_ticks,
+            "hfov_deg": _round(math.degrees(council.hfov_rad)),
+            "vfov_deg": _round(math.degrees(council.vfov_rad)),
+        },
+        "ticks": ticks,
+    }
+
+
 def _format(t: float, r: TickResult) -> str:
     est = "none" if r.estimate is None else f"x={r.estimate.x:6.2f} y={r.estimate.y:6.2f}"
     cmd = r.command
@@ -85,10 +155,16 @@ def _format(t: float, r: TickResult) -> str:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 2:
-        print("usage: python -m follow_me.replay LOG.json", file=sys.stderr)
+    args = argv[1:]
+    as_json = "--json" in args
+    files = [a for a in args if a != "--json"]
+    if len(files) != 1:
+        print("usage: python -m follow_me.replay [--json] LOG.json", file=sys.stderr)
         return 2
-    log = json.loads(Path(argv[1]).read_text(encoding="utf-8"))
+    log = json.loads(Path(files[0]).read_text(encoding="utf-8"))
+    if as_json:
+        print(json.dumps(trace(log), indent=1))
+        return 0
     for t, result in replay(log):
         print(_format(t, result))
     return 0

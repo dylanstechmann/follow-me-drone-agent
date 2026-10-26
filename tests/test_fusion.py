@@ -3,7 +3,7 @@ import math
 import pytest
 
 from follow_me.controller import Detection
-from follow_me.fusion import Estimate, Reading, fuse
+from follow_me.fusion import Estimate, Reading, fuse, fuse_report
 from follow_me.sources import camera_estimate
 
 
@@ -101,3 +101,29 @@ def test_camera_uncertainty_grows_with_range():
 def test_camera_rejects_zero_height():
     with pytest.raises(ValueError):
         camera_estimate(Detection(0.5, 0.5, 0.0), 1.0, 1.0)
+
+
+def test_report_says_which_readings_were_kept_rejected_or_off():
+    readings = [
+        Reading("camera", est(4.0), reliability=0.4),
+        Reading("phone_gnss", est(10.0), reliability=1.0),
+        Reading("tag_gnss", est(10.2), reliability=1.0),
+        Reading("tof", est(9.0), reliability=0.0),
+    ]
+    report = fuse_report(readings)
+    assert report.status == ("rejected", "kept", "kept", "off")
+    assert report.reference == (10.0, 0.0)
+    assert report.estimate == fuse(readings)
+
+
+def test_report_with_nothing_active_has_no_reference():
+    report = fuse_report([Reading("camera", est(4.0), reliability=0.0)])
+    assert report == type(report)(None, None, ("off",))
+
+
+def test_report_when_the_gate_rejects_everything():
+    report = fuse_report([Reading("a", est(0.0)), Reading("b", est(10.0))])
+    assert report.estimate is None
+    assert report.reference == (5.0, 0.0)
+    assert report.status == ("rejected", "rejected")
+

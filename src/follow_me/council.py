@@ -1,10 +1,10 @@
 """The council: one tick of sense -> context -> fusion -> mode -> control."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from follow_me.context import Conditions, apply_attention, attention
 from follow_me.controller import Command, FollowController
-from follow_me.fusion import Estimate, Reading, fuse
+from follow_me.fusion import Estimate, FuseReport, Reading, fuse_report
 from follow_me.mode import Mode, ModeMachine
 from follow_me.sources import estimate_to_detection
 
@@ -19,6 +19,9 @@ class TickResult:
     gain_scale: float
     request_return_home: bool
     command: Command
+    # How the tick was decided, for logs and the replay viewer. Not used for control.
+    weights: dict[str, float] = field(default_factory=dict)  # attention multiplier per source
+    fusion: FuseReport | None = None
 
 
 class Council:
@@ -41,7 +44,8 @@ class Council:
         overrides: dict[str, float] | None = None,
     ) -> TickResult:
         weights = attention(conditions, overrides)
-        fused = fuse(apply_attention(readings, weights))
+        report = fuse_report(apply_attention(readings, weights))
+        fused = report.estimate
         status = self.machine.step(fused)
         detection = None
         if fused is not None:
@@ -58,4 +62,6 @@ class Council:
             gain_scale=status.gain_scale,
             request_return_home=status.request_return_home,
             command=command,
+            weights=weights,
+            fusion=report,
         )

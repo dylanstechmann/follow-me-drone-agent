@@ -22,6 +22,7 @@ A log for agents and for the owner. Read the decisions before proposing a change
 | D14 | 2026-10-24 | The owner does not like asking for money. No funding, sponsorship or grant requests unless the owner asks. Funding mentions in older docs are optional. | The owner's stated preference. | [vision.md](vision.md), [AGENTS.md](../AGENTS.md) |
 | D15 | 2026-10-24 | Direction: curiosity about many drones and the software that may power them, with the owner sourcing or making the parts, somewhat. This is not a plan of record. | The owner's stated interest. | [vision.md](vision.md) |
 | D16 | 2026-10-24 | Record the project, the vision and the history in the repo, so that any AI agent can pick it up. | The owner asked. | [project-context.md](project-context.md), [history.md](history.md) |
+| D17 | 2026-10-26 | A static website on GitHub Pages, built from the repo's data in GitHub Actions at every push to main. No backend, analytics or cookies. The browser draws what the tested Python computed and never re-implements the logic. | The owner asked for easy visualizations and a site for the repo. Building from the data keeps the site from falling behind. | [website.md](website.md), `src/follow_me/website.py` |
 
 ## Corrections
 

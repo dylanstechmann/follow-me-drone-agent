@@ -470,7 +470,7 @@ def companion_tiers(
     ]
 
 
-def _budget_status(t: Totals, budget: float) -> str:
+def budget_status(t: Totals, budget: float) -> str:
     if t.core_high <= budget:
         return "fits budget at low and high prices"
     if t.core_low <= budget:
@@ -505,7 +505,7 @@ def report(
         lines.append(
             f"    core ${t.core_low:,.2f} to ${t.core_high:,.2f}"
             f"   optional ${t.optional_low:,.2f} to ${t.optional_high:,.2f}"
-            f"   {_budget_status(t, budget)}"
+            f"   {budget_status(t, budget)}"
         )
         lines.append(
             f"    made in house {made_share(t):.0%} of core (midpoints)"
@@ -554,7 +554,7 @@ def passes_markdown(
             f"| {p.id} {p.title} | {p.based_on or 'none'} | {t.core_low:,.2f} | {t.core_high:,.2f} | "
             f"{change} | {cash_lo:,.2f} to {cash_hi:,.2f} | {made_share(t):.0%} | "
             f"{designed_share(catalog, p.items, materials):.0%} | "
-            f"{_budget_status(t, budget)} | {t.placeholders} | {fresh} of {sourced} |"
+            f"{budget_status(t, budget)} | {t.placeholders} | {fresh} of {sourced} |"
         )
     return "\n".join(rows)
 

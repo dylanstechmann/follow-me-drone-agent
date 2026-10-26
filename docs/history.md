@@ -58,6 +58,7 @@ The owner asked what else could be done for the repo: visualizations and easy da
 
 - **Iteration 16:** an agent web search found that FAU's safety office prohibits recreational drone use on university property, and that the Boca Raton campus borders Boca Raton Airport's Class D airspace. Both are recorded as rules to confirm. The drone club is recorded as owner-reported, because the search found no university-level FAU drone club. Found C13: the replay example did not reach the modes the progress log said it did. The example now walks every mode at default settings.
 - **Iteration 17:** found C14, the cash at minimum orders leaving out the waste allowance, and fixed it. Added the cost per drone for any number of drones, with the PCB assembly fees paid once per order. It is for exploring; the owner has not set a number.
+- **Iteration 18:** built the website: an overview, a replay viewer and a cost explorer, built from the repo's data by `follow_me.website` and published by a GitHub Actions workflow. Fusion now reports its gate decisions, and the replay tool writes them into a JSON trace. The agent checked every page in a headless browser at desktop and phone widths, in light and dark themes.
 
 ## Standing instructions from the owner
 

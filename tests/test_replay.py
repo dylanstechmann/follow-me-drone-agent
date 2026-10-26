@@ -8,7 +8,7 @@ from follow_me.context import Conditions, WeatherReport
 from follow_me.council import Council
 from follow_me.fusion import Estimate, Reading, fuse
 from follow_me.mode import Mode, ModeMachine
-from follow_me.replay import main, replay
+from follow_me.replay import TRACE_FORMAT, main, replay, trace
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "replay.example.json"
 
@@ -116,3 +116,26 @@ def test_main_prints_one_line_per_tick(capsys):
 
 def test_main_usage_error(capsys):
     assert main(["replay"]) == 2
+
+
+def test_trace_records_gate_decisions_and_matches_the_replay():
+    log = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    data = trace(log)
+    assert data["format"] == TRACE_FORMAT
+    assert data["settings"]["dead_reckon_ticks"] == 10 and data["settings"]["hold_ticks"] == 100
+    assert len(data["ticks"]) == len(log["ticks"])
+    assert [t["mode"] for t in data["ticks"]] == [r.mode.value for _, r in replay(log)]
+    rain, spot = data["ticks"][2], data["ticks"][3]
+    assert [r["status"] for r in rain["readings"]] == ["rejected", "kept", "kept"]
+    assert rain["attention"]["camera"] == pytest.approx(0.4)
+    assert [r["status"] for r in spot["readings"]] == ["off", "kept", "kept"]
+    lost = data["ticks"][10]
+    assert lost["estimate"] is None and lost["reference"] is None and lost["readings"] == []
+
+
+def test_main_json_prints_a_trace(capsys):
+    assert main(["replay", "--json", str(EXAMPLE)]) == 0
+    data = json.loads(capsys.readouterr().out)
+    assert data["format"] == TRACE_FORMAT
+    assert data["note"].startswith("Synthetic")
+

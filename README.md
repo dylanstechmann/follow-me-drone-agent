@@ -8,6 +8,7 @@ A personal hobby and learning project: a drone that follows a skater (pennyboard
 - **Why this exists and where it is going:** [docs/vision.md](docs/vision.md).
 - **What was decided, and what was corrected:** [docs/decisions.md](docs/decisions.md).
 - **What was discussed and done, in order:** [docs/history.md](docs/history.md).
+- **The website:** https://dylanstechmann.github.io/follow-me-drone-agent/, a replay viewer and a cost explorer built from this repo's data and published by GitHub Actions ([docs/website.md](docs/website.md)).
 
 ## Direction
 
@@ -17,7 +18,7 @@ The owner does not like asking for money. Nothing in the plan depends on outside
 
 ## Status
 
-- **Built and tested (standard-library Python plus pytest):** the follow controller, fusion of several position sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, and a data-driven cost and supply model with a dependency check. These run on recorded or synthetic data only.
+- **Built and tested (standard-library Python plus pytest):** the follow controller, fusion of several position sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, and a data-driven cost and supply model with a dependency check and costs for any number of drones. These run on recorded or synthetic data only. A website shows the replay and the costs in the browser.
 - **Planned and documented:** the routes to make each part ([docs/make-own-ladder.md](docs/make-own-ladder.md)), the factory and lab routes ([docs/supply-side.md](docs/supply-side.md)), and a public IEEE group order plan ([docs/group-order.md](docs/group-order.md)) that nobody has acted on yet.
 - **Not built:** person detection and tracking, the simulator bridge, any flight adapter, and any CAD, PCB or firmware file.
 - **Never done:** flying, building or testing hardware, contacting a supplier, or placing an order.
@@ -36,11 +37,11 @@ The working budget is $100 for the bench and pipeline work, so simulation comes 
 
 ## Development
 
-The code is Python 3.10 or later with pytest only. Run `python3 -m pytest`. Docker Compose and uv, which the owner's other repos use, are planned and not added yet. Tables in the docs are generated from the data under `bom/`: run `PYTHONPATH=src python3 -m follow_me.docs_sync` after changing it. The commands are in [docs/project-context.md](docs/project-context.md).
+The code is Python 3.10 or later with pytest only. Run `python3 -m pytest`. Docker Compose and uv, which the owner's other repos use, are planned and not added yet. Tables in the docs are generated from the data under `bom/`: run `PYTHONPATH=src python3 -m follow_me.docs_sync` after changing it. Build the website with `PYTHONPATH=src python3 -m follow_me.website` and preview it with `python3 -m http.server -d _site 8000`. The commands are in [docs/project-context.md](docs/project-context.md).
 
 ## How this was built
 
-This is an AI-assisted hobby project. All the code, tests and docs so far were written by AI coding agents (Claude Code, with several assistant models over the sessions) at the owner's direction. The owner supplied the direction, the decisions and the real-world facts: the budget, access to 3D printers, that the IEEE club can run group orders, and the preference not to ask for money. No review of the code by the owner is recorded.
+This is an AI-assisted hobby project. All the code, tests, docs and the website so far were written by AI coding agents (Claude Code, with several assistant models over the sessions) at the owner's direction. The owner supplied the direction, the decisions and the real-world facts: the budget, access to 3D printers, that the IEEE club can run group orders, and the preference not to ask for money. No review of the code by the owner is recorded.
 
 The agents ran the web research. Search snippets and fetched pages are not verified, and the prices and licence notes drawn from them are provisional. Design research draws on public PX4, ArduPilot and MAVSDK documentation. Sources are in [docs/references.md](docs/references.md).
 

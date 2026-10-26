@@ -4,7 +4,7 @@ Budget: $100 total (see [budget.md](budget.md)). Build in gates. A later gate st
 
 ## Gates
 
-1. **Software core (no hardware).** Fusion, context, places, mode machine, companion GNSS for a phone and a tag, replay tool, and a priced parts catalog with cost passes. All tested (119 tests). Current stage.
+1. **Software core (no hardware).** Fusion, context, places, mode machine, companion GNSS for a phone and a tag, replay tool, and a priced parts catalog with cost passes. All tested. Current stage.
 2. **Replay.** Feed recorded or synthetic sensor logs through the core. Measure how it behaves when sources fail or disagree.
 3. **SITL.** Run the follow logic against a PX4 or ArduPilot simulated drone. No real hardware.
 4. **Bench.** Test sensors and the companion on a desk. Motors off, props removed.

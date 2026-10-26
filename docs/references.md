@@ -12,6 +12,11 @@ Sources used for design. Add a line for each source actually used.
 - JLCPCB, the low-markup PCB fab used as the planned production route: https://jlcpcb.com/
 - Holybro, Heltec, RadioMaster, u-blox, Raspberry Pi, LCSC, DigiKey, Newark, Mouser, JC-Magnetics and other vendors appear in [parts-catalog.md](parts-catalog.md) with their price sources.
 
+Website ([website.md](website.md)):
+
+- GitHub Pages and GitHub Actions host and build the site: https://docs.github.com/en/pages
+- The chart colours, status colours and freshness ramp follow a colour-blind-checked palette from the data-visualization guidance the coding agent used, checked with its validator on 2026-10-26.
+
 Rules and places (found by agent web searches on 2026-10-26, not confirmed with the organisations):
 
 - FAU Environmental Health and Safety, drone safety page (undated): https://www.fau.edu/ehs/info/drone-safety.pdf

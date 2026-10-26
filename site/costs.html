@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cost explorer · Follow-me drone</title>
+  <meta name="description" content="What the follow-me drone's cost model says a drone costs, pass by pass, by number of drones, and how sure the prices are.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="module" src="assets/costs.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="replay.html">Replay</a>
+        <a href="costs.html" aria-current="page">Costs</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h1>Cost explorer</h1>
+      <p class="lede">What the repo's cost model says the drone costs. Each pass is one way of getting the parts, from buying everything at retail to designing boards and having a factory assemble them.</p>
+      <div class="notice" role="note">
+        <p><strong>Estimates, not quotes.</strong> Prices were checked up to <span data-as-of>the cutoff date</span>, and many are older or are guesses, as the price table below shows. Labour, tooling, failed builds, crashes, rework, storage and shipping are not included. Nothing has been ordered.</p>
+      </div>
+    </section>
+
+    <section class="kpis" id="kpis" aria-label="Headline figures"></section>
+
+    <section class="card controls" aria-label="Choose a pass and a number of drones">
+      <label>Pass <select id="pass-select"></select></label>
+      <label style="flex: 1 1 260px">Drones
+        <input type="range" id="drone-slider" min="0" max="0" value="0" aria-describedby="drone-out">
+        <output id="drone-out" style="min-width: 5ch; color: var(--ink)"></output>
+      </label>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <p class="chart-title">Core cost per drone, by pass</p>
+        <p class="chart-sub">USD, low to high, for the parts one drone needs. Select a pass to see what it changes.</p>
+        <div class="pass-chart" id="pass-chart"></div>
+        <details>
+          <summary>Table view: every pass</summary>
+          <div class="table-wrap"><table id="pass-table"></table></div>
+        </details>
+      </div>
+      <div class="card" id="pass-detail" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <p class="chart-title" id="drone-title">Cost per drone as the number of drones grows</p>
+      <p class="chart-sub">For exploring only: the owner has not set a number of drones. Each point is the cash to build that many, with every order at least its minimum, divided by the count.</p>
+      <div class="kpis" id="drone-kpis"></div>
+      <svg id="drone-chart" role="img" aria-label="Cost per drone against the number of drones" style="width: 100%; height: auto; margin-top: 12px"></svg>
+      <p class="small muted">It assumes one order per design for the whole batch and the same unit prices at every count, so real volume discounts would lower it. The PCB assembly setup and loading fees are paid once per order; the import-duty allowance stays per drone.</p>
+      <details>
+        <summary>Table view: the selected pass at each count</summary>
+        <div class="table-wrap"><table id="drone-table"></table></div>
+      </details>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <p class="chart-title">How sure the prices are</p>
+        <p class="chart-sub" id="fresh-sub"></p>
+        <div class="stack" id="fresh-stack" role="img"></div>
+        <ul class="legend" id="fresh-legend"></ul>
+        <div class="controls" style="margin-top: 14px">
+          <label>Search <input type="search" id="price-search" placeholder="part or material"></label>
+          <label>Status <select id="price-status"></select></label>
+          <label>Freshness <select id="price-fresh"></select></label>
+        </div>
+        <div class="table-wrap" style="margin-top: 8px; max-height: 420px; overflow-y: auto"><table id="price-table"></table></div>
+      </div>
+      <div class="card">
+        <p class="chart-title">Bought from one place</p>
+        <p class="chart-sub" id="dep-sub"></p>
+        <h3>One listed supplier</h3>
+        <ul class="supplier-list" id="dep-single"></ul>
+        <h3 style="margin-top: 14px">No supplier listed yet</h3>
+        <ul class="supplier-list" id="dep-none"></ul>
+        <p class="small muted" style="margin-top: 14px">The owner wants two sources for every bought part, so these are the parts to find a second seller for.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents (Claude Code) at the owner's direction, and the prices come from agent web research that is mostly unverified. No review of the code by the owner is recorded.</p>
+    <p>Figures come from <a href="https://github.com/dylanstechmann/follow-me-drone-agent/tree/main/bom">the data in bom/</a> through <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/src/follow_me/bom.py">the cost model</a>, rebuilt with every change. See <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/cost-reduction.md">cost-reduction.md</a> for the method.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

@@ -217,6 +217,16 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Results, at the 2026-10-10 prices, per drone, low to high: pass 10 goes from $332 to $960 for one drone to $197 to $519 at 100 drones, below its core cost because the setup fees spread out. Pass 11's 1,000 stator cores make one drone cost $1,320 to $2,943, and wash out to $200 to $523 at 500. The bench kit (pass 5) costs $72 to $116 for one, because minimum orders round up, against its $63.87 to $98.99 core cost.
 - Not claimed: no number of drones, no volume discounts, and no labour, tooling, failures, storage or shipping.
 
+## Iteration 18: the website (done: 212 tests pass)
+
+- Built a static site in `site/`: an overview, a replay viewer and a cost explorer, in plain HTML, CSS and JavaScript with no libraries. `follow_me.website` writes the data from the cost model and the replay tool and copies the README's status into the overview, using only the standard library. See [website.md](website.md).
+- Named the builder `follow_me.website`, not the planned `follow_me.site`, so it cannot be confused with Python's own `site` module.
+- Fusion now returns a report (the gate centre, and each reading kept, rejected or off) through the council without changing any result; the existing tests pass unchanged. `python -m follow_me.replay --json` writes a trace.
+- A GitHub Actions workflow runs the tests on every push and pull request, and on main builds and publishes the site. GitHub Pages is not turned on yet. It is a repo setting that publishes the site, so it waits for the owner.
+- Checked in a headless browser (Chromium through Playwright, in the agent's scratch space) at 1280, 1024, 900 and 390 px wide, in light and dark themes: no script errors and no sideways scrolling. Fixed what the screenshots showed: a cramped plot, colliding labels, a mode strip where dead reckoning and hold looked like one bar, and a drop-down wider than a phone.
+- Tests: the site builds; its data matches the cost model and the replay; every local link and import resolves; every page carries the hobby framing, the AI disclosure and the no-review statement; there is no email-like or phone-like text and no place data.
+- Not done: a playground that runs raw logs in the browser (Pyodide), a group-order page, and a 3D view of the replay.
+
 ## Next candidates (not started)
 
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
