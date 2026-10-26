@@ -48,4 +48,4 @@ The agents ran the web research. Search snippets and fetched pages are not verif
 
 ## License
 
-See [LICENSE](LICENSE) once added.
+MIT, see [LICENSE](LICENSE). It covers this repo's contents. The website's build downloads three.js (MIT) and an unmodified WebAssembly build of OpenSCAD (GPL-2.0-or-later) from the npm registry. Neither is stored in this repo, and the site serves each with its own licence file.

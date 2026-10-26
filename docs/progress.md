@@ -236,10 +236,20 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Finding to check: the catalog costs the tag case at 25 g of PLA and the thrust stand at 80 g. These designs come to at most about 14 g and 55 g of PLA even printed solid, so the estimates look high. The catalog keeps them until a slicer or a scale gives real numbers.
 - Not done: the KiCad tag board (iteration 14's other half, still needs KiCad), a camera mount for the bench kit, and any print. The workflow's build step runs Node.js on GitHub's runner, which has not run yet.
 
+## Iteration 20 plan: publish the site (2026-10-26)
+
+- Owner input (2026-10-26): the owner asked what to do next and said "ok" to the agent's recommendation: publish now with an MIT licence; the owner prints the hole-size gauge and the test bars at FAU's engineering building; then a batch that runs the owner's own phone recording through the council; then a camera batch. The GPU question is deferred, because nothing planned needs training.
+- Update the workflow's GitHub actions from v4, written from memory in iteration 18, to the current versions: checkout v7, setup-node v7, upload-pages-artifact v5 and deploy-pages v5. The v4 versions run on Node 20, which GitHub is retiring; the new ones run on Node 24. Build with Node 24, the version the parts renderer was tested with.
+- Add the MIT licence, with the same copyright line as the owner's other repos, and record it as a decision.
+- Turn on GitHub Pages with source "GitHub Actions", push iterations 16 to 20, and watch the first workflow run. Fix whatever it fails on, check the live site in a headless browser, and put the site link in the repo's About box.
+
 ## Next candidates (not started)
 
+- In the order the owner agreed on 2026-10-26:
+  1. The owner prints the hole-size gauge and the test bars and reports which hole fits each screw, the measured grams, and the printer and settings. These set the hole sizes for the tag case and the thrust stand before those are printed.
+  2. Run the owner's own phone recording through the council: express the mode machine's thresholds in seconds rather than ticks, so their timing does not depend on the loop rate (found in iteration 16; a phone logging once a second would double every timeout); add a simple simulated drone that follows the controller's commands; and import a recording from a GPS-logging app in the browser with Pyodide, turning positions into offsets and never uploading or committing them.
+  3. A camera batch: a person detector under an open licence (not AGPL), tested on recordings; an estimate of whether the bench kit's Pi Zero 2 W runs it fast enough; and a browser demo that locks onto only the person holding a printed marker and blurs everyone else.
 - Start the bench kit from pass 3: a Pi Zero 2 W with its camera cable, one tag, and a measurement of real tag range and battery life. Then log real data for the replay tool.
-- Express the mode machine's thresholds in seconds rather than ticks, so their timing does not depend on the loop rate. Found in iteration 16.
 
 ## Open questions for the owner
 
@@ -248,4 +258,3 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Do you already own an ELRS-compatible transmitter? It is the largest placeholder in the drone passes ($60 to $120).
 - What tools can FAU engineering and IEEE lend or book: a PCB mill or etching setup, soldering and hot-air stations, a bench power supply, a load cell, a laser cutter? See [lab-access.md](lab-access.md). (Money is not on this list: the owner does not like asking for it.)
 - How many is "tons" of drones, what would count as success, and how should the first flying drone be paid for without asking for money? See [vision.md](vision.md).
-- Repo license (still unset; see the README).
