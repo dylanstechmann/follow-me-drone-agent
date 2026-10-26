@@ -442,6 +442,14 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - new tests cover noisy fixes with honest and under-reported accuracy, following and stopping with the margin, the margin's size, and the geometry of moving the estimate closer.
 - Also changed: the replay tool's commands for the example log now include the margin, as every caller of the council does.
 
+## Iteration 30: the website and docs for the margin (done: 317 tests pass)
+
+- The distance chart shades the band the controller aims for, pushed out by each tick's margin, and draws the band's near edge (3.79 m) as a dashed too-close line, with a legend.
+- The second tile is now the time spent closer than the band. It is 0% for both examples and the made-up recording.
+- The panel shows the tick's margin, and "How to read it" explains it.
+- The comparison example is the original controller, with neither feed-forward nor the margin.
+- Checked in a headless browser at 1280 px in the light theme and 390 px in the dark theme: all pages, links and the parts slider work, with no errors or sideways scrolling. The made-up GPX ride, at a phone's accuracy, is now followed at a median of 36.9 m, the price of holding back when the position is uncertain.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

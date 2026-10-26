@@ -471,7 +471,8 @@ function renderPanel(tick) {
   const gate = (state.trace.settings && state.trace.settings.gate) || 9;
   const n = state.trace.ticks.length;
   const estimate = tick.estimate
-    ? `${fixed(tick.estimate.x, 2)} m forward, ${fixed(tick.estimate.y, 2)} m left, one sigma ${fixed(Math.sqrt(tick.estimate.variance), 2)} m`
+    ? `${fixed(tick.estimate.x, 2)} m forward, ${fixed(tick.estimate.y, 2)} m left, one sigma ${fixed(Math.sqrt(tick.estimate.variance), 2)} m.` +
+      (tick.margin ? ` Safety margin: the controller treats the rider as ${fixed(tick.margin, 1)} m closer.` : "")
     : "None this tick.";
   const rows = tick.readings.map((r) => {
     const s = sourceInfo(r.source);
@@ -626,7 +627,9 @@ function drawFollow() {
     tile("Median distance to the rider", `${fixed(s.median_distance_m, 1)} m`,
       s.min_distance_m === undefined ? `The most was ${fixed(s.max_distance_m, 1)} m.`
         : `Closest ${fixed(s.min_distance_m, 1)} m, farthest ${fixed(s.max_distance_m, 1)} m.`),
-    tile("Time inside the follow band", percent(s.in_band_share), `${fixed(near, 2)} to ${fixed(far, 2)} m from the rider.`),
+    s.too_close_share === undefined
+      ? tile("Time inside the follow band", percent(s.in_band_share), `${fixed(near, 2)} to ${fixed(far, 2)} m from the rider.`)
+      : tile("Time closer than the band", percent(s.too_close_share), `Under ${fixed(near, 2)} m from the rider, the band's near edge.`),
     tile("Time below full tracking", percent(total ? lost / total : 0), detail || "Tracking the whole time."),
     tile("Return-home requested", s.return_home_requested ? "Yes" : "No", "Recorded, not flown."),
   );
@@ -667,14 +670,22 @@ function drawDistance() {
   for (let t = Math.ceil(t0 / step) * step; t <= t1 + 1e-9; t += step) {
     svg("text", { x: x(t), y: height - 8, "text-anchor": "middle" }, chart).textContent = `${trim(t)} s`;
   }
-  svg("rect", {
-    x: pad.left, width: width - pad.left - pad.right, y: y(far), height: Math.max(1, y(near) - y(far)),
-    fill: "var(--good)", "fill-opacity": 0.16,
+  // The band the controller aims for, pushed out by each tick's safety margin. A tick
+  // with no estimate keeps the last margin; nothing is being followed then.
+  let carried = 0;
+  const margins = ticks.map((t) => (carried = typeof t.margin === "number" ? t.margin : carried));
+  const edge = (base) => ticks.map((t, i) => `${x(t.t).toFixed(1)},${y(Math.min(top, base + margins[i])).toFixed(1)}`);
+  svg("polygon", { points: [...edge(far), ...edge(near).reverse()].join(" "), fill: "var(--good)", "fill-opacity": 0.18 }, chart);
+  svg("line", {
+    x1: pad.left, x2: width - pad.right, y1: y(near), y2: y(near),
+    stroke: "var(--critical)", "stroke-width": 1.2, "stroke-dasharray": "4 3",
   }, chart);
   // Label the band where the line is farthest above it, so the two do not collide.
   const farthest = ticks.reduce((best, t) => (t.world.distance > best.world.distance ? t : best), ticks[0]);
   const labelX = Math.min(width - pad.right - 40, Math.max(pad.left + 40, x(farthest.t)));
-  svg("text", { x: labelX, y: y(far) - 5, "text-anchor": "middle", class: "halo", "stroke-width": 4 }, chart).textContent = "follow band";
+  const labelMargin = margins[ticks.indexOf(farthest)];
+  svg("text", { x: labelX, y: y(Math.min(top, far + labelMargin)) - 5, "text-anchor": "middle", class: "halo", "stroke-width": 4 }, chart)
+    .textContent = "target band";
   const d = ticks.map((t, i) => `${i ? "L" : "M"}${x(t.t).toFixed(1)},${y(t.world.distance).toFixed(1)}`).join("");
   svg("path", { d, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "stroke-linejoin": "round" }, chart);
 
@@ -914,7 +925,7 @@ async function main() {
   }
   for (const [key, file, label] of [
     ["sim-example", "data/sim-example.json", "Example: a simulated follow, made up"],
-    ["sim-before", "data/sim-example-before.json", "Example: the same ride, before feed-forward"],
+    ["sim-before", "data/sim-example-before.json", "Example: the same ride, original controller"],
   ]) {
     try {
       const trace = await fetchJSON(file);

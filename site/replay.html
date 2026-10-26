@@ -85,8 +85,13 @@
       <div class="grid-2 follow-grid">
         <figure class="follow-figure">
           <p class="chart-title">Distance to the rider</p>
-          <p class="chart-sub">Meters, at each tick. The shaded band is where the controller asks neither to approach nor to back off. Click to jump.</p>
-          <svg id="distance-chart" role="img" aria-label="Distance from the simulated drone to the rider at each tick, with the follow band shaded"></svg>
+          <p class="chart-sub">Meters, at each tick. The shaded band is where the controller aims to hold the rider, pushed out by the safety margin when the position is uncertain. Click to jump.</p>
+          <svg id="distance-chart" role="img" aria-label="Distance from the simulated drone to the rider at each tick, with the target band shaded and the too-close line dashed"></svg>
+          <ul class="legend" id="distance-legend">
+            <li><span class="key-line" style="color: var(--ink)" aria-hidden="true"></span>Distance to the rider</li>
+            <li><span class="key" style="background: var(--good); opacity: 0.45; border-radius: 2px" aria-hidden="true"></span>Target band, with the safety margin</li>
+            <li><span class="key-line dashed" style="color: var(--critical)" aria-hidden="true"></span>Too close: under 3.79 m</li>
+          </ul>
         </figure>
         <figure class="follow-figure">
           <p class="chart-title">Top-down, from the start</p>
@@ -113,6 +118,7 @@
           <li><strong>The gate</strong> rejects a reading that sits more than about three sigma from the gate centre, a reliability-weighted median of the active readings.</li>
           <li><strong>The fused estimate</strong> combines the kept readings, weighting each by trust divided by variance.</li>
           <li><strong>Modes</strong> time a loss in seconds since the last estimate: dead reckoning for up to 5 s, then hold, and a return-home request after 50 s, however often the loop runs.</li>
+          <li><strong>The safety margin</strong> shows the controller the rider 2.5 sigmas closer than estimated, so the drone holds back further when it is unsure where the rider is.</li>
         </ul>
       </div>
     </section>
