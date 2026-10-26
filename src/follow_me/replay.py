@@ -2,7 +2,7 @@
 
 Log format (JSON): {"ticks": [ ... ]}, each tick:
   {
-    "t": 0.0,
+    "t": 0.0,                              # seconds; the mode machine times losses with it
     "weather": null | {"precipitation_mm": 0.0, "wind_mps": 2.0, "fog": false},
     "link_quality": 1.0 | {"phone_gnss": 0.1},   # a number applies to all companions
     "gnss_quality": 1.0 | {"tag_gnss": 0.5},
@@ -71,12 +71,14 @@ def replay(log: dict, council: Council | None = None) -> list[tuple[float, TickR
     council = council or Council()
     results = []
     for tick in log["ticks"]:
+        t = float(tick["t"])
         result = council.tick(
             _parse_readings(tick),
             _parse_conditions(tick),
             overrides=tick.get("overrides"),
+            now=t,
         )
-        results.append((float(tick["t"]), result))
+        results.append((t, result))
     return results
 
 
@@ -129,8 +131,8 @@ def trace_settings(council: Council) -> dict:
     return {
         "gate": DEFAULT_GATE,
         "degraded_variance": machine.degraded_variance,
-        "dead_reckon_ticks": machine.dead_reckon_ticks,
-        "hold_ticks": machine.hold_ticks,
+        "dead_reckon_s": machine.dead_reckon_s,
+        "return_home_s": machine.return_home_s,
         "hfov_deg": _round(math.degrees(council.hfov_rad)),
         "vfov_deg": _round(math.degrees(council.vfov_rad)),
     }

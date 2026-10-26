@@ -166,3 +166,17 @@ def test_summary_counts_seconds_and_the_share_in_the_band():
 def test_bad_tracks_are_refused(fixes, dt, message):
     with pytest.raises(ValueError, match=message):
         simulate(fixes, dt=dt)
+
+
+def test_fallback_timing_is_the_same_at_two_loop_rates():
+    # The mode machine times losses in seconds, so a 10 Hz loop and a 2 Hz loop reach
+    # hold and return-home at the same time, within one tick, after the fixes stop at 10 s.
+    fixes = [f for f in moving(3.0, seconds=90.0) if not 10.0 < f.t < 70.0]
+
+    def first(ticks, mode):
+        return next(s.t for s in ticks if s.result.mode is mode)
+
+    slow, fast = simulate(fixes, dt=0.5), simulate(fixes, dt=0.1)
+    for mode, expected in [(Mode.DEAD_RECKONING, 12.0), (Mode.HOLD, 17.0), (Mode.RETURN_HOME_REQUESTED, 62.0)]:
+        for ticks, dt in [(slow, 0.5), (fast, 0.1)]:
+            assert expected < first(ticks, mode) <= expected + dt + 1e-9

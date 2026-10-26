@@ -53,7 +53,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 1. **Sense.** Each source gives a position estimate for the rider in the drone's body frame (meters, +x forward, +y left) with a variance: the camera, the phone's GNSS, the tag's GNSS.
 2. **Attention.** Weather, link quality, GNSS fix quality and known places change each source's weight.
 3. **Fuse.** Outliers are rejected against a reliability-weighted median, and the rest are combined by inverse variance.
-4. **Mode.** A state machine falls back from tracking to degraded, dead reckoning, hold, and a return-home request, and scales the commands.
+4. **Mode.** A state machine falls back from tracking to degraded, dead reckoning, hold, and a return-home request, and scales the commands. Losses are timed in seconds from each tick's timestamp: dead reckoning up to 5 s, hold up to 50 s.
 5. **Control.** The follow controller turns the estimate into normalized yaw, forward and climb commands.
 6. **Adapter.** Commands would go to an autopilot. This does not exist. It needs simulation first.
 

@@ -164,7 +164,7 @@ def simulate(
                 fix.east - drone.east, fix.north - drone.north, fix.accuracy_m, drone.heading_deg
             )
             readings.append(Reading("phone_gnss", est))
-        result = council.tick(readings, Conditions())
+        result = council.tick(readings, Conditions(), now=t)
         if result.estimate is not None:
             held = result.command
         flown = held if result.hold_last_command else result.command

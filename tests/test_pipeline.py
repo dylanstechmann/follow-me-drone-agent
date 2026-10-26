@@ -21,11 +21,11 @@ def camera_box_at(distance_m, cx=0.5):
     return Detection(cx=cx, cy=0.5, height=h)
 
 
-def run_tick(readings, conditions, places=(), ctrl=None, machine=None):
+def run_tick(readings, conditions, places=(), ctrl=None, machine=None, now=0.0):
     overrides = combined_attention(list(places))
     weights = attention(conditions, overrides)
     fused = fuse(apply_attention(readings, weights))
-    status = (machine or ModeMachine()).step(fused)
+    status = (machine or ModeMachine()).step(fused, now)
     cmd = (ctrl or FollowController()).update(None if fused is None else _as_detection(fused))
     return fused, status, cmd
 
@@ -64,12 +64,12 @@ def test_rain_plus_shed_place_lets_gnss_carry_the_estimate():
 
 
 def test_total_loss_walks_down_the_fallback_ladder():
-    machine = ModeMachine(dead_reckon_ticks=2, hold_ticks=4)
+    machine = ModeMachine(dead_reckon_s=1.0, return_home_s=3.0)
     ctrl = FollowController()
     conditions = Conditions(weather=WeatherReport(0.0, 0.0, False))
     modes = []
-    for _ in range(6):
-        _, status, cmd = run_tick([], conditions, machine=machine, ctrl=ctrl)
+    for t in range(6):  # one tick a second, with no estimate from the start
+        _, status, cmd = run_tick([], conditions, machine=machine, ctrl=ctrl, now=float(t))
         modes.append(status.mode)
         assert cmd == Command(0.0, 0.0, 0.0)  # never chase when lost
     assert modes == [

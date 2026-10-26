@@ -102,7 +102,7 @@ def test_phone_tag_and_camera_agree_through_the_council():
         ),
     ]
     clear = Conditions(weather=WeatherReport(0.0, 2.0, False))
-    result = Council().tick(readings, clear)
+    result = Council().tick(readings, clear, now=10.5)
     assert result.mode is Mode.TRACKING
     assert result.estimate.x == pytest.approx(10.0, abs=0.5)
     assert result.estimate.y == pytest.approx(0.0, abs=0.5)
@@ -113,7 +113,7 @@ def test_stale_phone_fix_is_dropped_and_tag_carries_the_estimate():
     assert phone is None  # ten seconds old, far past the two-second limit
     tag = companion_estimate(fix_at(north_m=10, accuracy=2, t=10.0), ORIGIN, now=10.0)
     readings = [Reading("tag_gnss", tag)]
-    result = Council().tick(readings, Conditions())
+    result = Council().tick(readings, Conditions(), now=10.5)
     assert result.mode is Mode.TRACKING
     assert result.estimate.x == pytest.approx(10.0, abs=1e-3)
 
@@ -132,5 +132,5 @@ def test_offset_estimate_rotates_like_a_fix():
 
 def test_council_passes_on_the_dead_reckoning_hold():
     council = Council()
-    assert council.tick([Reading("phone_gnss", companion_estimate(fix_at(north_m=10), ORIGIN, now=10.5))], Conditions()).hold_last_command is False
-    assert council.tick([], Conditions()).hold_last_command is True
+    assert council.tick([Reading("phone_gnss", companion_estimate(fix_at(north_m=10), ORIGIN, now=10.5))], Conditions(), now=0.0).hold_last_command is False
+    assert council.tick([], Conditions(), now=0.5).hold_last_command is True

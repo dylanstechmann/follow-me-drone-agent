@@ -91,7 +91,7 @@
           <li><strong>Trust</strong> is the reading's reliability after attention. Zero means the source is off.</li>
           <li><strong>The gate</strong> rejects a reading that sits more than about three sigma from the gate centre, a reliability-weighted median of the active readings.</li>
           <li><strong>The fused estimate</strong> combines the kept readings, weighting each by trust divided by variance.</li>
-          <li><strong>Modes</strong> count ticks, not seconds. The example has two ticks per second, so return-home is requested about 50 s after the last estimate.</li>
+          <li><strong>Modes</strong> time a loss in seconds since the last estimate: dead reckoning for up to 5 s, then hold, and a return-home request after 50 s, however often the loop runs.</li>
         </ul>
       </div>
     </section>

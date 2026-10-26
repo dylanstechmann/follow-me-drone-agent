@@ -44,11 +44,14 @@ class Council:
         readings: list[Reading],
         conditions: Conditions,
         overrides: dict[str, float] | None = None,
+        *,
+        now: float,
     ) -> TickResult:
+        """One tick at time `now`, in seconds. The mode machine times losses with it."""
         weights = attention(conditions, overrides)
         report = fuse_report(apply_attention(readings, weights))
         fused = report.estimate
-        status = self.machine.step(fused)
+        status = self.machine.step(fused, now)
         detection = None
         if fused is not None:
             detection = estimate_to_detection(fused, self.hfov_rad, self.vfov_rad)

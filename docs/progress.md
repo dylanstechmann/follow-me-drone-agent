@@ -282,6 +282,13 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - Past about 54 m, the heading term makes even a 1 m fix degraded.
 - Not changed: the controller and the threshold. Each is a change to the follow logic, so it is listed in [simulation.md](simulation.md) as a candidate needing its own simulation tests.
 
+## Iteration 22: mode thresholds in seconds (done: 257 tests pass)
+
+- The mode machine now times a loss in seconds since the last estimate, from each tick's timestamp: dead reckoning up to 5 s, hold up to 50 s, then a return-home request. `ModeMachine(dead_reckon_s, return_home_s)` replaces the tick counts, and `Council.tick` and `ModeMachine.step` take the tick's time. Times that go backwards are refused.
+- At the example log's 2 ticks per second the windows match the old 10 and 100 ticks, so the example walks the same runs, and its test passes unchanged. The mode tests check the windows at 0.1, 0.5 and 2.5 s per tick, and a simulation test checks that a 10 Hz and a 2 Hz loop reach hold and return-home at the same time, within one tick. This is the simulation test the safety rule asks for, for a change to this logic.
+- One difference from counting ticks: a loss with no estimate before it is timed from its first tick, so a log that starts with no readings gets one extra dead-reckoning tick.
+- The replay page now says that modes are timed in seconds, and the trace settings carry `dead_reckon_s` and `return_home_s`.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:
