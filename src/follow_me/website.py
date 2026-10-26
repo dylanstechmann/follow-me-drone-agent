@@ -100,7 +100,7 @@ PYODIDE_JS = "assets/vendor/pyodide/pyodide.mjs"
 # checks that they import nothing else from the package.
 PY_MODULES = (
     "__init__", "companion", "context", "controller", "council", "fusion", "geo",
-    "mode", "recording", "replay", "sim", "sources",
+    "mode", "motion", "recording", "replay", "sim", "sources",
 )
 
 

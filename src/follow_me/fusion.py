@@ -33,6 +33,9 @@ class Reading:
     source: str
     estimate: Estimate
     reliability: float = 1.0  # 0 disables the source; context scales this
+    # Seconds since the measurement was taken. A source slower than the loop, such as
+    # a phone's 1 Hz fix, repeats its last measurement with a growing age.
+    age_s: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -42,6 +45,7 @@ class FuseReport:
     estimate: Estimate | None
     reference: tuple[float, float] | None  # the gate centre; None when no reading was active
     status: tuple[str, ...]  # one per input reading, in order: "kept", "rejected" or "off"
+    age_s: float | None = None  # the kept readings' ages, weighted as in the fused estimate
 
 
 def fuse(readings: list[Reading], gate: float = DEFAULT_GATE) -> Estimate | None:
@@ -68,16 +72,26 @@ def fuse_report(readings: list[Reading], gate: float = DEFAULT_GATE) -> FuseRepo
             kept.append(readings[i])
         else:
             status[i] = "rejected"
-    estimate = _combine(kept) if kept else None
-    return FuseReport(estimate, ref, tuple(status))
+    if not kept:
+        return FuseReport(None, ref, tuple(status))
+    return FuseReport(_combine(kept), ref, tuple(status), _age(kept))
+
+
+def _info(r: Reading) -> float:
+    return r.reliability / r.estimate.variance
 
 
 def _combine(readings: list[Reading]) -> Estimate:
-    info = [r.reliability / r.estimate.variance for r in readings]
+    info = [_info(r) for r in readings]
     total = sum(info)
     x = sum(w * r.estimate.x for w, r in zip(info, readings)) / total
     y = sum(w * r.estimate.y for w, r in zip(info, readings)) / total
     return Estimate(x, y, 1.0 / total)
+
+
+def _age(readings: list[Reading]) -> float:
+    info = [_info(r) for r in readings]
+    return sum(w * r.age_s for w, r in zip(info, readings)) / sum(info)
 
 
 def _reference(readings: list[Reading]) -> tuple[float, float]:

@@ -127,3 +127,15 @@ def test_report_when_the_gate_rejects_everything():
     assert report.reference == (5.0, 0.0)
     assert report.status == ("rejected", "rejected")
 
+
+
+def test_fusion_reports_the_kept_readings_weighted_age():
+    from follow_me.fusion import fuse_report
+
+    fresh = Reading("camera", Estimate(10.0, 0.0, 1.0), age_s=0.0)
+    old = Reading("phone_gnss", Estimate(10.0, 0.0, 3.0), age_s=0.8)
+    wild = Reading("tag_gnss", Estimate(40.0, 0.0, 1.0), age_s=5.0)
+    report = fuse_report([fresh, old, wild])
+    assert report.status == ("kept", "kept", "rejected")
+    assert report.age_s == pytest.approx(0.8 * (1 / 3) / (1 + 1 / 3))  # weighted by information
+    assert fuse_report([]).age_s is None

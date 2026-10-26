@@ -342,6 +342,42 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - [simulation.md](simulation.md) now has a table of the three apps.
 - Next candidate, from having two phones: record the same walk on both at once, and run one as `phone_gnss` and the other as a stand-in for `tag_gnss`. Two receivers with independent errors would test the gate on real disagreement, which `companion.py` was designed for. Not started.
 
+## Iterations 26 to 28 plan: make the simulated drone keep up (2026-10-26)
+
+- Owner input (2026-10-26): the owner asked what else could be done before work away from the computer. The agent recommended fixing the follow logic the simulation exposed in iteration 21, then the camera batch, then two-phone support, and started the first. Everything stays local until the owner says to push.
+- Iteration 26, the rider's motion (`motion.py`):
+  - A constant-velocity Kalman filter estimates the rider's position and velocity in a local frame. It uses the drone's own pose, which a real autopilot reports and the simulation knows.
+  - `Council.tick` takes the pose as an optional input. Without it, as in every existing log, nothing changes.
+  - The trace carries the rider's estimated speed.
+- Iteration 27, feed-forward:
+  - The controller adds the rider's estimated speed along the drone's nose, as a share of the full-scale speed, to the forward command. The share shrinks toward zero when the speed estimate is uncertain.
+  - The mode's gain still scales the whole command, so degraded still means half authority.
+  - Simulation tests, as the safety rule asks for a change to control code:
+    - a rider at 2 to 5 m/s is followed near the follow band instead of 7.6 to 30 m behind;
+    - a rider who stops suddenly is never approached closer than a set distance;
+    - a turning rider is followed without large overshoot;
+    - noisy fixes from a standing rider do not make the drone wander;
+    - with no pose, the commands are unchanged.
+- Iteration 28, the website and docs:
+  - The simulated follow example uses the new logic, with the old logic kept beside it for comparison.
+  - [simulation.md](simulation.md) gets before and after numbers.
+- Not in scope: the degraded threshold. A phone alone is still degraded at half authority, and that needs real data.
+- Stop point: ask the owner before pushing.
+
+## Iteration 26: the rider's motion (done: 293 tests pass)
+
+- Added `motion.py`. It places each fused estimate in a local frame using the drone's pose, and filters east and north with a constant-velocity Kalman filter. The filter uses a 1.5 m/s² acceleration sigma, a guess. It reports the rider's velocity over the ground in the drone's frame, with its uncertainty, or nothing before the first estimate and after 5 s without one.
+- `Council.tick` takes an optional `pose`. The simulation passes its drone's pose. Logs have no pose, so the replay tool, its example and its tests are unchanged. Traces carry `motion` only when there is one.
+- Found while testing: the simulation ticks every 0.5 s and a phone fixes once a second, so every other tick repeats the last fix. A filter that took each tick's estimate as new would see the rider stop every other tick. Readings now carry `age_s`, the measurement's age; fusion reports the kept readings' weighted age; and the filter uses each measurement once, at the time it was taken. Logs may give `age_s`; it defaults to 0.
+- Tests:
+  - frame rotations;
+  - convergence to the rider's speed;
+  - the drone's own motion taken out, both when it flies alongside the rider and when it spins on the spot;
+  - a repeated measurement adding nothing, and a steady speed from a 1 Hz fix on a 2 Hz loop;
+  - restarting after a gap;
+  - fusion's weighted age.
+- The controller does not use the motion yet. Iteration 27 does.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

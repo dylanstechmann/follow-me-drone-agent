@@ -20,6 +20,7 @@ from follow_me.context import Conditions
 from follow_me.controller import Command
 from follow_me.council import Council, TickResult
 from follow_me.fusion import Reading
+from follow_me.motion import Pose
 from follow_me.replay import TRACE_FORMAT, trace_settings, trace_tick
 
 PERSON_HEIGHT_M = 1.75  # the default in sources.estimate_to_detection
@@ -49,11 +50,8 @@ class RiderFix:
     accuracy_m: float  # reported 1-sigma horizontal accuracy
 
 
-@dataclass(frozen=True)
-class DroneState:
-    east: float
-    north: float
-    heading_deg: float  # clockwise from north
+# The simulated drone's state is its pose: meters east and north, heading clockwise from north.
+DroneState = Pose
 
 
 @dataclass(frozen=True)
@@ -195,8 +193,8 @@ def simulate(
             est = offset_estimate(
                 fix.east - drone.east, fix.north - drone.north, fix.accuracy_m, drone.heading_deg
             )
-            readings.append(Reading("phone_gnss", est))
-        result = council.tick(readings, Conditions(), now=t)
+            readings.append(Reading("phone_gnss", est, age_s=max(0.0, t - fix.t)))
+        result = council.tick(readings, Conditions(), now=t, pose=drone)
         if result.estimate is not None:
             held = result.command
         flown = held if result.hold_last_command else result.command

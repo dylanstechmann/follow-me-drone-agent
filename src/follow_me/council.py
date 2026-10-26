@@ -6,6 +6,7 @@ from follow_me.context import Conditions, apply_attention, attention
 from follow_me.controller import Command, FollowController
 from follow_me.fusion import Estimate, FuseReport, Reading, fuse_report
 from follow_me.mode import Mode, ModeMachine
+from follow_me.motion import Motion, Pose, RiderTracker
 from follow_me.sources import estimate_to_detection
 
 DEFAULT_HFOV = 1.5708  # 90 degrees, a placeholder camera
@@ -24,6 +25,8 @@ class TickResult:
     fusion: FuseReport | None = None
     # The mode machine allows the caller to keep its previous command (dead reckoning).
     hold_last_command: bool = False
+    # The rider's estimated velocity, when the caller gave the drone's pose.
+    motion: Motion | None = None
 
 
 class Council:
@@ -33,11 +36,13 @@ class Council:
         machine: ModeMachine | None = None,
         hfov_rad: float = DEFAULT_HFOV,
         vfov_rad: float = DEFAULT_VFOV,
+        tracker: RiderTracker | None = None,
     ) -> None:
         self.controller = controller or FollowController()
         self.machine = machine or ModeMachine()
         self.hfov_rad = hfov_rad
         self.vfov_rad = vfov_rad
+        self.tracker = tracker or RiderTracker()
 
     def tick(
         self,
@@ -46,12 +51,21 @@ class Council:
         overrides: dict[str, float] | None = None,
         *,
         now: float,
+        pose: Pose | None = None,
     ) -> TickResult:
-        """One tick at time `now`, in seconds. The mode machine times losses with it."""
+        """One tick at time `now`, in seconds. The mode machine times losses with it.
+
+        `pose` is the drone's pose in a local frame, from the autopilot or a simulation.
+        With it, the council also estimates the rider's velocity.
+        """
         weights = attention(conditions, overrides)
         report = fuse_report(apply_attention(readings, weights))
         fused = report.estimate
         status = self.machine.step(fused, now)
+        motion = None
+        if pose is not None:
+            measured_at = now - report.age_s if fused is not None else None
+            motion = self.tracker.step(now, pose, fused, measured_at)
         detection = None
         if fused is not None:
             detection = estimate_to_detection(fused, self.hfov_rad, self.vfov_rad)
@@ -70,4 +84,5 @@ class Council:
             weights=weights,
             fusion=report,
             hold_last_command=status.hold_last_command,
+            motion=motion,
         )

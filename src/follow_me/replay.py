@@ -8,7 +8,7 @@ Log format (JSON): {"ticks": [ ... ]}, each tick:
     "gnss_quality": 1.0 | {"tag_gnss": 0.5},
     "overrides": {"camera": 0.3},          # already-combined place attention
     "readings": [{"source": "camera", "x": 10.0, "y": 0.0, "variance": 1.0,
-                  "reliability": 1.0}, ...]
+                  "reliability": 1.0, "age_s": 0.0}, ...]   # age_s: seconds since measured
   }
 Missing optional fields take the defaults shown in the code.
 
@@ -62,6 +62,7 @@ def _parse_readings(tick: dict) -> list[Reading]:
                 source=r["source"],
                 estimate=Estimate(float(r["x"]), float(r["y"]), float(r["variance"])),
                 reliability=float(r.get("reliability", 1.0)),
+                age_s=float(r.get("age_s", 0.0)),
             )
         )
     return out
@@ -102,7 +103,7 @@ def trace_tick(tick: dict, t: float, r: TickResult) -> dict:
         })
     ref = r.fusion.reference if r.fusion else None
     est = r.estimate
-    return {
+    out = {
         "t": t,
         "weather": tick.get("weather"),
         "link_quality": tick.get("link_quality"),
@@ -123,6 +124,13 @@ def trace_tick(tick: dict, t: float, r: TickResult) -> dict:
             "climb": _round(r.command.climb),
         },
     }
+    if r.motion is not None:  # only when the drone's pose was known
+        out["motion"] = {
+            "forward": _round(r.motion.forward_mps),
+            "left": _round(r.motion.left_mps),
+            "sigma": _round(r.motion.sigma_mps),
+        }
+    return out
 
 
 def trace_settings(council: Council) -> dict:
