@@ -499,6 +499,23 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Found while testing: this onnxruntime-web build cannot use threads in Node.js, so the timing tool uses one.
 - See [camera.md](camera.md).
 
+## Iteration 33: the camera page (done: 329 Python and 12 JavaScript tests pass)
+
+- Added `camera.html`, linked from every page and from the overview:
+  - The visitor's camera, or a photo they choose, goes through the detector in a worker, and js-aruco2 (MIT, pinned) finds the printed marker.
+  - The person whose box holds the marker is the rider (`rider.js`). If the marker is hidden, the same person is kept for one second by overlap.
+  - The whole picture is blurred and only the rider's box is drawn sharp, so missed people stay blurred too (decision D24).
+  - The rider's box goes to `follow_me.camera_view` in Pyodide, which keeps a council between frames: the estimate, the safety margin, the mode and the command.
+  - The camera stops when the page is hidden, and nothing is recorded or uploaded.
+- The two workers that run Python now share `python.js`, and the build reports `camera` in `data/build.json`.
+- Tests:
+  - `test_camera_view.py`: the estimate is `camera_estimate`'s, the commands follow from it, and a lost rider walks down the modes in seconds;
+  - `rider.test.mjs`: the holder is the smallest box around the marker, only the right marker counts, and the hold works and then lets go.
+- Checked in a headless browser with a COCO photo of 11 people and the marker pasted onto one, kept on the agent's machine only:
+  - **Photo mode:** found all 11, followed only the marked person, and blurred a bystander's region from 12.5 to 1.9 on a sharpness measure, while the rider's stayed at 14.5 of 15.1.
+  - **Live camera mode:** with Chromium's fake camera playing the same picture, it ran at 73 ms a frame and stopped cleanly.
+  - **Layout:** no errors or sideways scrolling at desktop width in the light theme and phone width in the dark theme.
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

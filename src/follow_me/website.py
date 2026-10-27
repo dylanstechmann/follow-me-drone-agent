@@ -106,6 +106,18 @@ VENDOR = {
             "package/dist/ort-wasm-simd-threaded.wasm": "onnxruntime/ort-wasm-simd-threaded.wasm",
         },
     },
+    "js-aruco2": {
+        "version": "2.0.0",
+        "license": "MIT",
+        "url": "https://registry.npmjs.org/js-aruco2/-/js-aruco2-2.0.0.tgz",
+        "integrity": "sha512-2R9P7INqIkg1fsGBazSDLChmfwJpbaYN26gO6wFr1TLIOrvwQf0YzuhwVZAPF8frQ4cjdppAN0dRmExEd/6wqw==",
+        "source": "https://github.com/damianofalcioni/js-aruco2",
+        "files": {
+            "package/src/cv.js": "aruco/cv.js",
+            "package/src/aruco.js": "aruco/aruco.js",
+            "package/LICENSE.txt": "aruco/LICENSE.txt",
+        },
+    },
     "yolox-nano": {
         "version": "YOLOX release 0.1.1rc0, yolox_nano.onnx (trained on COCO)",
         "license": "Apache-2.0",
@@ -119,12 +131,17 @@ VENDOR = {
 }
 OPENSCAD_JS = "assets/vendor/openscad/openscad.js"
 PYODIDE_JS = "assets/vendor/pyodide/pyodide.mjs"
+CAMERA_FILES = (  # what the camera page needs besides Python
+    "assets/vendor/onnxruntime/ort.wasm.min.mjs",
+    "assets/vendor/yolox/yolox_nano.onnx",
+    "assets/vendor/aruco/aruco.js",
+)
 
 # The modules the replay page runs in the browser to simulate a recording. A test
 # checks that they import nothing else from the package.
 PY_MODULES = (
-    "__init__", "companion", "context", "controller", "council", "fusion", "geo",
-    "mode", "motion", "recording", "replay", "sim", "sources",
+    "__init__", "camera_view", "companion", "context", "controller", "council", "fusion",
+    "geo", "mode", "motion", "recording", "replay", "sim", "sources",
 )
 
 
@@ -394,6 +411,7 @@ def build(
     built = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     _write_json(out / "data" / "build.json", {
         "commit": commit, "built": built, "python": (out / PYODIDE_JS).is_file(),
+        "camera": (out / PYODIDE_JS).is_file() and all((out / f).is_file() for f in CAMERA_FILES),
     })
 
     index = out / "index.html"

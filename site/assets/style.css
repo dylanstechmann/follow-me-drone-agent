@@ -475,3 +475,15 @@ body.dragging .drop-hint { border-color: var(--accent); }
 .param output { text-align: right; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
 .param input[type="range"]:disabled { opacity: 0.5; }
 
+
+/* Camera page */
+
+.camera-card canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: var(--page); min-height: 120px; }
+.camera-card figcaption { margin-top: 8px; }
+.marker svg { width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto 12px; border: 1px solid var(--border); }
+@media print {
+  body.printing-marker * { visibility: hidden; }
+  body.printing-marker #marker, body.printing-marker #marker * { visibility: visible; }
+  body.printing-marker #marker { position: absolute; left: 1.5cm; top: 1.5cm; }
+  body.printing-marker #marker svg { width: 18cm; max-width: none; border: 0; }
+}

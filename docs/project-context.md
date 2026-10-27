@@ -14,7 +14,7 @@ The repo holds five things today:
 2. **A data-driven cost and supply model** that prices building the drone in different ways, from retail parts to parts the owner designs and has made closer to the maker.
 3. **A public group-order plan** for the owner's IEEE club.
 4. **Documents**: plans, findings, decisions and this record.
-5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer that also simulates a visitor's GPX recording in the browser, a cost explorer, and the printable parts in 3D ([website.md](website.md)).
+5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer that also simulates a visitor's GPX recording in the browser, a camera page with a person detector, a cost explorer, and the printable parts in 3D ([website.md](website.md)).
 
 Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. Four printable parts exist as OpenSCAD models, rendered by an agent but never printed or tested. No PCB or firmware file exists.
 
@@ -69,6 +69,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs, and a JSON trace of each tick (`--json`) for the website. | `test_pipeline.py`, `test_replay.py` |
 | `motion.py` | The rider's velocity over the ground: a constant-velocity Kalman filter in a local frame, from the fused estimates and the drone's pose. | `test_motion.py` |
 | `sim.py` | A kinematic follow simulation: a point drone that turns and moves as the council commands, after a rider who moves. Not a flight simulator, and not the SITL gate. | `test_sim.py` |
+| `camera_view.py` | One camera box at a time through a council kept between frames, for the website's camera page (run in the browser by Pyodide). | `test_camera_view.py` |
 | `recording.py` | Reads a GPX recording as offsets and seconds from its first fix, dropping coordinates and dates, and runs it through the simulation. Writes no files. | `test_recording.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
@@ -209,6 +210,7 @@ python3 -m http.server -d _site 8000                   # preview it
 - **Kinematic simulation:** `sim.py`'s point drone, which turns and moves as commanded within placeholder limits, with no physics, wind, autopilot or camera. It is a step before the SITL gate, not the gate.
 - **Measurement age:** how long ago a reading's measurement was taken. A slow source repeats its last measurement with a growing age, and the motion filter uses each measurement only once.
 - **Follow band:** the distances between which the controller asks neither to approach nor to back off: 3.79 to 5.05 m with the default settings, plus the safety margin.
+- **Marker:** a printed ArUco square. On the camera page, only the person holding it is followed and drawn sharp.
 - **Safety margin:** 2.5 times the estimate's one-sigma uncertainty. The controller is shown the rider that much closer than estimated, so the drone holds back further when it is unsure. It is only as good as the reported accuracy.
 - **Print card:** a printable part's entry in `cad/parts.json`: material, settings, the test to do before relying on it, safety notes, status and, once printed, the measured grams and minutes.
 - **Trace:** the replay as data, one entry per tick with the inputs, attention, gate decisions, estimate, mode and command. The website's replay viewer draws it.

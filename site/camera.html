@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Camera · Follow-me drone</title>
+  <meta name="description" content="A person detector in your browser: it follows only the person holding a printed marker, blurs everyone else, and shows what the follow logic would do.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <!-- The marker detector (js-aruco2, MIT) is two plain scripts that set CV and AR. -->
+  <script src="assets/vendor/aruco/cv.js"></script>
+  <script src="assets/vendor/aruco/aruco.js"></script>
+  <script type="module" src="assets/camera.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="replay.html">Replay</a>
+        <a href="camera.html" aria-current="page">Camera</a>
+        <a href="costs.html">Costs</a>
+        <a href="parts.html">Parts</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h1>Camera</h1>
+      <p class="lede">See what the drone's camera would make of you. A small person detector runs in this tab. The page follows only the person holding the printed marker, blurs everything else, and the repo's follow logic says what the drone would do.</p>
+      <div class="notice"><strong>Point it only at people who agree.</strong> Nothing is recorded or uploaded: the frames stay in this tab and are dropped once drawn. Everything outside the marked person's box is blurred before it is drawn, and nobody else is tracked.</div>
+      <div class="controls">
+        <button class="btn" type="button" id="start">Start the camera</button>
+        <button class="btn" type="button" id="stop" disabled>Stop</button>
+        <span class="btn file-btn">Use a photo…<input id="photo" type="file" accept="image/*" aria-label="Use a photo"></span>
+        <label>Field of view
+          <select id="fov">
+            <option value="60">60°</option>
+            <option value="70" selected>70°</option>
+            <option value="80">80°</option>
+          </select>
+        </label>
+      </div>
+      <p class="message" id="status" aria-live="polite">The first start downloads about 15 MB from this site: the detector, its model and Python.</p>
+    </section>
+
+    <section class="grid-2 camera-grid">
+      <figure class="card camera-card" style="margin: 0">
+        <canvas id="view" role="img" aria-label="The camera picture, blurred except for the person holding the marker"></canvas>
+        <figcaption class="small muted" id="caption">The picture appears here, blurred except for the person holding the marker.</figcaption>
+      </figure>
+      <div class="card" id="panel" aria-live="polite">
+        <p class="small muted">What the drone would do appears here once the camera or a photo is running.</p>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <div class="card">
+        <h2>Print the marker</h2>
+        <div class="marker" id="marker" role="img" aria-label="The marker to print, an ArUco square pattern"></div>
+        <p>Print it at least 15 cm across, on any printer, and hold it flat in front of your chest. The detector finds people; the marker tells it which one is the rider. Without the marker, nobody is followed.</p>
+        <button class="btn" type="button" id="print-marker">Print the marker</button>
+      </div>
+      <div class="card">
+        <h2>How it works</h2>
+        <ul class="small muted" style="padding-left: 1.1em; margin: 0">
+          <li><strong>People:</strong> YOLOX-Nano finds people in each frame, in this tab, about 70 to 120 ms a frame on a laptop.</li>
+          <li><strong>The rider:</strong> the person whose box holds the marker. If the marker is hidden, the same person is kept for one second by box overlap, then let go.</li>
+          <li><strong>Privacy:</strong> the whole picture is blurred, then only the rider's box is drawn sharp. A missed or unknown person stays blurred.</li>
+          <li><strong>The follow logic:</strong> the rider's box goes to the repo's own Python, run here by Pyodide: the camera estimate, the safety margin, the mode and the command, as in the replay viewer. Hide the marker and watch the modes fall back.</li>
+          <li><strong>Distance</strong> comes from the box's height, assuming a 1.75 m person and the field of view above. It is rough.</li>
+        </ul>
+        <p class="small muted">Credits: <a href="https://github.com/Megvii-BaseDetection/YOLOX">YOLOX</a> (Apache-2.0), <a href="https://github.com/microsoft/onnxruntime">onnxruntime-web</a> 1.30.0 (MIT), <a href="https://github.com/damianofalcioni/js-aruco2">js-aruco2</a> 2.0.0 (MIT), <a href="https://github.com/pyodide/pyodide">Pyodide</a> 314.0.7 (MPL-2.0), all served unmodified from this site.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents (Claude Code) at the owner's direction. No review of the code by the owner is recorded.</p>
+    <p>No camera has flown. Nothing here has flown, and nothing here claims the drone is safe, autonomous or ready to fly.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

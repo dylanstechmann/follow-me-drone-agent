@@ -21,7 +21,7 @@ from follow_me.website import (
 )
 
 REPO = Path(__file__).resolve().parents[1]
-PAGES = ("index.html", "replay.html", "costs.html", "parts.html")
+PAGES = ("index.html", "replay.html", "camera.html", "costs.html", "parts.html")
 # Stricter than the group-order check: a package@version string is not an email.
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[A-Za-z]{2,}\b")
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
@@ -111,6 +111,7 @@ def test_browser_python_is_the_repo_code_and_imports_only_itself(site):
 def test_build_says_whether_the_browser_has_python(site):
     build_info = json.loads((site / "data" / "build.json").read_text(encoding="utf-8"))
     assert build_info["python"] is False  # Pyodide comes only with --vendor
+    assert build_info["camera"] is False  # and so do the detector and the marker library
 
 
 def test_every_local_link_and_import_resolves(site):

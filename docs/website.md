@@ -9,6 +9,7 @@ A static website for the project on GitHub Pages: https://dylanstechmann.github.
 | `index.html` | The project, the six gates, what exists and how it was built | Hand-written text, plus the README's "Status" and "How this was built" sections, copied in at each build |
 | `replay.html` | One tick at a time: each source's reading and uncertainty, attention, trust, the gate's decision, the fused estimate, the mode and the command. For a simulated follow, also the distance to the rider over time and a top-down view of both paths | A trace of [examples/replay.example.json](../examples/replay.example.json) from `python -m follow_me.replay --json`, and a made-up ride run through the kinematic simulation, with the controller as it is, with a simulated camera as well, and the original controller for comparison ([simulation.md](simulation.md)) |
 | `costs.html` | Each pass's core cost, minimum-order cash and shares; cost per drone by number of drones; price freshness; single-supplier parts | The cost model in `src/follow_me/bom.py`, reading `bom/` |
+| `camera.html` | A person detector in the visitor's browser, on their camera or a photo. Only the person holding the printed marker is followed; everything else is blurred before it is drawn. The repo's follow logic says what the drone would do. | YOLOX-Nano in onnxruntime-web, js-aruco2 for the marker, and `follow_me.camera_view` run by Pyodide ([camera.md](camera.md)) |
 | `parts.html` | Each printable part in 3D, with sliders that re-render it in the browser, its print card, and STL and OpenSCAD downloads | `cad/*.scad` and `cad/parts.json` through `src/follow_me/parts.py`, with STLs rendered at build time |
 
 The replay viewer can also open a trace file the visitor makes from their own log. The file is read in the browser and is not uploaded anywhere:
@@ -42,7 +43,7 @@ python3 -m http.server -d _site 8000                 # preview at http://localho
 
 ## Rules for the site
 
-- **Privacy.** No analytics, cookies, trackers or third-party requests: the libraries are served from the site itself. The theme choice is kept in the browser's local storage. The parts page renders in the visitor's browser and sends nothing anywhere. Never put real coordinates, routes, names, contact details or order records on the site; the tests check for some of these.
+- **Privacy.** No analytics, cookies, trackers or third-party requests: the libraries are served from the site itself. The camera page keeps camera frames in the tab, draws everything blurred except the person holding the marker, stops the camera when the page is hidden, and records nothing. The theme choice is kept in the browser's local storage. The parts page renders in the visitor's browser and sends nothing anywhere. Never put real coordinates, routes, names, contact details or order records on the site; the tests check for some of these.
 - **Honesty.** Keep the hobby framing, the AI disclosure and "nothing has flown" on every page. Label made-up data as made up. Every price on the site carries the model's cutoff date and its freshness.
 - **No money asks.** No donate buttons, sponsorship links or funding appeals.
 - **No fleet or product claims.** The drone-count view is for exploring. The owner has not set a number of drones.

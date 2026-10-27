@@ -7,10 +7,8 @@ The camera is one of the council's sources. A person detector finds people in a 
 - **A simulated camera.** `sim.Camera` sees the rider in view, misses 10% of the time, and passes its boxes through `camera_estimate`. It is idealised, with no other people and no wrong detections. See [simulation.md](simulation.md).
 - **A person detector that runs in the browser and in Node.js.** YOLOX-Nano runs in onnxruntime-web, and `site/assets/detector.js` prepares the frame and decodes the model's output. Its decoding is tested with Node's test runner (`tests/js/detector.test.mjs`), also in CI.
 - **A timing tool.** `node tools/detect_bench.mjs [VENDOR_DIR]` times the detector on whatever machine runs it, for example a Raspberry Pi.
-- **Not yet:**
-  - the website's camera page with the rider marker (iteration 33);
-  - a camera on a drone;
-  - detection quality measured on rides.
+- **The website's camera page** (`site/camera.html`), described below.
+- **Not yet:** a camera on a drone, and detection quality measured on rides.
 
 ## The detector
 
@@ -45,6 +43,22 @@ In a headless browser, the detector ran on three photos from COCO's validation s
 - That confirms the input format: raw BGR values, padded at the top left.
 
 The photos were used only on the agent's machine and are not in the repo.
+
+## The camera page
+
+On the website, the visitor starts their camera or chooses a photo:
+1. A worker runs the detector on each frame (`site/assets/camera-worker.js`).
+2. js-aruco2 (MIT) looks for the printed marker: ArUco marker 0 from the `ARUCO_MIP_36h12` dictionary, which the page draws for printing.
+3. The rider is the person whose box holds the marker's centre (`site/assets/rider.js`). If the marker is hidden, the same person is kept for one second by box overlap, then let go. Without the marker, nobody is followed.
+4. The picture is drawn blurred, by shrinking and enlarging it, and only the rider's box is drawn sharp on top. A person the detector missed stays blurred.
+5. The rider's box, as shares of the frame, goes to the repo's own Python, run in the tab by Pyodide. `follow_me.camera_view.CameraView` keeps one council between frames, so a hidden marker walks down the modes in seconds, as on the drone. The page shows the estimate, the safety margin, the mode and the command.
+
+The first start downloads about 15 MB from the site: the runtime, the model and Python. The field of view defaults to 70 degrees across, a guess for laptop cameras that the page lets the visitor change. The distance assumes a 1.75 m person, so it is rough.
+
+Checked in a headless browser on 2026-10-27, with a COCO photo of 11 people and the marker pasted onto one of them:
+- **Photo mode:** it found all 11, followed only the marked person, and blurred the rest. A bystander's region fell from 12.5 to 1.9 on a sharpness measure, and the rider's stayed at 14.5 of 15.1.
+- **Live camera mode:** Chromium's fake camera played the same image. It ran at 73 ms a frame, followed the marked person, and stopped cleanly.
+- **Layout:** no errors or sideways scrolling, at desktop width in the light theme and phone width in the dark theme.
 
 ## Privacy
 
