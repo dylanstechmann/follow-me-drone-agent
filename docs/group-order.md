@@ -28,32 +28,32 @@ Prices for lines that are not yet quoted come from [materials.json](../bom/mater
 ## Current plan
 
 <!-- generated:group_order:start -->
-**Plan status:** draft. **Last updated:** 2026-10-10. **Lines:** 14 (7 blocked, 7 needs quote). **Supplier quotes in hand:** 0 of 14.
+**Plan status:** draft. **Last updated:** 2026-10-27. **Lines:** 14 (7 blocked, 7 needs quote). **Supplier quotes in hand:** 0 of 14.
 
 ### Totals
 
 | Scope | Cash low (USD) | Cash high (USD) | Per member at 5 (USD) | Per member at 10 (USD) | Per member at 20 (USD) |
 |---|---|---|---|---|---|
-| Wave 1: Factory parts, ready now | 159.20 | 540.44 | 31.84 to 108.09 | 15.92 to 54.04 | 7.96 to 27.02 |
-| Wave 2: Assembled boards, blocked by designs | 576.90 | 1,843.10 | 115.38 to 368.62 | 57.69 to 184.31 | 28.84 to 92.16 |
+| Wave 1: Factory parts, ready now | 189.20 | 502.44 | 37.84 to 100.49 | 18.92 to 50.24 | 9.46 to 25.12 |
+| Wave 2: Assembled boards, blocked by designs | 717.80 | 1,913.20 | 143.56 to 382.64 | 71.78 to 191.32 | 35.89 to 95.66 |
 | Wave 3: Deferred until the lab tests pass | 991.44 | 1,992.09 | 198.29 to 398.42 | 99.14 to 199.21 | 49.57 to 99.60 |
-| All lines | 1,727.54 | 4,375.63 | 345.51 to 875.13 | 172.75 to 437.56 | 86.38 to 218.78 |
+| All lines | 1,898.44 | 4,407.73 | 379.69 to 881.55 | 189.84 to 440.77 | 94.92 to 220.39 |
 
 ### Lines
 
 | Wave | Line | Supplier type | Order qty (minimum) | Unit price (USD) | Line total (USD) | Price basis | State | Drones covered |
 |---|---|---|---|---|---|---|---|---|
-| 1 | N52 disc magnets, 10 x 2 mm: sample from a distributor | distributor | 25 disc (25) | 0.78 | 19.50 | listing, undated | needs quote | 0 |
-| 1 | 684ZZ miniature bearings, 4 x 9 x 4 mm: sample from a retailer | retail | 10 bearing (1) | 3.00 to 4.38 | 30.00 to 43.80 | listing, undated | needs quote | 1 |
-| 1 | N52 disc magnets, 10 x 2 mm, from a factory | factory | 1000 disc (1000) | 0.020 to 0.10 | 20.00 to 100.00 | listing, undated | needs quote | 17 |
-| 1 | 684ZZ miniature bearings, 4 x 9 x 4 mm, from a factory | factory | 100 bearing (100) | 0.16 to 0.88 | 16.00 to 88.00 | listing, undated | needs quote | 12 |
+| 1 | N52 disc magnets, 10 x 2 mm: sample from a distributor | distributor | 25 disc (25) | 0.78 | 19.50 | listing, 2026-10-27 | needs quote | 0 |
+| 1 | 684ZZ miniature bearings, 4 x 9 x 4 mm: sample from a retailer | retail | 10 bearing (1) | 3.00 to 4.38 | 30.00 to 43.80 | listing, 2026-10-27 | needs quote | 1 |
+| 1 | N52 disc magnets, 10 x 2 mm, from a factory | factory | 1000 disc (10) | 0.050 to 0.10 | 50.00 to 100.00 | listing, 2026-10-27 | needs quote | 17 |
+| 1 | 684ZZ miniature bearings, 4 x 9 x 4 mm, from a factory | factory | 100 bearing (100) | 0.16 to 0.50 | 16.00 to 50.00 | listing, 2026-10-27 | needs quote | 12 |
 | 1 | Enamelled copper wire, 0.3 mm, 1 kg spools | retail | 2 kg (1) | 11.85 to 44.57 | 23.70 to 89.14 | listing, 2026-03 | needs quote | 12 |
 | 1 | Hardened steel motor shafts | retail | 20 shaft (1) | 1.00 to 3.00 | 20.00 to 60.00 | placeholder, undated | needs quote | 5 |
 | 1 | Shipping, duty and brokerage allowance, wave 1 | shared | 1 order (1) | 30.00 to 140.00 | 30.00 to 140.00 | placeholder, undated | needs quote | n/a |
-| 2 | GNSS board with a bare u-blox M9N, factory-assembled | fab | 10 board (1) | 15.54 to 28.59 | 155.40 to 285.90 | estimate, undated | blocked | 10 |
-| 2 | Tag board v2 (CH592 BLE and a clone GNSS module), factory-assembled | fab | 10 board (1) | 7.26 to 16.36 | 72.60 to 163.60 | estimate, undated | blocked | 10 |
-| 2 | Autopilot board (STM32H743 and ICM-42688-P), factory-assembled | fab | 10 board (1) | 15.69 to 45.21 | 156.90 to 452.10 | estimate, undated | blocked | 10 |
-| 2 | 4-in-1 ESC board (AT32F421 and FD6288Q), factory-assembled | fab | 10 board (1) | 16.20 to 80.15 | 162.00 to 801.50 | estimate, undated | blocked | 10 |
+| 2 | GNSS board with a bare u-blox M9N, factory-assembled | fab | 10 board (1) | 21.33 to 28.86 | 213.30 to 288.60 | estimate, undated | blocked | 10 |
+| 2 | Tag board v2 (CH592 BLE and a clone GNSS module), factory-assembled | fab | 10 board (1) | 8.20 to 16.01 | 82.00 to 160.10 | estimate, undated | blocked | 10 |
+| 2 | Autopilot board (STM32H743 and ICM-42688-P), factory-assembled | fab | 10 board (1) | 18.59 to 46.80 | 185.90 to 468.00 | estimate, undated | blocked | 10 |
+| 2 | 4-in-1 ESC board (AT32F421 and FD6288Q), factory-assembled | fab | 10 board (1) | 20.66 to 85.65 | 206.60 to 856.50 | estimate, undated | blocked | 10 |
 | 2 | Shipping, duty and brokerage allowance, wave 2 | shared | 1 order (1) | 30.00 to 140.00 | 30.00 to 140.00 | placeholder, undated | blocked | n/a |
 | 3 | Stator cores, 2207 class, from a factory | factory | 1000 core (1000) | 0.99 to 1.99 | 990.00 to 1,990.00 | listing, undated | blocked | 250 |
 | 3 | Electrical steel sheet for etched laminations | retail | 1 kg (1) | 1.44 to 2.09 | 1.44 to 2.09 | listing, 2026-06 | blocked | n/a |

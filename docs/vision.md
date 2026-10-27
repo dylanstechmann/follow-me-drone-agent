@@ -21,7 +21,7 @@ This is the agent's reading of the owner's words. The owner can correct it.
 |---|---|---|---|
 | Control | Hold the design files (CAD, PCB, firmware, BOM). Have two sources for each bought part. Be able to repair, modify and replace without anyone's permission. | A rule to keep design files in the repo, a dependency check that flags single-supplier parts, an open-source software stack. | No hardware exists yet. No design file exists beyond plans. |
 | Power | Independence from any single supplier, price change or product decision. Leverage from ordering at factory minimums. Freedom to decide what the drones do. | A supply-side model with minimum orders and cash needed, and a group order plan. | No supplier has been contacted. No order has been placed. |
-| Money | Lower cost per drone, and less exposure to retail markup. The owner did not describe an income plan. | A cost model. On paper, the modelled core cost per drone falls from $558 to $965 (pass 0, retail) to $208 to $534 (pass 10, factory-assembled own designs), about 45 to 63 percent lower. | These are estimates with many placeholders. They leave out labour, tooling, failed builds, crashes, rework, duty and the cash tied up in minimum orders. They are not a business case. |
+| Money | Lower cost per drone, and less exposure to retail markup. The owner did not describe an income plan. | A cost model. On paper, the modelled core cost per drone falls from $668 to $977 (pass 0, retail) to $240 to $545 (pass 10, factory-assembled own designs), about 44 to 64 percent lower. | These are estimates with many placeholders. They leave out labour, tooling, failed builds, crashes, rework, duty and the cash tied up in minimum orders. They are not a business case. |
 | Understanding | Learn how each part works by specifying it, building it and measuring it. | Plans for thrust testing, bring-up checklists and coupon tests. | Nothing has been measured yet. |
 | Capabilities | Make variants, such as custom tags, sensors and motors, and write the software that drives them. | A tested software core and a replay tool, run on synthetic data. | Nothing has flown, and nothing has been tested on hardware. |
 
@@ -36,7 +36,7 @@ The owner does not like asking for money. Agents must follow this:
 
 Routes that need no outside money:
 
-1. Build in stages. The bench kit with a made tag fits $100 on paper (pass 5: $63.87 to $98.99). Flying hardware waits until the bench results justify it.
+1. Build in stages. The bench kit with a made tag fits $100 on paper (pass 5: $69.13 to $99.20). Flying hardware waits until the bench results justify it.
 2. Use what is already owned or freely available: the owner's phone, the printers at FAU's engineering building and the IEEE club.
 3. Salvage parts, and buy used.
 4. Share the cost of factory minimums through group orders.
@@ -52,7 +52,7 @@ The owner is curious about "tons" of drones. No number has been given.
 What a larger number changes, according to the cost model:
 
 - Fixed costs spread out. One order of 1,000 magnets covers about 17 drones. One order of 1,000 stator cores covers about 250. Per-design PCB and assembly fees fall per board.
-- Cash to start rises. Factory stator cores raise the cash at minimum orders from $332 to $960 (pass 10) to $1,320 to $2,943 (pass 11).
+- Cash to start rises. Factory stator cores raise the cash at minimum orders from $362 to $842 (pass 10) to $1,349 to $2,824 (pass 11).
 - Quality control matters more. Every factory part needs an inspection step, and the inspection results feed back into the cost model.
 - The cost per drone at 1, 5, 20, 100 and 500 drones is a generated table in [cost-reduction.md](cost-reduction.md). It is for exploring, not a plan.
 
@@ -90,7 +90,7 @@ Safety and legal topics to verify before scaling. This is not legal advice:
 
 ## Where the evidence is weak
 
-- Only 10 of 51 sourced prices are dated within 12 months of the 2026-10-10 cutoff, and 16 inputs are placeholders ([price-audit.md](price-audit.md)).
+- 16 inputs are placeholders, and 4 of the 51 sourced prices could not be re-checked on 2026-10-27 ([price-audit.md](price-audit.md)). The rest were seen on sellers' pages, not quoted by sellers.
 - The largest open price is the ESC power MOSFET.
 - Nothing has been built, measured, ordered or flown.
 - Labour time, tooling, failures and crashes are not costed.

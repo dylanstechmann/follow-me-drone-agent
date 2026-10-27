@@ -2,7 +2,7 @@
 
 The goal is to make the drone without depending on any one supplier, and to stop paying a markup on parts that can be made or bought more cheaply in bulk. This doc says what that can realistically mean, where the markup actually sits, and what the cost model shows so far.
 
-Numbers come from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Each price shows the date it was seen on its source. Most are undated or older than 12 months, which [price-audit.md](price-audit.md) lists. For the route to make each part on the list, see [make-own-ladder.md](make-own-ladder.md).
+Numbers come from [bom/catalog.json](../bom/catalog.json) and [bom/materials.json](../bom/materials.json). Each price shows the date it was seen on its source. Most were re-checked on 2026-10-27, and [price-audit.md](price-audit.md) lists each date. For the route to make each part on the list, see [make-own-ladder.md](make-own-ladder.md).
 
 ## What "owning" means here
 
@@ -21,12 +21,12 @@ The evidence from the search, in one table:
 | Part | Retail or finished price | Bulk or raw price | Verdict |
 |---|---|---|---|
 | ESP32-C3 module | $6.90 to $9.00 (Heltec HT-CT62, which also has a LoRa chip) | $2.01 to $3.53 (LCSC, DigiKey) | The markup is large. Buy the chip in bulk and make the board. |
-| GNSS module (NEO-M9N) | $54.99 (Holybro finished board) | $10.99 to $16.04 (bare module) | The finished board carries the markup. Buy the bare module. |
-| 2-layer PCB, 10 x 10 cm | none needed | $0.40 to $0.70 per board (low-markup fab) | The fab's markup is small. Outsource production. |
+| GNSS module (NEO-M9N) | $54.99 (Holybro finished board) | $16.15 to $16.55 (bare module) | The finished board carries the markup. Buy the bare module. |
+| 2-layer PCB, 10 x 10 cm | none needed | $0.40 per board before shipping (low-markup fab) | The fab's markup is small. Outsource production. |
 | 100 cm2 single-sided board, etched in-house | none | $1.82 to $15.48 per board (material and etchant) | In-house etching is more expensive per board. Use it for fast iteration only. |
-| PLA filament | $13 to $26 per kg (1 kg spools) | $10.99 to $20 per kg (5 kg spools) | Buy 5 kg spools for printing. |
+| PLA filament | $13.49 to $17.99 per kg (Elegoo and Polymaker 1 kg spools) | $10.29 to $11.00 per kg (Sunlu 1 kg rolls, Elegoo's 10 kg pack) | Buy budget rolls or packs for test prints. |
 | Commercial frame | $30 to $60 (placeholder) | about $2 to $5 printed in PETG (estimate) | Print it. |
-| 2207 motor (T-Motor) | $10 to $13.50 each | $7.01 to $26.42 each DIY, excluding the unpriced steel core | Not a clear saving yet. Research only. |
+| 2207 motor | $14.99 to $17.99 each (known brand) | $11.96 to $35.17 each DIY with retail parts, $3.04 to $11.41 with factory parts | A saving only with factory parts. Research first. |
 
 The owner's instinct is right for modules and finished boards. It is not right for PCB fabrication: an outsourced 2-layer board is cheaper per board than etching one at home.
 
@@ -35,27 +35,27 @@ The owner's instinct is right for modules and finished boards. It is not right f
 | Part | Decision | Why | Model cost (USD) | Stage |
 |---|---|---|---|---|
 | Printed structure: frame, guards, camera mount, tag case | Make | Largest markup gap, low risk once tested | $0.33 to $5.40 per part | 1, now |
-| Tag board | Design it yourself, outsource production | The fab's premium is small; keep the Gerbers so any fab can run it | $0.40 to $0.70 per board | 1 |
+| Tag board | Design it yourself, outsource production | The fab's premium is small; keep the Gerbers so any fab can run it | $0.40 per board | 1 |
 | Tag MCU (ESP32-C3-MINI-1) | Buy bulk from two distributors | Silicon cannot be made here | $2.01 to $3.53 | 1 |
-| Tag GNSS (NEO-M9N-00B) | Buy bulk | The largest chip cost in the tag; no in-house alternative | $10.99 to $16.04 | 1 |
+| Tag GNSS (NEO-M9N-00B) | Buy bulk | The largest chip cost in the tag; no in-house alternative | $16.15 to $16.55 | 1 |
 | Tag GNSS antenna | Design on a bought board | Cheap, but unverified | $0.40 to $0.70 plus a connector (not priced) | 1, prototype |
-| Thrust stand | Make | Motors cannot be judged without one | about $3.68 to $10.11 (printed base plus load cell) | 2 |
-| DIY outrunner motors | Research | Not a clear saving; the steel core is unpriced | $7.01 to $26.42 each, excluding the core | 2, research |
-| Magnet wire and N52 magnets | Buy bulk; salvage where safe | Commodity inputs to motors | $26 to $45 per kg of wire; $0.26 to $0.78 per magnet | 2 |
+| Thrust stand | Make | Motors cannot be judged without one | about $8.27 to $15.63 (printed base plus load cell) | 2 |
+| DIY outrunner motors | Research | Not a clear saving with retail parts; the stator is a placeholder | $11.96 to $35.17 each with retail parts | 2, research |
+| Magnet wire and N52 magnets | Buy bulk; salvage where safe | Commodity inputs to motors | $11.85 to $44.57 per kg of wire; $0.26 to $0.78 per magnet | 2 |
 | Propellers | Buy | Fast rotating, safety-critical; homemade props need testing to failure | $5 to $15 (placeholder) | later |
 | ESC | Design later on an AM32-supported microcontroller | The MOSFET power stage is not priced | unpriced | 3 |
-| Flight controller | Buy used for now; design later | Needs an IMU ($3.07 to $4.86 bulk), an MCU ($8.11 to $11.49 at 100 pieces), and a firmware port | used Pix32 v5 at $149 (one listing) | 4 |
-| LiPo cells and packs | Buy from known brands; DIY packs not recommended now | Fire risk; needs an experienced reviewer | $24 to $38 per pack (bought) | 5, not recommended now |
+| Flight controller | Buy used for now; design later | Needs an IMU ($3.07 to $6.50), an MCU ($7.86 to $10.78), and a firmware port | used Pix32 v5 at $149 (one listing) | 4 |
+| LiPo cells and packs | Buy from known brands; DIY packs not recommended now | Fire risk; needs an experienced reviewer | $26.99 to $35 per pack (bought) | 5, not recommended now |
 | Phone as companion or drone computer | Owned, or bought used | See the Pixel note below | $0 owned; Pixel 8a bought for $250 | decision pending |
 
 ## What the model says now
 
 From the pass report in [cost-reduction.md](cost-reduction.md):
 
-- **The made tag fits $100 at both ends:** pass 5 comes to $64.00 to $99.59 for the bench kit with a made tag. It saves only $1.77 to $3.49 over the retail tag, because the GNSS module and antenna dominate the cost.
-- **The owned pipeline is still mostly bought hardware:** pass 7 comes to $454.80 to $743.08 of core cost, and only 12 percent of that is made in-house by cost (midpoints). The autopilot, GPS, ESC, transmitter, battery, charger and props are the remaining 88 percent.
+- **The made tag fits $100 at both ends:** pass 5 comes to $69.13 to $99.20 for the bench kit with a made tag. It saves only $2.54 to $3.49 over the retail tag, because the GNSS module and antenna dominate the cost.
+- **The owned pipeline is still mostly bought hardware:** pass 7 comes to $485.30 to $775.57 of core cost, and only 16 percent of that is made in-house by cost (midpoints). The autopilot, GPS, ESC, transmitter, battery, charger and props are most of the remaining 84 percent.
 - **The Pixel costs more than the Pi and camera it replaces:** pass 4 adds $210 to $215 over pass 2. It buys a better camera, GNSS, IMU and compute. It is a purchase, not a free owned device.
-- **Motors are not yet a saving:** pass 6 saves $8.28 at the low end and costs $61.79 more at the high end, because the DIY motor's steel core is not priced.
+- **Motors are not yet a saving:** pass 6 saves $3.85 at the low end and costs $84.35 more at the high end, thrust stand included, with retail bearings and magnets and a placeholder stator.
 
 ## Dependency check
 

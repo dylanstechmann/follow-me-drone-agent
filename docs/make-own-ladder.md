@@ -2,22 +2,22 @@
 
 For each part on the list, this doc gives what it costs to buy (with the date that price was seen), what it costs to make or own (from the model), and what can realistically be made at home. Costs come from [bom/materials.json](../bom/materials.json) and [bom/catalog.json](../bom/catalog.json). For the factory and minimum-order side, see [supply-side.md](supply-side.md).
 
-Read the dates first. Only 10 of the 51 sourced prices in the model are dated within the last 12 months ([price-audit.md](price-audit.md)). Treat every bought price as provisional until it is re-checked at the seller.
+Read the dates first. 47 of the 51 sourced prices in the model were seen within the last 12 months, most of them on 2026-10-27 ([price-audit.md](price-audit.md)). Prices move, so re-check at the seller before buying.
 
 ## Summary
 
 | Part | Can it be made at home? | Cheapest bought route (date seen) | Own route (model) | Verdict |
 |---|---|---|---|---|
 | Silicon chips in general | Design and firmware, yes. The silicon, no. | See the chips section | Custom digital blocks through a shuttle (about EUR 70 per tile, undated) | Buy the chips, own the design, and keep two sources. |
-| ESP32 (MCU and Wi-Fi radio) | No, the radio is silicon | Module $2.01 to $3.06 (LCSC, fetched 2026-10-10). Bare ESP32-C3FH4 $1.30 to $2.50 (undated) | Own board and firmware | Buy. For the tag, the CH592 BLE chip ($0.46 to $0.95) is the bigger saving if BLE range is enough. |
-| LoRa chip | No, the RF is silicon | SX1262 module $4.10 to $7.99 (undated) | Software LoRa modem on an SDR, plus a radio | Skip LoRa for version 0. |
-| GPS (GNSS) | No, the RF and baseband are silicon | Bare M9N $10.99 to $16.04. Clone ATGM336H $1.82 to $3.24 (both undated; the clone is untested) | Own board, factory-assembled with a bare M9N: $15.54 to $28.59. Software receiver: about $133 to $145 | Build the own board. It replaces a $54.99 to $74.90 retail board. |
-| Autopilot | Board and firmware, yes. Sensors, no. | Used Pix32 v5 $149. New $147 to $263 (undated) | Own board: $12.37 to $47.94 hand-assembled, or $15.69 to $45.21 factory-assembled, plus a firmware port | Factory-assembled, after simulation and bench tests. |
-| ESC | Yes: MCU, MOSFETs, drivers, board, AM32 firmware | Retail 4-in-1 not found (placeholder $25 to $55) | Own: $12.40 to $81.79 hand-assembled, or $16.20 to $80.15 factory-assembled. MOSFET price is a placeholder | Price the MOSFETs, then bench at low voltage. |
-| Transmitter | Yes: MCU, 2.4 GHz module, gimbals, case, open firmware | Retail ELRS transmitter (placeholder $60 to $120) | Own: $12.88 to $49.12 | After the ESC. Test the kill path. |
-| Motors | Yes, as outrunners | T-Motor V2207 $10 to $13.50 each (undated) | Retail parts: $11.91 to $35.17 each. Factory magnets and bearings with a lab-etched stator: $2.57 to $12.40 | Build only with factory parts. Measure thrust per watt first. |
+| ESP32 (MCU and Wi-Fi radio) | No, the radio is silicon | Module $2.01 to $3.06 (LCSC, fetched 2026-10-10). Bare ESP32-C3FH4 $1.30 to $2.50 (undated) | Own board and firmware | Buy. For the tag, the CH592 BLE chip ($0.45 to $0.86) is the bigger saving if BLE range is enough. |
+| LoRa chip | No, the RF is silicon | SX1262 module $4.10 to $7.99 (2026-10-27) | Software LoRa modem on an SDR, plus a radio | Skip LoRa for version 0. |
+| GPS (GNSS) | No, the RF and baseband are silicon | Bare M9N $16.15 to $16.55. Clone ATGM336H $1.83 to $3.27 (both 2026-10-27; the clone is untested) | Own board, factory-assembled with a bare M9N: $21.33 to $28.86. Software receiver: about $133 to $145 | Build the own board. It replaces a $54.99 to $74.90 retail board. |
+| Autopilot | Board and firmware, yes. Sensors, no. | Used Pix32 v5 $149 (undated). New $189 to $253 (2026-10-27) | Own board: $14.33 to $49.76 hand-assembled, or $18.59 to $46.80 factory-assembled, plus a firmware port | Factory-assembled, after simulation and bench tests. |
+| ESC | Yes: MCU, MOSFETs, drivers, board, AM32 firmware | Retail 4-in-1 not found (placeholder $25 to $55) | Own: $15.92 to $87.74 hand-assembled, or $20.66 to $85.65 factory-assembled. MOSFET price is a placeholder | Price the MOSFETs, then bench at low voltage. |
+| Transmitter | Yes: MCU, 2.4 GHz module, gimbals, case, open firmware | Retail ELRS transmitter (placeholder $60 to $120) | Own: $16.73 to $42.49 | After the ESC. Test the kill path. |
+| Motors | Yes, as outrunners | Known-brand 2207 $14.99 to $17.99 each (2026-10-27) | Retail parts: $11.96 to $35.17 each. Factory magnets and bearings with a lab-etched stator: $3.04 to $11.41 | Build only with factory parts. Measure thrust per watt first. |
 | Steel stator core | Yes: etched or cut laminations | Electrical steel $1.44 to $2.09 per kg (Q2 2026 benchmark). Factory cores $0.99 to $1.99 at 1,000 pieces | Lab etching: about $0.24 to $1.05 with steel (unverified) | Etch a test coupon in the lab first. |
-| Lithium cells | No, cell making is hazardous | US distributor EVE 30P $3.89 to $4.99. Drone packs $24 to $38 (both undated) | Pack assembly, protection and testing only | Buy domestic. Salvage only for the tag, after testing. |
+| Lithium cells | No, cell making is hazardous | US distributor cells $4.99 to $6.99. Drone packs $26.99 to $35 (both 2026-10-27) | Pack assembly, protection and testing only | Buy domestic. Salvage only for the tag, after testing. |
 
 ## What you can own, and what you cannot
 
@@ -40,56 +40,57 @@ Salvage is a real source: crashed flight controllers (MCU, IMU, regulators), pho
 
 - **Buy the module:** ESP32-C3-MINI-1-N4 at $3.06 for one and $2.01 at 1,300 (LCSC page fetched 2026-10-10).
 - **Buy the bare chip:** ESP32-C3FH4 with 4 MB flash in the package, $2.50 for one to $1.30 per reel (undated). It needs a crystal, RF matching and an antenna. That saves about $0.70 per unit at volume and adds RF design work.
-- **Swap to BLE:** the WCH CH592 RISC-V chip with BLE 5.4 is $0.91 for one and $0.50 at 1,000 (LCSC, 19,237 in stock, undated). The drone's Pi Zero 2 W has BLE. Measure BLE range in the field before switching.
+- **Swap to BLE:** the WCH CH592 RISC-V chip with BLE 5.4 is $0.86 for one and $0.45 at 1,000 (the CH592F at LCSC, 1,720 in stock, 2026-10-27). The drone's Pi Zero 2 W has BLE. Measure BLE range in the field before switching.
 - **Own:** the board, the firmware and the link protocol.
 
 ## LoRa chip
 
-- **Buy:** SX1262 modules at $4.10 to $7.99 (undated). The bare chip is not verified for 2026.
+- **Buy:** SX1262 modules at $4.10 (1,000-piece minimum) to $7.99 for one (2026-10-27). The bare chip is not verified for 2026.
 - **Own:** the modem in software. gr-lora_sdr implements the LoRa physical layer in GNU Radio under GPL-3.0. The radio still needs hardware.
 - **Verdict:** skip LoRa for version 0.
 
 ## GPS (GNSS)
 
-- **Retail board:** Holybro M9N at $54.99 to $74.90 (undated).
-- **Own board:** a bare u-blox NEO-M9N ($10.99 to $16.04), a ceramic antenna (placeholder), passives and a 2-layer board, assembled by the board factory. The model's total is $15.54 to $28.59. It has no compass yet.
-- **Clone:** ATGM336H at $1.82 to $3.24 (undated, untested). It is used in the version 2 tag. Field-test it against the M9N on the same antenna first.
+- **Retail board:** M9N boards at $54.99 (Holybro) to $74.90 (3DR, with compass), 2026-10-27.
+- **Own board:** a bare u-blox NEO-M9N ($16.15 to $16.55), a ceramic antenna (placeholder), passives and a 2-layer board, assembled by the board factory. The model's total is $21.33 to $28.86. It has no compass yet.
+- **Clone:** ATGM336H at $1.83 to $3.27 (2026-10-27, untested). It is used in the version 2 tag. Field-test it against the M9N on the same antenna first.
 - **Software receiver:** an RTL-SDR V4 ($39.95 to $44.95, mid-2026), a filtered L1 amplifier ($93 to $99) and a patch antenna, about $133 to $145 in total. GNSS-SDR (GPL-3.0) does the signal processing. This route is for learning, not saving.
 
 ## Autopilot
 
-- **Buy:** a used Pix32 v5 for $149. A new Pix32 v6 is $146.99 to $262.99. Both undated.
-- **Own board:** STM32H743 ($5.90 to $9.38), ICM-42688-P ($3.07 to $6.50), passives and a 4-layer board ($1.40 to $15 per board).
-  - Hand-assembled: $12.37 to $47.94.
-  - Factory-assembled: $15.69 to $45.21. Factory assembly suits the fine-pitch MCU and the LGA IMU.
+- **Buy:** a used Pix32 v5 for $149 (one listing, undated). A new Pix32 v6 is $189.00 to $252.97 (Holybro, 2026-10-27).
+- **Own board:** STM32H743 ($7.86 to $10.78), ICM-42688-P ($3.07 to $6.50), passives and a 4-layer board ($1.40 to $15 per board).
+  - Hand-assembled: $14.33 to $49.76.
+  - Factory-assembled: $18.59 to $46.80. Factory assembly suits the fine-pitch MCU and the LGA IMU.
 - **Not costed:** barometer, magnetometer, regulators, SD card, connectors and the firmware port.
 - **Firmware:** PX4 (reported BSD 3-clause) or ArduPilot (reported GPLv3). Read the LICENSE files. Do not use the Pixhawk name for your own board.
 
 ## ESC
 
-- **Own design:** four AT32F421 MCUs ($0.43 to $1.37 each), four FD6288Q three-phase gate drivers ($0.27 to $0.67 each, in stock at the board factory), 24 MOSFETs (placeholder $0.30 to $1.75 each), passives and a 4-layer board.
-  - Hand-assembled: $12.40 to $81.79.
-  - Factory-assembled: $16.20 to $80.15.
-- **The range is the MOSFET price,** not the design. Use LCSC's parametric search for 30 V PDFN5x6 parts.
+- **Own design:** four AT32F421 MCUs ($0.43 to $0.91 each), four FD6288Q three-phase gate drivers ($1.15 to $2.37 each), 24 MOSFETs (placeholder $0.30 to $1.75 each), passives and a 4-layer board.
+  - Hand-assembled: $15.92 to $87.74.
+  - Factory-assembled: $20.66 to $85.65.
+- **The range is mostly the MOSFET price,** not the design. Use LCSC's parametric search for 30 V PDFN5x6 parts.
+- **The gate driver needs a source.** On 2026-10-27 the cheaper JSMSEMI FD6288Q was gone from LCSC and JLCPCB, and the Fortior original was out of stock. Find an in-stock equivalent before the design is fixed.
 - **Firmware:** AM32 supports the AT32F421. Check its LICENSE.
 - Test at low voltage with a current limit, with props off. No LiPo until a reviewer has checked the build.
 
 ## Transmitter
 
-- **Own:** an ESP32-C3 ($2.01 to $3.06), a 2.4 GHz module ($3.22 to $13.98), four gimbal pots (placeholder), a protected cell, a 2-layer board and a printed case. The model's total is $12.88 to $49.12.
+- **Own:** an ESP32-C3 ($2.01 to $3.06), a 2.4 GHz chip or module ($2.91 to $4.97; modules with a power amplifier cost more and were not re-checked), four gimbal pots (placeholder), a protected cell, a 2-layer board and a printed case. The model's total is $16.73 to $42.49.
 - **Firmware:** ELRS (reported GPL-3.0) and EdgeTX (reported GPL-2.0). Check the LICENSE files and the MCU support list before ordering.
 - **Checks:** 2.4 GHz output must meet the regulations. The kill path must work at range before any flight.
 
 ## Motors
 
-- **Buy:** T-Motor V2207 V2 at $10 to $13.50 each (undated). Factory 2207 motors are about $11 at a 10-piece minimum, so buying complete motors from a factory saves nothing.
-- **Own, retail parts:** $11.91 to $35.17 per motor. Miniature 4 x 9 x 4 mm bearings at retail ($3.00 to $4.38 each) and magnets at distributor prices make this dearer than a T-Motor.
+- **Buy:** a known-brand 2207 at $14.99 to $17.99 each (EMAX E3 in stock on 2026-10-27; the T-Motor V2207 V2 was sold out at $16.99). Factory 2207 motors were about $11 at a 10-piece minimum (undated), so buying complete motors from a factory saves a few dollars a motor at most, before shipping and duty.
+- **Own, retail parts:** $11.96 to $35.17 per motor. Miniature 4 x 9 x 4 mm bearings at retail ($3.00 to $4.38 each) and magnets at distributor prices make this dearer than a retail motor.
 - **Own, factory parts:**
-  - Magnets from a factory ($0.02 to $0.10 each at 1,000), bearings from a factory ($0.16 to $0.88 each at 100), and a lab-etched stator. The model's total is $2.57 to $12.40 per motor.
-  - With factory stator cores instead: $3.32 to $13.61, but about $1,000 to $2,000 of cash at the 1,000-piece minimum.
-- **Target:** magnets by weight and salvaged wire and shaft bring it to $2.68 to $8.45.
+  - Magnets from a factory ($0.10 each, $0.05 from 2,000 pieces), bearings from a factory ($0.16 to $0.50 each at 100), and a lab-etched stator. The model's total is $3.04 to $11.41 per motor.
+  - With factory stator cores instead: $3.79 to $12.63, but about $1,000 to $2,000 of cash at the 1,000-piece minimum.
+- **Target:** magnets by weight and salvaged wire and shaft bring it to $2.73 to $7.46.
 - **Bells:** the printed bell is for the thrust stand only. A flight motor needs a metal bell, which is not priced.
-- **Verdict:** build with factory parts, and measure thrust per watt against a T-Motor on the same prop first ([motors-plan.md](motors-plan.md)).
+- **Verdict:** build with factory parts, and measure thrust per watt against a retail 2207 on the same prop first ([motors-plan.md](motors-plan.md)).
 
 ## Steel stator core
 
@@ -103,7 +104,7 @@ Salvage is a real source: crashed flight controllers (MCU, IMU, regulators), pho
 
 - **Why not make cells:** the electrolyte, lithium hexafluorophosphate, turns into hydrogen fluoride with moisture or heat. A small release in a closed room can reach acute exposure levels. Cell making needs a dry room and protective equipment.
 - **Why not import cells from a factory:** shipping guides say standalone cells fly on cargo aircraft only, at 30 percent charge or less. Sea freight is slow. Factory listings ($1.14 to $2.20) are not verified as genuine.
-- **Buy:** EVE 30P from a US distributor at $3.89 to $4.99 (undated). Drone packs are $24 to $38 (undated).
+- **Buy:** name-brand cells from a US distributor at $4.99 to $6.99 (Samsung 25R, Samsung 35E and Panasonic GA on 2026-10-27; the EVE 25P is $3.99 when in stock). Drone packs are $26.99 to $35 (2026-10-27).
 - **Own:** pack assembly, protection ($2.39 to $7.19 for a TP4056 module), balancing and testing.
 - **Salvage:** laptop and power-tool cells, tested, for the tag only. Never in the drone.
 
@@ -111,8 +112,8 @@ Salvage is a real source: crashed flight controllers (MCU, IMU, regulators), pho
 
 From [cost-reduction.md](cost-reduction.md):
 
-- **Pass 8, own most (hand-assembled):** $275.09 to $623.11 per drone, 48 percent made in-house.
-- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone. The cash at minimum orders is $332.20 to $960.45, and 51 percent of the cost is the owner's design. Still over $100.
+- **Pass 8, own most (hand-assembled):** $301.76 to $638.79 per drone, 48 percent made in-house.
+- **Pass 10, closer to the factory:** $239.66 to $544.96 per drone. The cash at minimum orders is $361.63 to $841.62, and 51 percent of the cost is the owner's design. Still over $100.
 - **The levers left, in order:**
   1. The ESC MOSFET price.
   2. The charger and LiPo bag (placeholders).
@@ -127,4 +128,4 @@ From [cost-reduction.md](cost-reduction.md):
 3. Etch a lamination coupon.
 4. Field-test the CH592 BLE link and the ATGM336H against the M9N.
 5. Read the LICENSE files for PX4, ArduPilot, ELRS, EdgeTX, AM32 and GNSS-SDR.
-6. Re-check the 41 undated or stale prices.
+6. Re-check the four prices that could not be read on 2026-10-27: the used Pix32 v5, the FR4 board, magnets by weight and factory stator cores.

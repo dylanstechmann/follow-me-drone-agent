@@ -1,10 +1,10 @@
 {
-  "notes": "Raw inputs, components and service fees for composed items. checked is the date the price was seen on its source: YYYY-MM-DD, YYYY-MM, or YYYY (year only). Empty means the source shows no date. A price is fresh only with month precision and a date within 12 months before 2026-10-10. moq is the minimum order in the material's unit. moq_per_item means each design pays its own minimum (PCBs and assembly fees); otherwise the minimum is shared across the pass. per_order marks a fee paid once per order, so it does not grow with the number of drones. Placeholders are guesses. Unpriced inputs count as $0.",
+  "notes": "Raw inputs, components and service fees for composed items. checked is the date the price was seen on its source: YYYY-MM-DD, YYYY-MM, or YYYY (year only). Empty means the source shows no date. A price is fresh only with month precision and a date within 12 months before 2026-10-27. moq is the minimum order in the material's unit. moq_per_item means each design pays its own minimum (PCBs and assembly fees); otherwise the minimum is shared across the pass. per_order marks a fee paid once per order, so it does not grow with the number of drones. Placeholders are guesses. Unpriced inputs count as $0.",
   "materials": {
     "pla_per_kg": {
-      "unit": "kg", "low": 8.55, "high": 18.0, "status": "snapshot", "checked": "2026",
-      "source": "https://sigmafilament.com/bulk-pla-filament/; https://sigmafilament.com/3d-filament-deals/",
-      "note": "2026 B2B guides: 5 to 20 kg lots $8.55 to $10.49 per kg; single spools $18 to $25 per kg (high end shown). Month not stated, so year-only."
+      "unit": "kg", "low": 10.29, "high": 17.99, "status": "snapshot", "checked": "2026-10-27",
+      "source": "https://store.sunlu.com/products/over-6kg-of-pla-pla-meta-3d-filaments-1kg-2-2lbs-fit-most-of-fdm-printer; https://us.elegoo.com/products/pla-rfid-emoji-filament-10-kg; https://us.elegoo.com/products/pla-basic-filament-1-75mm-colored-1kg; https://us.polymaker.com/products/panchroma-pla",
+      "note": "Makers' US stores on 2026-10-27: Sunlu PLA $10.29 a 1 kg roll; Elegoo $109.99 for 10 kg ($11.00 per kg) and $13.49 for 1 kg; Polymaker Panchroma Basic $17.99 for 1 kg. Replaces year-only 2026 B2B guide figures."
     },
     "petg_per_kg": {
       "unit": "kg", "low": 15.0, "high": 30.0, "status": "placeholder", "checked": "",
@@ -14,17 +14,17 @@
     "pla_pellets_per_kg": {
       "unit": "kg", "low": 1.0, "high": 4.85, "status": "snapshot", "checked": "", "moq": 25,
       "source": "https://www.made-in-china.com/products-search/hot-china-products/PLA_Pellet_Price.html; https://www.made-in-china.com/products-search/hot-china-products/Pla_Resin_Price.html",
-      "note": "Raw PLA resin pellets, asking prices at a 25 kg minimum: $1.00 to $4.85 per kg. Undated. Needs an extruder to become filament, which breaks even only after roughly 55 to 150 kg, so no pass uses it."
+      "note": "Raw PLA resin pellets, asking prices at a 25 kg minimum: $1.00 to $4.85 per kg. Undated. Needs an extruder to become filament, which breaks even only after roughly 45 to 285 kg at the filament prices of 2026-10-27, so no pass uses it."
     },
     "fr4_single_sided_per_cm2": {
       "unit": "cm2", "low": 0.009, "high": 0.111, "status": "snapshot", "checked": "",
       "source": "https://www.newark.com/fortex/ss100/fr4-1-side-copper-clad-100x160x1/dp/51AK9434; https://www.mouser.com/c/tools-supplies/prototyping-products/copper-clad-boards/?material=FR4",
-      "note": "Single-sided copper-clad FR4. Newark $1.43 for 160 cm2 to Mouser $10.73 for about 97 cm2. Undated."
+      "note": "Single-sided copper-clad FR4. Newark $1.43 for 160 cm2 to Mouser $10.73 for about 97 cm2, undated. Both pages timed out on 2026-10-27, so this was not re-checked."
     },
     "etchant_ferric_per_l": {
-      "unit": "l", "low": 9.25, "high": 18.01, "status": "snapshot", "checked": "",
+      "unit": "l", "low": 9.25, "high": 18.01, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://shop.takachpress.com/etching/acid-room-equipment/ferric-chloride/; https://www.circuitspecialists.com/ferric-chloride-photoresists",
-      "note": "Bulk gallons about $9 to $12 per liter; a 1 liter bottle about $18. Undated. Reusable."
+      "note": "On 2026-10-27: Takach $46 a gallon ($12.15 per liter) and $140 for four gallons ($9.25 per liter); Circuit Specialists $18.01 for 1 liter and $47.47 for a 4 liter jug. Reusable."
     },
     "magnet_wire_per_kg": {
       "unit": "kg", "low": 11.85, "high": 44.57, "status": "snapshot", "checked": "2026-03",
@@ -32,29 +32,29 @@
       "note": "Low: a March 2026 listing at $11.85 to $13.85 (unit and minimum unclear). High: a 0.3 mm 140 g spool at about $44.57 per kg (undated). Factory asks of $7 to $10 per kg need 300 kg minimums. Salvaged wire is the cheapest route."
     },
     "ndfeb_n52_10x2_each": {
-      "unit": "each", "low": 0.26, "high": 0.78, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 0.26, "high": 0.78, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm; https://www.jc-magnetics.com/Magnet-Discs",
-      "note": "Distributor: JC-Magnetics $0.78 at the 25-piece minimum down to $0.26 at 5,000. Undated."
+      "note": "Distributor: JC-Magnetics on 2026-10-27, $0.78 at the 25-piece minimum down to $0.26 at 5,000."
     },
     "ndfeb_n52_10x2_factory_each": {
-      "unit": "each", "low": 0.02, "high": 0.1, "status": "snapshot", "checked": "", "moq": 1000,
-      "source": "https://huajinmag.en.made-in-china.com/product/njCxtpmJIkhV/China-Rare-Earth-Strong-Permanent-Neodymium-N52-Round-Circle-Disc-Magnet-10X2mm-15X2mm.html; https://www.alibaba.com/showroom/disc-magnets-n52-10x2mm.html",
-      "note": "Factory listings: Nanjing Huajin $0.10 each at 10 to 1,999 pieces, $0.05 at 2,000 to 4,999, $0.01 at 5,000 or more (page about 17 months old). Alibaba $0.02 to $0.10 at a 1,000-piece minimum. Specify grade, coating and magnetization direction, and pull-test a sample."
+      "unit": "each", "low": 0.05, "high": 0.1, "status": "snapshot", "checked": "2026-10-27", "moq": 10,
+      "source": "https://huajinmag.en.made-in-china.com/product/njCxtpmJIkhV/China-Rare-Earth-Strong-Permanent-Neodymium-N52-Round-Circle-Disc-Magnet-10X2mm-15X2mm.html",
+      "note": "Nanjing Huajin on 2026-10-27, one listing for 10 x 2 and 15 x 2 mm N52 discs: $0.10 each at 10 to 1,999 pieces, $0.05 at 2,000 to 4,999, $0.01 at 5,000 or more. The $0.01 tier is left out: a 1.2 g magnet holds about $0.05 of rare earth at September 2026 metal prices. The Alibaba page listed before is gone. Specify grade, coating and magnetization direction, and pull-test a sample."
     },
     "ndfeb_n52_by_weight_kg": {
       "unit": "kg", "low": 95.0, "high": 130.0, "status": "snapshot", "checked": "",
       "source": "https://www.xinhuimagnet.com/best-neodymium-magnet-price-grade-guide-for/; https://rare-earth-mining.com/neodymium-price/",
-      "note": "Vendor range for N52 by weight (undated). Raw neodymium metal was about $130 to $141 per kg in September 2026."
+      "note": "Vendor range for N52 by weight, undated; the vendor page could not be read on 2026-10-27. Neodymium metal was $140.88 per kg on SMM's China benchmark on 2026-09-30 (rare-earth-mining.com)."
     },
     "bearing_mini_684_each": {
-      "unit": "each", "low": 3.0, "high": 4.38, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 3.0, "high": 4.38, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://vxb.com/products/684zz-4x9-shielded-4x9x4-miniature-bearing-pa; https://bearingsdirect.com/684-zz-miniature-ball-bearing-4x9x4-shielded-r940zz/",
-      "note": "Miniature 4 x 9 x 4 mm bearing (684ZZ, also sold as MR94ZZ), the size class used in small drone motors. VXB 10-pack about $3 each, Bearings Direct $4.38. Undated. Replaces the 608 skate bearing used earlier, which is too large for a 2207 motor."
+      "note": "Miniature 4 x 9 x 4 mm bearing (684ZZ, also sold as MR94ZZ), the size class used in small drone motors. On 2026-10-27: VXB $29.99 for ten (about $3 each), Bearings Direct $4.38 each. Replaces the 608 skate bearing used earlier, which is too large for a 2207 motor."
     },
     "bearing_mini_684_factory_each": {
-      "unit": "each", "low": 0.16, "high": 0.88, "status": "snapshot", "checked": "", "moq": 100,
+      "unit": "each", "low": 0.16, "high": 0.5, "status": "snapshot", "checked": "2026-10-27", "moq": 100,
       "source": "https://linear-bearing.en.made-in-china.com/product/AToUDwOrZNhY/China-Deep-Groove-Ball-Bearing-684zz-L-940zz-High-Speed-Micro-Bearing-Size-4X9X4mm.html; https://www.aliexpress.us/item/2255801059162249.html",
-      "note": "Factory listings for 684ZZ at a 100-piece minimum, $0.16 to $0.50, and an AliExpress 10-pack at $8.76 (about $0.88 each). Undated. Quality varies: spin-test and check play before use."
+      "note": "684ZZ factory listing on 2026-10-27: $0.16 to $0.50 at a 100-piece minimum. The AliExpress 10-pack ($8.76, about $0.88 each, undated) sits behind a sign-in and was not re-read. Quality varies: spin-test and check play before use."
     },
     "steel_shaft_each": {
       "unit": "each", "low": 1.0, "high": 3.0, "status": "placeholder", "checked": "",
@@ -79,12 +79,12 @@
     "stator_core_factory_each": {
       "unit": "each", "low": 0.99, "high": 1.99, "status": "snapshot", "checked": "", "moq": 1000,
       "source": "https://www.made-in-china.com/products-search/hot-china-products/Stator_Core_Lamination.html; https://sinotech.com/products/motor-components/laminations/",
-      "note": "Generic BLDC stator cores from a factory listing at a 1,000-piece minimum, undated. Not 2207-specific: send a drawing with diameter, stack height, slot count and steel grade. New tooling takes 10 to 12 weeks (Sinotech). Small batches cost $15 to $21 each at 10 pieces."
+      "note": "Generic BLDC stator cores from a factory listing at a 1,000-piece minimum, undated; the listing blocked automated reading on 2026-10-27. Not 2207-specific: send a drawing with diameter, stack height, slot count and steel grade. New tooling takes 10 to 12 weeks (Sinotech, still stated on 2026-10-27). Small batches cost $15 to $21 each at 10 pieces."
     },
     "cell_18650_each": {
-      "unit": "each", "low": 1.0, "high": 3.2, "status": "snapshot", "checked": "",
-      "source": "https://18650batterypartners.com/pages/bulk-lithium-ion-battery-cells-bulk-only; https://www.made-in-china.com/products-search/hot-china-products/18650_Battery_Price.html",
-      "note": "Unprotected 18650 cells, undated. China wholesale $1 to $2, Panasonic-class bulk about $3.09 to $3.19. Factory-direct cells ship as dangerous goods (cargo aircraft only at 30 percent charge or less, or sea freight), so for small orders buy from a US distributor: EVE 30P at $3.89 to $4.99 (undated)."
+      "unit": "each", "low": 4.99, "high": 6.99, "status": "snapshot", "checked": "2026-10-27",
+      "source": "https://www.18650batterystore.com/products/samsung-25r-18650; https://www.18650batterystore.com/products/samsung-35e-18650-3500mah-8a-battery; https://18650batterypartners.com/pages/bulk-lithium-ion-battery-cells-bulk-only; https://www.made-in-china.com/products-search/hot-china-products/18650_Battery_Price.html",
+      "note": "Unprotected 18650 cells from a US distributor on 2026-10-27: Samsung 25R $4.99, Samsung 35E and Panasonic GA $6.99, in stock (EVE 25P $3.99, out of stock). China wholesale ($1 to $2) and US bulk ($3.09 to $3.19), undated, could not be read. Factory-direct cells ship as dangerous goods (cargo aircraft only at 30 percent charge or less, or sea freight), so small orders come from a US distributor."
     },
     "tp4056_module_each": {
       "unit": "each", "low": 2.39, "high": 7.19, "status": "snapshot", "checked": "2026-08",
@@ -92,14 +92,14 @@
       "note": "Single-cell charger with DW01A protection. August 2026 eBay listings at $6.11 to $7.19; Envistia $2.39 (undated)."
     },
     "at32f421_each": {
-      "unit": "each", "low": 0.43, "high": 1.37, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 0.43, "high": 0.91, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://www.lcsc.com/product-detail/C2687447.html; https://www.lcsc.com/product-detail/C2965611.html",
-      "note": "LCSC, undated. $0.43 to $0.81 at 1,000 pieces; $0.85 to $1.37 for one. AM32 lists the AT32F421 as supported."
+      "note": "LCSC on 2026-10-27, two packages: $0.43 to $0.50 at about 1,000 pieces, $0.89 to $0.91 for one, both in stock. AM32 lists the AT32F421 as supported."
     },
     "stm32h743_each": {
-      "unit": "each", "low": 5.9, "high": 9.38, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 7.86, "high": 10.78, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://www.lcsc.com/product-detail/C114409.html; https://www.findchips.com/search/STM32H743VIT6",
-      "note": "Undated. Typical market $5.90 to $7.90; DigiKey 990-piece tier $9.38."
+      "note": "LCSC on 2026-10-27: $10.78 for one, $7.86 at 100, 120 in stock. Findchips was not re-read; the old $5.90 to $9.38 was undated."
     },
     "icm42688p_each": {
       "unit": "each", "low": 3.07, "high": 6.5, "status": "snapshot", "checked": "2026-08",
@@ -117,9 +117,9 @@
       "note": "Bare ESP32-C3 SoC with 4 MB flash in the package. LCSC $2.18 to $1.38 (reference only, out of stock); Mouser and DigiKey $2.50 for one to $1.30 per reel. Undated. Needs a 40 MHz crystal, RF matching and an antenna, so it saves about $0.70 per unit at volume and adds RF design risk."
     },
     "ch592_each": {
-      "unit": "each", "low": 0.46, "high": 0.95, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 0.45, "high": 0.86, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://www.lcsc.com/product-detail/C39831287.html; https://www.lcsc.com/product-detail/C42442063.html; https://www.lcsc.com/product-detail/C41417128.html",
-      "note": "WCH CH592 RISC-V SoC with BLE 5.4. LCSC: CH592F $0.91 for one and $0.50 at 1,000 (19,237 in stock); CH592D $0.84 to $0.46. Undated. Needs a crystal, RF matching and an antenna. BLE range must be tested in the field."
+      "note": "WCH CH592 RISC-V SoC with BLE 5.4. LCSC on 2026-10-27: CH592F $0.86 for one and $0.45 at 1,000 (1,720 in stock); CH592D $0.84 to $0.46; CH592X $0.71 to $0.52. Needs a crystal, RF matching and an antenna. BLE range must be tested in the field."
     },
     "sx1262_module_each": {
       "unit": "each", "low": 4.1, "high": 7.99, "status": "snapshot", "checked": "",
@@ -127,19 +127,19 @@
       "note": "LoRa module, not a bare chip. Undated."
     },
     "sx1280_module_each": {
-      "unit": "each", "low": 3.22, "high": 13.98, "status": "snapshot", "checked": "",
-      "source": "https://www.aliexpress.com/w/wholesale-sx1280.html; https://www.alibaba.com/showroom/sx1280-module.html",
-      "note": "2.4 GHz chip or module for an ELRS-style transmitter. AliExpress IC $3.22 (page about 1,787 days old); modules $9.80 to $13.98 (undated)."
+      "unit": "each", "low": 2.91, "high": 4.97, "status": "snapshot", "checked": "2026-10-27",
+      "source": "https://www.lcsc.com/product-detail/C125969.html; https://www.tindie.com/products/ebyteiot/e28-2g4m12sx-sx1281-chip-lora-module/; https://www.aliexpress.com/w/wholesale-sx1280.html; https://www.alibaba.com/showroom/sx1280-module.html",
+      "note": "2.4 GHz chip or module for an ELRS-style transmitter. On 2026-10-27: the bare SX1280 at LCSC $4.64 for one to $2.91 at 1,000 (4,000 in stock); Ebyte's E28-2G4M12SX module (SX1281, 12.5 dBm) on Tindie $4.97. Modules with a power amplifier were $9.80 to $13.98 before (undated); LCSC's listings for them are gone, and AliExpress and Alibaba could not be read."
     },
     "gnss_atgm336h_each": {
-      "unit": "each", "low": 1.82, "high": 3.24, "status": "snapshot", "checked": "",
+      "unit": "each", "low": 1.83, "high": 3.27, "status": "snapshot", "checked": "2026-10-27",
       "source": "https://www.lcsc.com/product-detail/GNSS-Modules_ZHONGKEWEI-ATGM336H-5N31_C90770.html; https://www.chipmall.com/products/detail/gnss-modules_zhongkewei-atgm336h-5nr32_c06771907",
-      "note": "Clone-family GNSS module. LCSC $3.24 for one, $1.82 at 1,000. Undated. Untested here."
+      "note": "Clone-family GNSS module. LCSC on 2026-10-27: $3.27 for one, $1.83 at 1,000, 6,888 in stock. Chipmall was not re-read. Untested here."
     },
     "gnss_m9n_each": {
-      "unit": "each", "low": 10.99, "high": 16.04, "status": "snapshot", "checked": "",
-      "source": "https://www.symmetryelectronics.com/products/u-blox/neo-m9n-00b/; https://www.lcsc.com/product-detail/C5119087.html",
-      "note": "u-blox NEO-M9N-00B bare module. $10.99 at ten (Symmetry) to $16.04 for one (LCSC). Undated."
+      "unit": "each", "low": 16.15, "high": 16.55, "status": "snapshot", "checked": "2026-10-27",
+      "source": "https://www.lcsc.com/product-detail/C5119087.html; https://americas.braemac.com/products/u-blox/neo-m9n-00b/",
+      "note": "u-blox NEO-M9N-00B bare module. LCSC on 2026-10-27: $16.55 for one, $16.15 at ten. Symmetry now redirects to Braemac, which blocked automated reading ($10.99 at ten before, undated)."
     },
     "gnss_antenna_ceramic_each": {
       "unit": "each", "low": 0.5, "high": 3.0, "status": "placeholder", "checked": "",
@@ -152,9 +152,9 @@
       "note": "High: a retail TO-220 part at $1.75 (Tinkersphere, last updated June 2026). Low: a guess. No LCSC listing for a 30 V PDFN5x6 ESC-class part was found. LCSC prices other power MOSFETs in cents at volume, so the low end may be generous. Search LCSC's filters directly."
     },
     "fd6288q_each": {
-      "unit": "each", "low": 0.27, "high": 0.67, "status": "snapshot", "checked": "",
-      "source": "https://jlcpcb.com/partdetail/JSMSEMI-FD6288Q/C7466367; https://www.lcsc.com/product-detail/C328453.html",
-      "note": "Three-phase 250 V gate driver used in many ESCs, one per motor. JSMSEMI FD6288Q at JLCPCB $0.55 for one and $0.27 at 1,000, in stock. The Fortior original was listed at about $1.15, out of stock. Undated."
+      "unit": "each", "low": 1.15, "high": 2.37, "status": "snapshot", "checked": "2026-10-27",
+      "source": "https://www.lcsc.com/product-detail/C328453.html",
+      "note": "Three-phase 250 V gate driver used in many ESCs, one per motor. On 2026-10-27 the JSMSEMI FD6288Q ($0.27 to $0.55 before) was gone from LCSC and JLCPCB. The Fortior original at LCSC: $2.37 for one to $1.15 at 1,000, out of stock. Find an in-stock equivalent before an ESC design is fixed."
     },
     "passives_kit_each": {
       "unit": "each", "low": 1.0, "high": 3.0, "status": "estimate", "checked": "",
@@ -162,14 +162,14 @@
       "note": "Resistors, capacitors, crystal, connectors and current-sense parts in bulk. Estimate only."
     },
     "pcb_2layer_100cm2_each": {
-      "unit": "board", "low": 0.4, "high": 0.7, "status": "snapshot", "checked": "", "moq": 5, "moq_per_item": true,
+      "unit": "board", "low": 0.4, "high": 0.4, "status": "snapshot", "checked": "2026-10-27", "moq": 5, "moq_per_item": true,
       "source": "https://jlcpcb.com/",
-      "note": "10 x 10 cm, 2-layer. JLCPCB homepage: 5 boards from $2.00 (undated). One user reported $3.50 for five including shipping."
+      "note": "10 x 10 cm, 2-layer. JLCPCB's homepage on 2026-10-27: from $2.00 for 5 boards. Shipping is extra and was not checked (one user once reported $3.50 for five with shipping, undated)."
     },
     "pcb_4layer_100cm2_each": {
-      "unit": "board", "low": 1.4, "high": 15.0, "status": "snapshot", "checked": "2026", "moq": 5, "moq_per_item": true,
+      "unit": "board", "low": 1.4, "high": 15.0, "status": "snapshot", "checked": "2026-10-27", "moq": 5, "moq_per_item": true,
       "source": "https://jlcpcb.com/features/prototype-pcb-way; https://www.atlaspcb.com/blog/multilayer-pcb-cost-2026-pricing-breakdown-optimization/",
-      "note": "10 x 10 cm, 4-layer. Low: JLCPCB's promo of $7 for five (undated). High: a competitor's 2026 estimate of $8 to $15 each for 5 to 10 boards. Year-only."
+      "note": "10 x 10 cm, 4-layer. Low: JLCPCB's page on 2026-10-27 says these start at $7, and its minimum order is five boards. High: Atlas PCB's article of 2026-07-11 gives $8 to $15 each for 5 to 10 boards from a quality manufacturer."
     },
     "pcba_order_fixed": {
       "unit": "order", "low": 9.71, "high": 9.71, "status": "snapshot", "checked": "2026-09", "moq": 1, "moq_per_item": true, "per_order": true,
@@ -182,9 +182,9 @@
       "note": "JLCPCB Economic PCBA placement per solder joint."
     },
     "pcba_extended_part_type_each": {
-      "unit": "part type", "low": 1.5, "high": 3.0, "status": "snapshot", "checked": "", "moq": 3, "moq_per_item": true, "per_order": true,
-      "source": "https://www.itechguides.com/jlcpcb-smt-assembly-service-complete-guide-to-files-pricing-parts-and-ordering/",
-      "note": "Loading fee per unique extended part type per order: $3 (a 2025 guide) or $1.5 (another listing). Basic parts have no loading fee in Economic PCBA. The model assumes three extended types per design."
+      "unit": "part type", "low": 3.07, "high": 3.07, "status": "snapshot", "checked": "2026-10-27", "moq": 3, "moq_per_item": true, "per_order": true,
+      "source": "https://jlcpcb.com/help/article/pcb-assembly-price; https://jlcpcb.com/blog/reduce-pcb-assembly-cost-prototype; https://www.itechguides.com/jlcpcb-smt-assembly-service-complete-guide-to-files-pricing-parts-and-ordering/",
+      "note": "JLCPCB's assembly price page (updated 2026-10-22) and its blog (2026-10-13): $3.07 per unique Extended part per order in Economic PCBA. Basic and Preferred Extended parts load free. Standard PCBA charges $1.53 for every part type. A third-party page reported $1.50 from 2025-12-19, which JLCPCB's page does not show. The model assumes three extended types per design."
     },
     "gimbal_pot_each": {
       "unit": "each", "low": 0.5, "high": 2.0, "status": "placeholder", "checked": "",

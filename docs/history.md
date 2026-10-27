@@ -108,6 +108,12 @@ After the owner's "ok", the agent pushed iterations 35 and 36 and added cropping
 - **Iteration 38:** the simulated camera crops around where the council last placed the rider. At phone accuracy, a 4 m/s follow went from 36.8 m behind with 4% tracking to 15.7 m with 65%.
 - **Iteration 39:** the camera page. The marker starts a follow, box overlap continues it, and ambiguity stops it. The detector crops around the rider. A fake-camera check followed a rider shrinking to 93 pixels tall, where the whole frame lost them.
 
+## Phase 16: the prices re-checked (iteration 40, 2026-10-27)
+
+After the owner's "ok", the agent pushed iterations 37 to 39 and re-checked the cost model's out-of-date prices.
+
+- **Iteration 40:** 37 of the 41 undated or stale prices were seen on sellers' pages on 2026-10-27, so 47 of 51 sourced prices are now dated within 12 months. The Raspberry Pi 5 4 GB costs $110, not $70. The cheaper ESC gate driver is gone. The bare M9N and known-brand 2207 motors cost more. Pass 10 is $239.66 to $544.96 per drone, and the bench kit with a made tag still fits $100, at $69.13 to $99.20.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

@@ -27,7 +27,7 @@ The owner does not like asking for money. Nothing in the plan depends on outside
 
 ## Budget
 
-The working budget is $100 for the bench and pipeline work, so simulation comes first. The cost passes in [docs/cost-reduction.md](docs/cost-reduction.md) show on paper that a bench kit with a made tag fits $100, and that a flying drone does not. Prices carry their own dates, and most are older than 12 months or undated ([docs/price-audit.md](docs/price-audit.md)). See [docs/budget.md](docs/budget.md) and [docs/pipeline.md](docs/pipeline.md).
+The working budget is $100 for the bench and pipeline work, so simulation comes first. The cost passes in [docs/cost-reduction.md](docs/cost-reduction.md) show on paper that a bench kit with a made tag fits $100, and that a flying drone does not. Prices carry their own dates, and most were re-checked on 2026-10-27 ([docs/price-audit.md](docs/price-audit.md)). See [docs/budget.md](docs/budget.md) and [docs/pipeline.md](docs/pipeline.md).
 
 ## Planned scope
 

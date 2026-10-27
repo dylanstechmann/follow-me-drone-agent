@@ -1,6 +1,6 @@
 {
   "status": "draft",
-  "last_updated": "2026-10-10",
+  "last_updated": "2026-10-27",
   "member_counts": [5, 10, 20],
   "waves": {
     "1": "Factory parts, ready now",
@@ -27,7 +27,7 @@
     {
       "id": "magnets_sample", "wave": 1, "supplier_type": "distributor", "unit": "disc", "order_qty": 25, "state": "needs quote",
       "name": "N52 disc magnets, 10 x 2 mm: sample from a distributor",
-      "price": {"low": 0.78, "high": 0.78, "moq": 25, "basis": "listing", "checked": "", "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm"},
+      "price": {"low": 0.78, "high": 0.78, "moq": 25, "basis": "listing", "checked": "2026-10-27", "source": "https://www.jc-magnetics.com/Magnet-disc-N52-10mm-2mm"},
       "ships_from": "US", "units_per_drone": 56,
       "inspection": "Weigh and caliper a few discs. Pull-test one. Check the coating for chips.",
       "note": "Enough for one test motor (14 discs) with spares. Lets the team test the winding and the pull before the factory order. Magnets pinch fingers and shatter if they snap together: use spacers."
@@ -35,7 +35,7 @@
     {
       "id": "bearings_sample", "wave": 1, "supplier_type": "retail", "unit": "bearing", "order_qty": 10, "state": "needs quote",
       "name": "684ZZ miniature bearings, 4 x 9 x 4 mm: sample from a retailer",
-      "price": {"low": 3.0, "high": 4.38, "moq": 1, "basis": "listing", "checked": "", "source": "https://vxb.com/products/684zz-4x9-shielded-4x9x4-miniature-bearing-pa; https://bearingsdirect.com/684-zz-miniature-ball-bearing-4x9x4-shielded-r940zz/"},
+      "price": {"low": 3.0, "high": 4.38, "moq": 1, "basis": "listing", "checked": "2026-10-27", "source": "https://vxb.com/products/684zz-4x9-shielded-4x9x4-miniature-bearing-pa;https://bearingsdirect.com/684-zz-miniature-ball-bearing-4x9x4-shielded-r940zz/"},
       "ships_from": "US", "units_per_drone": 8,
       "inspection": "Spin each bearing by hand and listen. Check radial play with a dial gauge if one is available.",
       "note": "The same size is sold as MR94ZZ. Compare the factory order against this sample."
@@ -45,9 +45,9 @@
       "name": "N52 disc magnets, 10 x 2 mm, from a factory",
       "material": "ndfeb_n52_10x2_factory_each",
       "ships_from": "China", "units_per_drone": 56,
-      "candidates": ["Nanjing Huajin Magnet (a Made-in-China listing)", "An Alibaba listing at a 1,000-piece minimum"],
+      "candidates": ["Nanjing Huajin Magnet (a Made-in-China listing)"],
       "inspection": "Pull-test ten samples from the batch. Check grade marking, coating and magnetization direction against the datasheet. Calipers for size.",
-      "note": "Ask for the grade, the coating, the magnetization direction (axial), the tolerance, packaging for strong magnets, and the delivered-duty-paid price. Candidates come from listings and are not vetted."
+      "note": "Ask for the grade, the coating, the magnetization direction (axial), the tolerance, packaging for strong magnets, and the delivered-duty-paid price. The listing gives $0.10 each up to 1,999 pieces and $0.05 from 2,000, so 1,000 discs cost about $100. The Alibaba listing named before is gone, so a second candidate is needed. Candidates come from listings and are not vetted."
     },
     {
       "id": "bearings_factory", "wave": 1, "supplier_type": "factory", "unit": "bearing", "order_qty": 100, "state": "needs quote",

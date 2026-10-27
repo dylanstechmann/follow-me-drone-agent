@@ -37,7 +37,7 @@ COMPOSED_PATHS = ("make", "buy_service", "buy_factory")
 MADE_PATHS = ("make", "salvage")
 SOURCED_STATUSES = ("snapshot", "official")
 
-AS_OF = date(2026, 10, 10)
+AS_OF = date(2026, 10, 27)
 MAX_PRICE_AGE_DAYS = 365
 _DATE_RE = re.compile(r"^\d{4}(-\d{2}(-\d{2})?)?$")
 

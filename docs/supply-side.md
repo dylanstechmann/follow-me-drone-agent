@@ -2,35 +2,35 @@
 
 Each part can move up its supply chain: retail, then marketplace, then distributor, then factory, then fab or lab. Each step usually lowers the unit price and adds something else: a minimum order, a lead time, an import duty, or a quality risk. The cost model now shows both numbers for every pass: the per-drone cost, and the cash needed to place every order at its minimum.
 
-Prices come from [bom/materials.json](../bom/materials.json) and [bom/catalog.json](../bom/catalog.json). Only 10 of 51 sourced prices are dated within the last 12 months ([price-audit.md](price-audit.md)), so treat every figure as provisional.
+Prices come from [bom/materials.json](../bom/materials.json) and [bom/catalog.json](../bom/catalog.json). 47 of 51 sourced prices were seen within the last 12 months, most of them on 2026-10-27 ([price-audit.md](price-audit.md)). Prices move, so treat every figure as provisional.
 
 ## Where each part sits, and the next step up
 
 | Part | Now | Next step up (price, minimum order) | Verdict |
 |---|---|---|---|
-| N52 magnets, 10 x 2 mm | Distributor $0.26 to $0.78 each | Factory $0.02 to $0.10 each at 1,000 pieces (listing about 17 months old) | Go upstream. 1,000 magnets is $20 to $100 and covers about 70 motors. Pull-test a sample. |
-| Miniature bearings, 4 x 9 x 4 mm | Retail $3.00 to $4.38 each | Factory $0.16 to $0.88 each at 100 pieces | Go upstream. Spin-test and check play. |
+| N52 magnets, 10 x 2 mm | Distributor $0.26 to $0.78 each | Factory $0.10 each, $0.05 from 2,000 pieces (2026-10-27) | Go upstream. 1,000 magnets cost about $100, and so do 2,000 at $0.05, which cover about 140 motors. Pull-test a sample. |
+| Miniature bearings, 4 x 9 x 4 mm | Retail $3.00 to $4.38 each | Factory $0.16 to $0.50 each at 100 pieces | Go upstream. Spin-test and check play. |
 | Stator cores | Laser-cut by a service (placeholder) | Lab photo-etch, about $0.24 to $1.05 with steel (unverified). Factory $0.99 to $1.99 at 1,000 pieces, 10 to 12 weeks of tooling | Etch in the lab first. Factory cores only as a group order. |
 | Electrical steel | None yet | $1.44 to $2.09 per kg (Q2 2026 benchmarks); small lots cost more | Buy a small sheet for etching tests. |
 | Magnet wire | Retail spool about $44.57 per kg | Factory $7 to $10 per kg at 300 kg | Salvage, or buy a 1 kg spool. The factory minimum is far too large. |
-| Complete motors | T-Motor $10 to $13.50 each | Factory 2207 about $11 each at 10 pieces | No gain. The gain is in the parts. |
-| ESC | Hand-assembled own design, $12.40 to $81.79 | Factory-assembled own design, $16.20 to $80.15 | Factory assembly from the fab's own parts stock. FD6288Q drivers are $0.27 to $0.67. The MOSFET price is still a placeholder. |
-| Autopilot board | Hand-assembled own design, $12.37 to $47.94 | Factory-assembled, $15.69 to $45.21 | Factory assembly suits the fine-pitch MCU and the LGA IMU. |
-| GPS | Holybro M9N board $54.99 to $74.90 | Own board with a bare M9N, factory-assembled, $15.54 to $28.59 | Go upstream. The largest single saving. No compass yet. |
-| Tag | ESP32-C3 module ($2.01 to $3.06) and M9N | CH592 BLE chip ($0.46 to $0.95) and a clone GNSS module ($1.82 to $3.24); the tag board is $7.26 to $16.36 | Test both new parts against the old ones before switching. |
+| Complete motors | Known-brand 2207 $14.99 to $17.99 each | Factory 2207 about $11 each at 10 pieces (undated) | A few dollars a motor at most, before shipping and duty. The gain is in the parts. |
+| ESC | Hand-assembled own design, $15.92 to $87.74 | Factory-assembled own design, $20.66 to $85.65 | Factory assembly from the fab's own parts stock. FD6288Q drivers are $1.15 to $2.37 and were out of stock on 2026-10-27. The MOSFET price is still a placeholder. |
+| Autopilot board | Hand-assembled own design, $14.33 to $49.76 | Factory-assembled, $18.59 to $46.80 | Factory assembly suits the fine-pitch MCU and the LGA IMU. |
+| GPS | Holybro M9N board $54.99 to $74.90 | Own board with a bare M9N, factory-assembled, $21.33 to $28.86 | Go upstream. The largest single saving. No compass yet. |
+| Tag | ESP32-C3 module ($2.01 to $3.06) and M9N | CH592 BLE chip ($0.45 to $0.86) and a clone GNSS module ($1.83 to $3.27); the tag board is $8.20 to $16.01 | Test both new parts against the old ones before switching. |
 | Bare ESP32-C3 | Module $2.01 to $3.06 | ESP32-C3FH4 chip $1.30 to $2.50 | Small saving, adds RF design work. The CH592 is the bigger saving if BLE is enough. |
-| PCBs | 2-layer $0.40 to $0.70 per board | Already at the factory. 4-layer $1.40 to $15 per board. Five boards per design minimum. | Stay. |
-| PCB assembly | Hand soldering | Economic factory assembly: $9.71 per order, $0.0016 per joint, $1.50 to $3 per extended part type (JLCPCB help page, about a month old) | Use basic parts where possible, since they have no loading fee. |
-| Props | Retail 4-pack $2.89 to $3.29 | Factory $0.70 to $1.20 per prop | No gain. Stay retail. |
-| Cells | Undated wholesale $1.00 to $3.20 | US distributor EVE 30P $3.89 to $4.99; factory listings $1.14 to $2.20 (authenticity unverified) | Buy domestic. Factory cells are dangerous goods to ship. |
-| Filament | 5 to 20 kg PLA $8.55 to $10.49 per kg | Pellets $1.00 to $4.85 per kg at 25 kg, plus an extruder at EUR 699 to EUR 1,399 | Not worth it. Payback takes about 55 to 150 kg. |
+| PCBs | 2-layer $0.40 per board, before shipping | Already at the factory. 4-layer $1.40 to $15 per board. Five boards per design minimum. | Stay. |
+| PCB assembly | Hand soldering | Economic factory assembly: $9.71 per order and $0.0016 per joint (JLCPCB help page, 2026-09), and $3.07 per extended part type (the same page, updated 2026-10-22) | Use basic parts where possible, since they have no loading fee. |
+| Props | Retail 4-pack $2.99 to $4.99 | Factory $0.70 to $1.20 per prop | No gain. Stay retail. |
+| Cells | US distributor $4.99 to $6.99 (2026-10-27) | Wholesale $1.00 to $3.20 and factory listings $1.14 to $2.20 (undated, authenticity unverified) | Buy domestic. Factory cells are dangerous goods to ship. |
+| Filament | PLA $10.29 to $17.99 per kg (2026-10-27) | Pellets $1.00 to $4.85 per kg at 25 kg, plus an extruder at EUR 699 to EUR 1,399 | Not worth it. Payback takes about 45 to 285 kg. |
 
 ## What the model says
 
 From [cost-reduction.md](cost-reduction.md):
 
-- **Pass 10, closer to the factory:** $207.86 to $534.21 per drone, $67 to $89 cheaper than pass 8. The cash needed at minimum orders is $332.20 to $960.45. 20 percent of the cost is made in-house and 51 percent is the owner's own design, since the factory assembles boards the owner designed. Still over $100.
-- **Pass 11, factory stator cores:** about the same per drone ($210.86 to $539.05), but $1,319.96 to $2,943.16 of cash to start.
+- **Pass 10, closer to the factory:** $239.66 to $544.96 per drone, $62 to $94 cheaper than pass 8. The cash needed at minimum orders is $361.63 to $841.62. 20 percent of the cost is made in-house and 51 percent is the owner's own design, since the factory assembles boards the owner designed. Still over $100.
+- **Pass 11, factory stator cores:** about the same per drone ($242.66 to $549.84), but $1,349.39 to $2,824.33 of cash to start.
 - **Cheapest per drone is not cheapest to start.** Minimum orders turn small unit prices into large up-front orders. A group order spreads them: 1,000 magnets cover about 17 drones' worth of motors.
 
 ## What going upstream costs
@@ -68,7 +68,7 @@ In-house steps the owner can take on:
 
 ## What not to pull upstream yet
 
-- **Complete motors:** factory 2207s cost about the same as retail.
+- **Complete motors:** factory 2207s were only a few dollars cheaper than retail, before shipping and duty.
 - **Props:** retail is already close to factory price.
 - **Cells and flight packs:** shipping rules and safety. Buy known brands from domestic distributors.
 - **Filament from pellets:** the extruder does not pay back at hobby scale.
@@ -85,4 +85,4 @@ In-house steps the owner can take on:
 3. Etch a test lamination coupon and check its edges and flatness.
 4. Ask the FAU FabLab about the laser type and the orientation.
 5. Ask the IEEE club about a group order and a shared customs entry.
-6. Re-check the 41 sourced prices that are undated or older than 12 months.
+6. Re-check the four sourced prices that could not be read on 2026-10-27.

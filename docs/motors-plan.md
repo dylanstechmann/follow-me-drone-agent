@@ -9,15 +9,15 @@ For one 2207-class outrunner, from [bom/catalog.json](../bom/catalog.json) and [
 | Input | Quantity per motor | Retail and distributor parts (USD) | Factory parts and lab stator (USD) |
 |---|---|---|---|
 | 0.3 mm enamelled copper wire | 40 g | 0.47 to 1.78 | 0.47 to 1.78 (or salvaged) |
-| N52 neodymium discs, 10 x 2 mm | 14 | 3.64 to 10.92 (distributor) | 0.28 to 1.40 (factory, 1,000 minimum) |
-| Miniature bearings, 4 x 9 x 4 mm (684ZZ) | 2 | 6.00 to 8.76 (retail) | 0.32 to 1.76 (factory, 100 minimum) |
+| N52 neodymium discs, 10 x 2 mm | 14 | 3.64 to 10.92 (distributor) | 0.70 to 1.40 (factory; the low end needs 2,000 pieces) |
+| Miniature bearings, 4 x 9 x 4 mm (684ZZ) | 2 | 6.00 to 8.76 (retail) | 0.32 to 1.00 (factory, 100 minimum) |
 | Steel shaft | 1 | 1.00 to 3.00 (placeholder) | 1.00 to 3.00 (placeholder) |
 | Electrical steel for the stator | 25 g | 0.04 to 0.05 | 0.04 to 0.05 |
 | Stator laminations | 1 set | 0.50 to 2.00 (laser-cut placeholder) | 0.20 to 1.00 (lab etch placeholder) |
-| Printed bell (PLA, thrust stand only) | 30 g | 0.26 to 0.54 | 0.26 to 0.54 |
-| **Total, with 30 percent waste on the high end** | | **11.91 to 35.17** | **2.57 to 12.40** |
+| Printed bell (PLA, thrust stand only) | 30 g | 0.31 to 0.54 | 0.31 to 0.54 |
+| **Total, with 30 percent waste on the high end** | | **11.96 to 35.17** | **3.04 to 11.41** |
 
-A retail T-Motor V2207 V2 is $10 to $13.50 (undated). Only the factory-parts route is cheaper. The 14-magnet count is an assumption for a 2207-class outrunner, so check it against the chosen stator design.
+A retail 2207 motor from a known brand is $14.99 to $17.99 (EMAX E3, in stock on 2026-10-27; the T-Motor V2207 V2 was sold out at $16.99). Only the factory-parts route is cheaper. The 14-magnet count is an assumption for a 2207-class outrunner, so check it against the chosen stator design.
 
 **Correction:** an earlier version used 608 skateboard bearings. They are 22 mm across, the same size as a 2207 stator, so they cannot fit. Small drone motors use miniature bearings around 4 x 9 x 4 mm.
 

@@ -12,13 +12,13 @@ Why both:
 
 ## Tier costs
 
-From [parts-catalog.md](parts-catalog.md). The retail tag (pass 0) is about $27 to $51 of parts. The made tag (pass 5, bulk chip and outsourced board) is about $24 to $49. The phone is $0 because you already own it.
+From [parts-catalog.md](parts-catalog.md). The retail tag (pass 0) is about $32 to $51 of parts. The made tag (pass 5, bulk chip and outsourced board) is about $29 to $49. The phone is $0 because you already own it.
 
 | Tier | What it adds | Cost (USD, low to high) |
 |---|---|---|
 | 0 | Phone only | $0 |
-| 1 | Phone and one tag | $27.16 to $50.64 retail; $23.67 to $48.87 made |
-| 2 | Phone and two tags | $54.32 to $101.28 retail; $47.34 to $97.74 made |
+| 1 | Phone and one tag | $32.31 to $51.09 retail; $28.82 to $48.55 made |
+| 2 | Phone and two tags | $64.62 to $102.18 retail; $57.64 to $97.10 made |
 | 3 | Plus wearable IMUs | Not priced. The IMU boards are unpriced in the catalog. |
 
 With retail tags, tier 2 exceeds the whole $100 budget at the high end. With made tags it fits, just. Tier 3 is outside the budget until it is priced.

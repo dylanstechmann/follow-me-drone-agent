@@ -65,7 +65,7 @@ Four parts exist as OpenSCAD models, each with a print card in [cad/parts.json](
 
 Printed parts are costed from the raw filament prices in [materials.json](../bom/materials.json):
 
-- PLA at $10.99 to $20 per kg, from 5 kg spools.
+- PLA at $10.29 to $17.99 per kg: budget 1 kg rolls and a 10 kg pack at the low end, a premium brand's 1 kg spool at the high end (2026-10-27).
 - PETG at $15 to $30 per kg. This is a placeholder until a bulk PETG price is searched.
 
 Cost is grams divided by 1000, times the price per kilogram, with 20 percent waste added to the high end. A 150 g PETG frame comes to about $2.25 to $5.40. Time and electricity are not counted yet.

@@ -646,3 +646,52 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - A dense group shrunk this far stops the follow as intended.
   - After JPEG compression this rider was found down to 93 pixels tall, not at 66.
 - JavaScript tests: following by overlap for as long as it lasts, waiting unseen and letting go, stopping when two people overlap, and the crop's geometry.
+
+## Iteration 40 plan: re-check the out-of-date prices (2026-10-27)
+
+- Owner input (2026-10-27): the owner replied "ok" to the agent's question about pushing iterations 37 to 39, and to its proposed next step, refreshing the cost model's out-of-date prices.
+- Only 10 of the 51 sourced prices (snapshot or official) were dated within 12 months of the 2026-10-10 cutoff. The other 41 were undated or year-only.
+- Re-check each of the 41 on its listed sources, through the agent's web access:
+  - Record what a source shows today, with `checked` set to 2026-10-27. Low and high become the lowest and highest prices seen today across the row's sources.
+  - Replace a source that is gone with one selling the same thing, and say so in the note.
+  - Leave a row undated when none of its sources could be read, and say which were tried.
+- Move `AS_OF` to 2026-10-27, so today's dates count, and update the docs that quote the cutoff.
+- Placeholders stay guesses: this iteration re-checks sourced prices only.
+- Stop point: ask the owner before pushing.
+
+## Iteration 40: the prices re-checked (done: 339 Python and 15 JavaScript tests pass)
+
+- Read on 2026-10-27 through the agent's web access: stores' own product data, LCSC's product pages, and fetched pages. 37 of the 41 rows now carry that date. With the 10 already fresh, 47 of 51 sourced prices are dated within 12 months of the new cutoff, `AS_OF` = 2026-10-27.
+- Not re-checked, still undated:
+  - the used Pix32 v5 (eBay blocked automated reading);
+  - single-sided FR4 (Newark and Mouser timed out);
+  - N52 magnets by weight (the vendor page would not load);
+  - factory stator cores (the listing blocked automated reading).
+- How rows were set: low and high are the lowest and highest prices seen that day across a row's sources. Sources that are gone were removed. Sources that could not be read were kept, and the note names them.
+- Notable changes:
+  - **Raspberry Pi 5 4 GB:** $110, not $70. Raspberry Pi raised it by $15 on 2026-02-02 and by $25 on 2026-04-01 (correction C15).
+  - **ESC gate driver:** the cheaper JSMSEMI FD6288Q is gone from LCSC and JLCPCB. The Fortior original is $1.15 to $2.37 and out of stock, so the ESC design needs a driver source.
+  - **Bare NEO-M9N:** $16.15 to $16.55 at LCSC, against $10.99 to $16.04 before. Symmetry's cheaper price could not be re-read: its page now redirects to Braemac.
+  - **2207 motor:** the T-Motor V2207 V2 was sold out at Pyrodrone ($16.99), and T-Motor's store blocked reading. The row is now a known-brand 2207, priced from the EMAX E3 at $14.99 to $17.99, against $10 to $13.50 before.
+  - **Pix32 v6:** $189.00 to $252.97, so a used v5 at $149 now saves $40 to $104.
+  - **Others:**
+    - STM32H743: $7.86 to $10.78.
+    - JLCPCB's loading fee per extended part: $3.07.
+    - Cells from a US distributor: $4.99 to $6.99, against $1.00 to $3.20 wholesale before.
+    - The load cell set: $7.45 to $13.90.
+    - PLA: $10.29 to $17.99 per kg.
+    - ELRS nano receivers: $9.99 to $18.99.
+  - **Factory magnets:** the listing's $0.01 tier (5,000 or more) was left out, because a 1.2 g N52 disc holds about $0.05 of rare earth at September 2026 metal prices. The minimum is now 10 pieces, as the listing says. The Alibaba listing is gone.
+  - **Single prices:** where only one seller could be read, a range became one price: the Tello ($79), the 3018 mill ($169), and the 2-layer board ($0.40 before shipping).
+- Results:
+  - Pass 0: $668.18 to $977.10, against $557.91 to $964.58 before.
+  - Pass 5, the bench kit with a made tag: $69.13 to $99.20, still inside $100.
+  - Pass 10: $239.66 to $544.96, against $207.86 to $534.21, with $361.63 to $841.62 of cash at minimum orders.
+  - The motors' factory parts now save more than the own GPS board.
+- Docs:
+  - The generated tables were re-synced.
+  - The prices quoted in the text of these docs were updated: cost reduction, supply side, make-or-own, motors, pipeline, PCB plan, companion tiers, vision, build plan and project context.
+  - The group-order plan's two sample prices are dated, and its magnet line gives the price tiers.
+  - The website's cost page says prices were seen up to the cutoff, instead of "many are older".
+  - Older entries in this log and in the history keep the old figures as records of their time.
+- A test pinned the shipped PLA price. It now expects $10.29.

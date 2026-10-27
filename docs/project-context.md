@@ -42,7 +42,7 @@ The wider direction, set by the owner on 2026-10-24, is in [vision.md](vision.md
 | The owner can work with a drone club. | Owner (2026-10-26) | Not confirmed. A web search found no university-level FAU drone club, only the K-12 club at FAU's lab schools. |
 | FAU prohibits recreational drone use on university property. Other flights need approval through FAU Risk Management. | FAU's environmental health and safety drone page, found by web search | The page is undated. Not confirmed with FAU. |
 | FAU's Boca Raton campus borders Boca Raton Airport, which has Class D airspace with LAANC available. | Web search and the airport's site | Check the FAA's B4UFLY app before any flight. |
-| Web prices, lead times, licence summaries and duty claims | Web search snippets and fetched pages | Mostly not verified. Only 10 of 51 sourced prices are dated within 12 months of the 2026-10-10 cutoff. |
+| Web prices, lead times, licence summaries and duty claims | Web search snippets and fetched pages | Mostly not verified with sellers. 47 of 51 sourced prices were seen within 12 months of the 2026-10-27 cutoff, most of them on that day. |
 
 ## 4. How the code fits together
 
@@ -92,29 +92,29 @@ Concepts:
 
 - **Status** says how sure a price is: snapshot, official, estimate, placeholder, owned, purchased, unpriced.
 - **Path** says how a part is obtained: buy_retail, buy_bulk, buy_used, buy_service, buy_factory, make, owned, salvage.
-- **Checked** is the date the price was seen on its source. A price is fresh only with month precision and a date within 12 months of the cutoff `AS_OF` in `bom.py` (2026-10-10). Move `AS_OF` when prices are re-checked.
+- **Checked** is the date the price was seen on its source. A price is fresh only with month precision and a date within 12 months of the cutoff `AS_OF` in `bom.py` (2026-10-27). Move `AS_OF` when prices are re-checked.
 - **Composed items** have no price of their own. Their cost is the sum of their materials, with a waste allowance on the high end.
 - **Cash at minimum orders** is separate from per-drone cost, because a cheap unit price can sit behind a large minimum order.
 - **Cost per drone for a number of drones** divides the cash for that many drones by the count. Fees marked `per_order` (the PCB assembly setup and loading fees) are paid once per order. It is for exploring: the owner has not set a number of drones.
 
-Headline results at the 2026-10-10 prices, core cost per drone in USD, low to high. The generated table in [cost-reduction.md](cost-reduction.md) is current:
+Headline results at the 2026-10-27 prices, core cost per drone in USD, low to high. The generated table in [cost-reduction.md](cost-reduction.md) is current:
 
 | Pass | What it is | Core cost |
 |---|---|---|
-| 0 | Retail autopilot drone | 557.91 to 964.58 |
-| 3 | Bench kit, no flying drone | 67.36 to 101.23 |
-| 5 | Bench kit with a made tag | 63.87 to 98.99 (fits $100) |
-| 8 | Own autopilot board, ESC, transmitter and tag battery | 275.09 to 623.11 |
-| 10 | Factory-assembled own boards, factory magnets and bearings, lab-etched stators | 207.86 to 534.21, with 332.20 to 960.45 of cash at minimum orders |
+| 0 | Retail autopilot drone | 668.18 to 977.10 |
+| 3 | Bench kit, no flying drone | 72.62 to 101.74 |
+| 5 | Bench kit with a made tag | 69.13 to 99.20 (fits $100) |
+| 8 | Own autopilot board, ESC, transmitter and tag battery | 301.76 to 638.79 |
+| 10 | Factory-assembled own boards, factory magnets and bearings, lab-etched stators | 239.66 to 544.96, with 361.63 to 841.62 of cash at minimum orders |
 
 Main findings:
 
-1. The bench kit fits $100. A flying drone does not fit under any pass so far.
-2. Owning more lowers the modelled cost. The largest single saving is an own GNSS board with a bare u-blox chip, factory-assembled, at $15.54 to $28.59 against a $54.99 to $74.90 retail board.
+1. The bench kit fits $100, with 80 cents to spare at the high end. A flying drone does not fit under any pass so far.
+2. Owning more lowers the modelled cost. The largest savings are factory parts for the motors and an own GNSS board with a bare u-blox chip, factory-assembled, at $21.33 to $28.86 against a $54.99 to $74.90 retail board.
 3. Going upstream pays for magnets, bearings and assembled boards. It does not pay for complete motors, props, cells or filament pellets.
 4. An outsourced two-layer board is cheaper than etching one. Etching is for fast iteration.
 5. Chips, radios and lithium cells cannot be made at home. The design, firmware, boards, structure and motors' build can be owned. Some distributors quote 45 to 53 weeks for an IMU.
-6. A used autopilot is no cheaper than a new one at the low end.
+6. A used autopilot ($149, one undated listing) is $40 to $104 cheaper than a new one ($189.00 to $252.97).
 
 Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.md) for the part-by-part reasoning.
 
@@ -155,7 +155,7 @@ Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.m
 
 **For an agent:**
 
-1. Re-check the 41 undated or stale prices, starting with chips, GNSS modules and motors. Record the date seen.
+1. Find an in-stock equivalent of the FD6288Q gate driver, and re-check the four prices that could not be read on 2026-10-27: the used Pix32 v5, the FR4 board, magnets by weight and factory stator cores. Record the date seen.
 2. Price 30 V power MOSFETs on LCSC. This is the largest open placeholder.
 3. Read the LICENSE files named above.
 4. Update the group-order plan when the owner reports news.

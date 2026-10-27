@@ -81,7 +81,7 @@ def small_catalog(tmp_path, extra=()):
 
 def test_shipped_materials_load_with_valid_statuses():
     materials = load_materials(DEFAULT_MATERIALS)
-    assert materials["pla_per_kg"].low == pytest.approx(8.55)
+    assert materials["pla_per_kg"].low == pytest.approx(10.29)
     assert {m.status for m in materials.values()} <= {
         "snapshot", "official", "estimate", "placeholder", "owned", "purchased", "unpriced",
     }

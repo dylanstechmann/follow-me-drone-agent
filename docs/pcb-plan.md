@@ -20,15 +20,15 @@ From [bom/catalog.json](../bom/catalog.json), for one tag:
 
 | Item | Path | Cost (USD) | Note |
 |---|---|---|---|
-| ESP32-C3-MINI-1 module | bulk | 2.01 to 3.53 | LCSC and DigiKey both listed |
-| NEO-M9N-00B bare module | bulk | 10.99 to 16.04 | Largest chip cost; needs a carrier and antenna |
-| 2-layer board, 10 x 10 cm | outsourced | 0.40 to 0.70 | One fab listed so far |
+| ESP32-C3-MINI-1 module | bulk | 2.01 to 3.06 | LCSC and DigiKey both listed |
+| NEO-M9N-00B bare module | bulk | 16.15 to 16.55 | Largest chip cost; needs a carrier and antenna |
+| 2-layer board, 10 x 10 cm | outsourced | 0.40 | Before shipping; one fab listed so far |
 | Passives and connectors | bulk | 1 to 3 | Estimate; not searched |
 | GNSS antenna and carrier board | retail placeholder | 5 to 15 | Replaced by an own-design patch in pass 7 (unverified) |
 | Battery and charge board | retail placeholder | 4 to 10 | Not priced |
-| Printed case | make | 0.27 to 0.60 | 25 g of PLA |
+| Printed case | make | 0.26 to 0.54 | 25 g of PLA |
 
-The made tag comes to about $23.67 to $48.87. The retail tag, using a HT-CT62 module, comes to about $27.16 to $50.64. The difference is small, because the GNSS module and antenna dominate the cost.
+The made tag comes to about $28.82 to $48.55. The retail tag, using a HT-CT62 module, comes to about $32.31 to $51.09. The difference is small, because the GNSS module and antenna dominate the cost.
 
 ## Board route options
 
