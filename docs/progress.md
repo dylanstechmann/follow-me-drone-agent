@@ -597,3 +597,33 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - the gate rejecting a phone 15 m off;
   - the CLI with two files.
 - Checked in a headless browser: two files opened together, the note gave the verdict, and the second track was drawn, with no errors.
+
+## Iterations 37 to 39 plan: crop around the rider (2026-10-27)
+
+- Owner input (2026-10-27): the owner replied "ok" to the agent's question about pushing iterations 35 and 36, and to its proposed next step, cropping.
+- Iteration 37, measure a crop on COCO:
+  - For each drawn person, crop a square around them, three times their height and inside the photo. Scale it to the detector's input, and check whether the detector finds them.
+  - This measures the gain for a camera with no spare pixels, such as a 640 x 480 webcam, where the crop is only enlarged. A camera with spare pixels would gain more.
+  - Crops centred on the drawn box are kinder than crops centred on an estimate, so the result is an upper bound for that camera.
+- Iteration 38, the crop in the simulation:
+  - The camera crops around where the council last placed the rider, when it has an estimate.
+  - It falls back to the whole frame when there is no estimate, when the rider would not fit in the crop, or when the rider is outside it.
+  - Two settings: a camera with spare pixels (the rider's height times the zoom), and one without (the curve measured in iteration 37).
+- Iteration 39, the camera page:
+  - The marker starts the follow. A 15 cm marker is only about 7 pixels wide at 10 m on a 640-pixel webcam, too small to read. So after that, the same person is followed by box overlap from frame to frame.
+  - The follow stops if the person is lost for a second, or if two people overlap the rider's last box. It does not guess between people.
+  - The detector runs on a crop around the rider's last box.
+  - Tests and a headless check.
+- Stop point: ask the owner before pushing.
+
+## Iteration 37: a crop, measured on COCO (done)
+
+- `tools/detector_recall.html` has a crop mode, `?mode=crop`. It runs the detector once per drawn person, on a square crop three times their height (at least 160 pixels, inside the photo), enlarged to the input. `tools/detector_recall.py crop` compares that with the whole photo for people of the same height.
+- On the same 500 photos, 1,950 crops, at a score of 0.35, cropping found people of 16 to 48 px far more often: 57 to 70%, against 12 to 46% in the whole photo. People 96 px and taller gained nothing. No camera detail was added, so this is what a webcam can get. Crops centred on the drawn box make it an upper bound. Full table in [camera.md](camera.md).
+- The tool now draws the whole-photo mode through the same function as the crops, so its numbers moved by up to 2 points. The simulation's `MEASURED_RECALL` was updated to match.
+
+## Iteration 38: the crop in the simulation (done: 339 tests pass)
+
+- `sim.Camera(crop=True)` crops around where the council last placed the rider: three times the expected height, at least a third of the frame. When that crop holds the rider (`sim.crop_holds`: centred near them, and they fit), the measured crop recall applies. Otherwise the whole frame's applies.
+- Results: at phone accuracy, cropping takes a 4 m/s follow from 36.8 m behind with 4% tracking to 15.7 m with 65%, and a 2 m/s follow from 17.6 m and 29% to 14.2 m and 66%. The example ride tracks 89% of the time at 10.7 m. A camera zooming 2x into spare pixels does about as well.
+- Tests: the trap broken by the measured crop and by a 2x zoom; when a crop holds the rider.

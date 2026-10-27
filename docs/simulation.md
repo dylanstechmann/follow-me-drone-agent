@@ -96,19 +96,22 @@ Each is a change to the follow logic, so it needs simulation tests first.
 
 `simulate(..., camera=Camera())` adds a camera on the drone's nose, as a stand-in for the person detector:
 - **What it sees.** Only inside the field of view and within 60 m. Since iteration 35, it sees the rider only as often as the detector found people of the rider's height on screen in 500 COCO photos (`MEASURED_RECALL`; see [camera.md](camera.md)).
+- **Cropping.** With `crop=True` (iteration 38), the camera crops around where the council last placed the rider: three times the expected height, at least a third of the frame. When that crop really holds the rider, the recall measured on such crops applies (`MEASURED_RECALL_CROP`). Otherwise the whole frame's recall applies, as it does when there is no estimate or the rider is close.
 - **How its readings are made.** It makes the box a detector would, with the error `sources.camera_estimate` assumes, and passes the box through that function.
 - **What it leaves out.** There are no other people, no wrong detections and nothing in the way.
 
 Iteration 31 first gave it a placeholder that saw 90% of the time out to 30 m, which made the camera look far more useful than the measurement does.
 
-Median distance behind the rider, and the share of time in full tracking. All columns use the simulation's default camera, 90 degrees across and 60 high. A 2x crop means running the detector on a crop around where the council expects the rider, which doubles their height on screen:
+Median distance behind the rider, and the share of time in full tracking. All columns use the simulation's default camera, 90 degrees across and 60 high:
 
-| Case | Phone only | Phone and camera | Phone and camera, 2x crop |
+| Case | Phone only | Phone and camera | Phone and camera, cropping (measured) |
 |---|---|---|---|
-| 2 m/s, phone at 4 m | 21.3 m, 0% tracking | 17.6 m, 29% | 14.2 m, 67% |
-| 4 m/s, phone at 4 m | 38.0 m, 0% | 36.8 m, 4% | 15.8 m, 64% |
-| 4 m/s, phone at 1 m | 10.1 m, 100% | 9.0 m, 100% | 8.7 m, 100% |
-| The example ride | 12.2 m, 60% | 11.7 m, 72% | 10.7 m, 90% |
+| 2 m/s, phone at 4 m | 21.3 m, 0% tracking | 17.6 m, 29% | 14.2 m, 66% |
+| 4 m/s, phone at 4 m | 38.0 m, 0% | 36.8 m, 4% | 15.7 m, 65% |
+| 4 m/s, phone at 1 m | 10.1 m, 100% | 9.1 m, 100% | 8.8 m, 100% |
+| The example ride | 12.2 m, 60% | 11.7 m, 72% | 10.7 m, 89% |
+
+A camera with spare pixels, zooming 2x into a larger frame (`frame_px` doubled), does about as well as the measured crop: 16.1 m and 62% at 4 m/s.
 
 What this shows:
 - **At phone accuracy, the camera alone barely helps.** The safety margin keeps the drone far back, where the rider is small on screen and seldom found. That keeps the estimate uncertain and the drone back: a trap.
@@ -186,7 +189,8 @@ The recording is not uploaded. See [website.md](website.md).
   - seen only in view and in range, with readings through `camera_estimate`;
   - the measured recall curve and its sampling;
   - a gap bridged by a camera that always sees;
-  - a degraded phone follow helped only a little at the measured recall, and the trap broken by a 2x crop;
+  - a degraded phone follow helped only a little at the measured recall, and the trap broken by cropping (measured) or by a 2x zoom;
+  - when a crop holds the rider: centred near them, and they fit;
   - never too close with noisy fixes;
 - the safety margin: noisy fixes kept at a distance, the limit when accuracy is under-reported, following and stopping with the margin, and the margin's size;
 - with feed-forward and no margin:

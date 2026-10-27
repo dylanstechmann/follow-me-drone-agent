@@ -65,10 +65,38 @@ Limits of this measurement:
 What it means:
 - The simulated camera's first numbers (seen 90% of the time out to 30 m) were far too optimistic. The simulation now uses the all-people column ([simulation.md](simulation.md)).
 - At phone accuracy, the safety margin keeps the drone 15 to 40 m back, where the rider is seldom found, so the estimate stays uncertain. That is a trap.
-- Running the detector on a crop around where the council expects the rider doubles their height on screen. In the simulation, at 4 m/s with a phone, that changed the follow from 36.8 m behind and 4% tracking to 15.8 m behind and 64% tracking. It needs a camera with enough real pixels to crop into, such as a 1080p or higher sensor.
+- Running the detector on a crop around the rider breaks the trap, measured below.
 - A narrower lens did worse in the simulation. That result is confounded: the controller sets its distance from how much of the frame the rider fills, so a narrower lens also moves the follow distance out.
 
 To repeat the measurement, see the steps at the top of `tools/detector_recall.py`. The photos stay on the machine that runs it.
+
+### Cropping around the rider (iteration 37)
+
+The same 500 photos were run once per drawn person, on a square crop around them: three times their height, at least 160 pixels, inside the photo. Each crop was enlarged to the detector's input. No camera detail is added, which is what a 640 x 480 webcam can do.
+
+At a score of 0.35:
+
+| Height in the whole-photo input | Whole photo | Crop |
+|---|---|---|
+| 128 px and up | 89% | 89% |
+| 96 to 128 px | 84% | 84% |
+| 64 to 96 px | 68% | 79% |
+| 48 to 64 px | 64% | 73% |
+| 32 to 48 px | 46% | 70% |
+| 24 to 32 px | 31% | 66% |
+| 16 to 24 px | 12% | 57% |
+| 12 to 16 px | 5% | 47% |
+| 8 to 12 px | 1% | 53% |
+| Under 8 px | 1% | 22% |
+
+The whole-photo column differs from the table above by up to 2 points, because the tool now draws both modes through one function.
+
+How to read it:
+- **Small people gain most.** At the detector's coarsest grid, 8 pixels, a small person covers one or two cells, and enlarging gives it more to see.
+- **It is an upper bound.** The crops were centred on the drawn box. On the drone, a crop would centre on the council's estimate. The simulation applies the gain only when the rider falls inside such a crop.
+- **More pixels would help more.** A camera with spare pixels, cropping from a 1080p or larger frame, would add real detail as well.
+
+In the simulation (iteration 38), cropping took a 4 m/s follow at phone accuracy from 36.8 m behind with 4% tracking to 15.7 m with 65% tracking. See [simulation.md](simulation.md).
 
 ## A check on real photos
 

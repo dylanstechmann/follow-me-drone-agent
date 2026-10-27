@@ -13,6 +13,8 @@ because a person's height on screen shrinks with distance.
                                           http://localhost:8000/recall-check/index.html
      When it finishes, save predictions.json into _site/recall-check.
   4. Read the result:                     python3 tools/detector_recall.py analyse _site/recall-check
+  5. Optionally, the gain from cropping:  open index.html?mode=crop, save predictions-crop.json, then
+                                          python3 tools/detector_recall.py crop _site/recall-check
 
 The photos are COCO's, under their owners' Flickr licences, and stay on the machine
 that runs this: never commit or publish them. COCO's annotations are CC BY 4.0.
@@ -134,6 +136,34 @@ def analyse(folder: Path, hfov_deg: float = 70.0) -> None:
             print(f"{lo:>5}-{hi if hi < 1000 else '':<5} {span:>11} {shown[0]:>14} {shown[1]:>16}")
 
 
+def crop_gain(folder: Path, threshold: float = 0.35) -> None:
+    """Recall on square crops around each person, enlarged to the input, against recall in
+    the whole photo, for people of the same height. The crops are centred on the drawn box,
+    so this is an upper bound for a camera with no spare pixels: the crop is only enlarged."""
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
+    by_file = {m["file"]: m for m in manifest}
+    frame = json.loads((folder / "predictions.json").read_text(encoding="utf-8"))
+    cells, _ = recall_by_height(manifest, {p["file"]: p["boxes"] for p in frame["predictions"]}, threshold)
+    crops = json.loads((folder / "predictions-crop.json").read_text(encoding="utf-8"))
+    found: dict[int, list[int]] = {}
+    for entry in crops["predictions"]:
+        item = by_file[entry["file"]]
+        person = item["people"][entry["person"]]
+        hit = any(iou(b, person) >= 0.5 for b in entry["boxes"] if b[4] >= threshold)
+        h = person[3] * INPUT / max(item["width"], item["height"])
+        b = next(i for i in range(len(BINS) - 1) if BINS[i] <= h < BINS[i + 1])
+        cell = found.setdefault(b, [0, 0])
+        cell[0] += int(hit)
+        cell[1] += 1
+    print(f"score >= {threshold}: recall by height in the whole-photo input, whole photo against a crop")
+    print(f"{'height px':>11} {'whole photo':>14} {'crop':>14}")
+    for b in range(len(BINS) - 1):
+        lo, hi = BINS[b], BINS[b + 1]
+        whole, cropped = cells.get(("all", b), [0, 0]), found.get(b, [0, 0])
+        shown = [f"{c[0] / c[1]:.0%} of {c[1]}" if c[1] else "-" for c in (whole, cropped)]
+        print(f"{lo:>5}-{hi if hi < 1000 else '':<5} {shown[0]:>14} {shown[1]:>14}")
+
+
 def main(argv: list[str]) -> int:
     if len(argv) == 3 and argv[1] == "prepare":
         prepare(Path(argv[2]))
@@ -141,7 +171,10 @@ def main(argv: list[str]) -> int:
     if len(argv) == 3 and argv[1] == "analyse":
         analyse(Path(argv[2]))
         return 0
-    print("usage: python3 tools/detector_recall.py prepare|analyse FOLDER", file=sys.stderr)
+    if len(argv) == 3 and argv[1] == "crop":
+        crop_gain(Path(argv[2]))
+        return 0
+    print("usage: python3 tools/detector_recall.py prepare|analyse|crop FOLDER", file=sys.stderr)
     return 2
 
 

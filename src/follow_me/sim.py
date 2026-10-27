@@ -21,7 +21,7 @@ from follow_me.context import Conditions
 from follow_me.controller import Command, Detection
 from follow_me.council import Council, TickResult
 from follow_me.fusion import Reading
-from follow_me.motion import Pose, to_body
+from follow_me.motion import Pose, to_body, to_local
 from follow_me.replay import TRACE_FORMAT, trace_settings, trace_tick
 from follow_me.sources import camera_estimate
 
@@ -49,9 +49,20 @@ class Limits:
 # docs/camera.md. Heights are bin middles; beyond the last point the share stays level.
 MEASURED_RECALL = (
     (4.0, 0.01), (10.0, 0.01), (14.0, 0.05), (20.0, 0.12), (28.0, 0.31),
-    (40.0, 0.47), (56.0, 0.66), (80.0, 0.69), (112.0, 0.82), (160.0, 0.89),
+    (40.0, 0.46), (56.0, 0.64), (80.0, 0.68), (112.0, 0.84), (160.0, 0.89),
+)
+# The same photos, run once per drawn person on a square crop around them (three times
+# their height, at least 160 pixels, inside the photo), enlarged to the input: what a
+# crop gives a camera with no spare pixels. Indexed like MEASURED_RECALL, by height in
+# the whole-photo input. Neighbouring values that fell were pooled (8 to 16 px: 53% of
+# 87 and 47% of 118), and the crops were centred on the drawn box, so it is an upper bound.
+MEASURED_RECALL_CROP = (
+    (4.0, 0.22), (10.0, 0.50), (14.0, 0.50), (20.0, 0.57), (28.0, 0.66),
+    (40.0, 0.70), (56.0, 0.73), (80.0, 0.79), (112.0, 0.84), (160.0, 0.89),
 )
 INPUT_FRAME_PX = 312.0  # a 4:3 frame's height in the detector's 416-pixel input
+CROP_TIMES = 3.0  # a crop's side, in the expected rider's heights
+CROP_MIN = 160.0 / 480.0  # and at least 160 pixels of a 480-pixel frame, as a share of its height
 
 
 def recall_at(height_px: float, curve: tuple = MEASURED_RECALL) -> float:
@@ -79,7 +90,11 @@ class Camera:
     bearing_sigma_rad: float = 0.05  # placeholders, as in sources.camera_estimate
     range_sigma_frac: float = 0.15
     recall: tuple = MEASURED_RECALL
-    frame_px: float = INPUT_FRAME_PX
+    frame_px: float = INPUT_FRAME_PX  # more models a camera with spare pixels to zoom into
+    # Crop around where the council last placed the rider, enlarged to the input, as the
+    # page does around the rider's last box. Without spare pixels: crop_recall applies.
+    crop: bool = False
+    crop_recall: tuple = MEASURED_RECALL_CROP
     seed: int = 1
 
 
@@ -189,15 +204,35 @@ def _rider_at(fixes: list[RiderFix], i: int, t: float) -> tuple[float, float]:
     return a.east + s * (b.east - a.east), a.north + s * (b.north - a.north)
 
 
+def crop_holds(council: Council, drone: DroneState, expected: tuple[float, float], x: float, y: float) -> bool:
+    """Whether a square crop around where the council expects the rider (east, north)
+    holds the rider, who is at x, y in the drone's frame. Positions and the crop's side
+    are in frame heights; the crop is centred on the expected rider."""
+    ex, ey = to_body(drone, expected[0] - drone.east, expected[1] - drone.north)
+    if ex <= 0.5 or x <= 0.5:
+        return False
+    per_m = PERSON_HEIGHT_M / (2.0 * math.tan(council.vfov_rad / 2.0))  # frame heights x meters
+    side = max(CROP_TIMES * per_m / math.hypot(ex, ey), CROP_MIN)
+    if side >= 1.0:  # the rider is close: the crop would be the whole frame
+        return False
+    aspect = math.tan(council.hfov_rad / 2.0) / math.tan(council.vfov_rad / 2.0)
+    across = lambda bx, by: (0.5 - math.atan2(by, bx) / council.hfov_rad) * aspect
+    return abs(across(x, y) - across(ex, ey)) <= side / 2.0 and per_m / math.hypot(x, y) <= side
+
+
 def _camera_reading(
     camera: Camera, rng: random.Random, council: Council, drone: DroneState, rider: tuple[float, float],
+    expected: tuple[float, float] | None = None,
 ) -> Reading | None:
     x, y = to_body(drone, rider[0] - drone.east, rider[1] - drone.north)
     distance, bearing = math.hypot(x, y), math.atan2(y, x)
     if distance < 0.5 or distance > camera.max_range_m or abs(bearing) > council.hfov_rad / 2.0:
         return None
     height_px = camera.frame_px * PERSON_HEIGHT_M / (2.0 * distance * math.tan(council.vfov_rad / 2.0))
-    if rng.random() >= recall_at(height_px, camera.recall):
+    curve = camera.recall
+    if camera.crop and expected is not None and crop_holds(council, drone, expected, x, y):
+        curve = camera.crop_recall
+    if rng.random() >= recall_at(height_px, curve):
         return None
     seen_range = distance * max(0.2, 1.0 + rng.gauss(0.0, camera.range_sigma_frac))
     seen_bearing = bearing + rng.gauss(0.0, camera.bearing_sigma_rad)
@@ -267,6 +302,7 @@ def simulate(
         _check(second, dt)
     j = 0
     held = Command(0.0, 0.0, 0.0)
+    expected = None  # where the council last placed the rider, east and north, for a crop
     ticks = []
     t0 = fixes[0].t
     i = 0
@@ -297,10 +333,12 @@ def simulate(
                 other = _rider_at(second, j, t)
                 rider = ((rider[0] + other[0]) / 2.0, (rider[1] + other[1]) / 2.0)
         if camera is not None:
-            seen = _camera_reading(camera, camera_rng, council, drone, rider)
+            seen = _camera_reading(camera, camera_rng, council, drone, rider, expected)
             if seen is not None:
                 readings.append(seen)
         result = council.tick(readings, Conditions(), now=t, pose=drone)
+        if result.estimate is not None:
+            expected = to_local(drone, result.estimate)
         if result.estimate is not None:
             held = result.command
         flown = held if result.hold_last_command else result.command

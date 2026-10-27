@@ -360,7 +360,7 @@ def test_recall_follows_the_measured_curve():
     from follow_me.sim import MEASURED_RECALL, recall_at
 
     assert recall_at(2.0) == MEASURED_RECALL[0][1]
-    assert recall_at(48.0) == pytest.approx(0.47 + (0.66 - 0.47) * 0.5)
+    assert recall_at(48.0) == pytest.approx(0.46 + (0.64 - 0.46) * 0.5)
     assert recall_at(500.0) == MEASURED_RECALL[-1][1]
     assert all(r0 <= r1 for (_, r0), (_, r1) in zip(MEASURED_RECALL, MEASURED_RECALL[1:]))  # never falls with size
 
@@ -402,16 +402,32 @@ def test_with_the_measured_recall_a_camera_helps_a_degraded_phone_follow_only_a_
 
 
 def test_cropping_around_the_estimate_breaks_the_trap():
-    # Running the detector on a crop around where the council expects the rider doubles
-    # their height on screen. At 4 m/s with a phone, that turns a lost follow into tracking.
+    # Running the detector on a crop around where the council last placed the rider,
+    # enlarged, with the recall measured on such crops (iteration 37). At 4 m/s with a
+    # phone, that turns a lost follow into tracking. A camera with spare pixels to zoom
+    # 2x into does about as well.
     from follow_me.sim import INPUT_FRAME_PX, Camera
 
     fixes = legs((150, 4.0, 0), accuracy=4.0)
     share = lambda ticks: sum(s.result.mode is Mode.TRACKING for s in ticks) / len(ticks)
     plain = simulate(fixes, camera=Camera())
-    cropped = simulate(fixes, camera=Camera(frame_px=2 * INPUT_FRAME_PX))
-    assert share(plain) < 0.15 < 0.5 < share(cropped)
+    cropped = simulate(fixes, camera=Camera(crop=True))
+    zoomed = simulate(fixes, camera=Camera(frame_px=2 * INPUT_FRAME_PX))
+    assert share(plain) < 0.15 < 0.5 < min(share(cropped), share(zoomed))
     assert statistics.median(s.distance for s in cropped if s.t >= 100) < 25.0
+
+
+def test_a_crop_holds_the_rider_only_if_centred_near_them_and_they_fit():
+    from follow_me.sim import crop_holds
+
+    council = Council()
+    drone = DroneState(0.0, 0.0, 0.0)  # facing north
+    assert crop_holds(council, drone, (0.0, 30.0), 30.0, 0.0)  # expected where they are
+    assert crop_holds(council, drone, (2.0, 30.0), 30.0, 0.0)  # a little off
+    assert not crop_holds(council, drone, (20.0, 30.0), 30.0, 0.0)  # far off to the side
+    assert not crop_holds(council, drone, (0.0, 3.0), 3.0, 0.0)  # close: the crop would be the whole frame
+    assert crop_holds(council, drone, (0.0, 30.0), 6.0, 0.0)  # really at 6 m: a quarter of the frame, fits
+    assert not crop_holds(council, drone, (0.0, 30.0), 3.5, 0.0)  # really at 3.5 m: 43% of the frame, does not fit
 
 
 def test_with_a_camera_noisy_fixes_still_never_bring_the_drone_too_close():

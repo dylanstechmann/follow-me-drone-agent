@@ -1,13 +1,14 @@
 <!doctype html>
 <!-- Runs the person detector on the photos prepared by tools/detector_recall.py, in this
-     browser, and offers predictions.json to save. Copied into the check folder inside a
-     site build; never part of the published site. -->
+     browser, and offers predictions.json to save. With ?mode=crop it runs once per drawn
+     person, on a square crop around them, and offers predictions-crop.json. Copied into
+     the check folder inside a site build; never part of the published site. -->
 <meta charset="utf-8">
 <title>Detector recall check</title>
 <p id="status">Loading the detector…</p>
-<p><a id="save" hidden download="predictions.json">Save predictions.json</a></p>
+<p><a id="save" hidden>Save the predictions</a></p>
 <script type="module">
-import { INPUT, PAD, detectPeople, fitScale } from "../assets/detector.js";
+import { INPUT, PAD, detectPeople } from "../assets/detector.js";
 
 const status = document.getElementById("status");
 const ort = await import("../assets/vendor/onnxruntime/ort.wasm.min.mjs");
@@ -18,28 +19,49 @@ const session = await ort.InferenceSession.create(model, { executionProviders: [
 const manifest = await (await fetch("manifest.json")).json();
 const square = new OffscreenCanvas(INPUT, INPUT);
 const sq = square.getContext("2d", { willReadFrequently: true });
+const crop = new URLSearchParams(location.search).get("mode") === "crop";
+const CROP_TIMES = 3; // the crop's side, in the person's heights
+const CROP_MIN = 160; // pixels: enlarges at most 2.6 times
 const predictions = [];
 const times = [];
-for (const [i, item] of manifest.entries()) {
-  const img = new Image();
-  img.src = item.file;
-  await img.decode();
-  const scale = fitScale(img.width, img.height);
+
+// Detect on a square region of the photo (side s at x0, y0), enlarged to the input.
+async function detectIn(img, x0, y0, side) {
+  const scale = INPUT / side;
   sq.fillStyle = `rgb(${PAD}, ${PAD}, ${PAD})`;
   sq.fillRect(0, 0, INPUT, INPUT);
-  sq.drawImage(img, 0, 0, Math.round(img.width * scale), Math.round(img.height * scale));
+  sq.drawImage(img, x0, y0, side, side, 0, 0, INPUT, INPUT);
   const started = performance.now();
   // A low threshold, so the analysis can try several.
   const people = await detectPeople(ort, session, sq.getImageData(0, 0, INPUT, INPUT).data, scale, { threshold: 0.05 });
   times.push(performance.now() - started);
-  predictions.push({ file: item.file, boxes: people.map((p) => [p.x, p.y, p.w, p.h, p.score]) });
+  return people.map((p) => [p.x + x0, p.y + y0, p.w, p.h, p.score]);
+}
+
+for (const [i, item] of manifest.entries()) {
+  const img = new Image();
+  img.src = item.file;
+  await img.decode();
+  if (!crop) {
+    const side = Math.max(img.width, img.height); // the whole photo, letterboxed at the top left
+    predictions.push({ file: item.file, boxes: await detectIn(img, 0, 0, side) });
+  } else {
+    for (const [k, [x, y, w, h]] of item.people.entries()) {
+      const side = Math.min(Math.max(CROP_TIMES * h, CROP_MIN), img.width, img.height);
+      const x0 = Math.min(Math.max(x + w / 2 - side / 2, 0), img.width - side);
+      const y0 = Math.min(Math.max(y + h / 2 - side / 2, 0), img.height - side);
+      predictions.push({ file: item.file, person: k, crop: [x0, y0, side], boxes: await detectIn(img, x0, y0, side) });
+    }
+  }
   status.textContent = `${i + 1} of ${manifest.length} photos`;
 }
 times.sort((a, b) => a - b);
-const result = { predictions, median_ms: times[times.length >> 1] };
+const result = { mode: crop ? "crop" : "frame", predictions, median_ms: times[times.length >> 1] };
 window.__predictions = result; // for a headless browser
 const save = document.getElementById("save");
 save.href = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/json" }));
+save.download = crop ? "predictions-crop.json" : "predictions.json";
+save.textContent = `Save ${save.download}`;
 save.hidden = false;
 status.textContent = `Done: ${manifest.length} photos, median ${result.median_ms.toFixed(0)} ms a photo.`;
 </script>
