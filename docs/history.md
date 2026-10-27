@@ -112,7 +112,7 @@ After the owner's "ok", the agent pushed iterations 35 and 36 and added cropping
 
 After the owner's "ok", the agent pushed iterations 37 to 39 and re-checked the cost model's out-of-date prices.
 
-- **Iteration 40:** 37 of the 41 undated or stale prices were seen on sellers' pages on 2026-10-27, so 47 of 51 sourced prices are now dated within 12 months. The Raspberry Pi 5 4 GB costs $110, not $70. The cheaper ESC gate driver is gone. The bare M9N and known-brand 2207 motors cost more. Pass 10 is $239.66 to $544.96 per drone, and the bench kit with a made tag still fits $100, at $69.13 to $99.20.
+- **Iteration 40:** 37 of the 41 undated or stale prices were seen on sellers' pages on 2026-10-27, so 47 of 51 sourced prices are now dated within 12 months. The Raspberry Pi 5 4 GB costs $110, not $70. The ESC gate driver the model prices was out of stock at LCSC, and its cheaper second source is no longer listed there. The bare M9N and known-brand 2207 motors cost more. Pass 10 is $239.66 to $544.96 per drone, and the bench kit with a made tag still fits $100, at $69.13 to $99.20.
 
 ## Standing instructions from the owner
 

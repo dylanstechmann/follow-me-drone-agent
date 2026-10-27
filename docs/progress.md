@@ -670,7 +670,7 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - How rows were set: low and high are the lowest and highest prices seen that day across a row's sources. Sources that are gone were removed. Sources that could not be read were kept, and the note names them.
 - Notable changes:
   - **Raspberry Pi 5 4 GB:** $110, not $70. Raspberry Pi raised it by $15 on 2026-02-02 and by $25 on 2026-04-01 (correction C15).
-  - **ESC gate driver:** the cheaper JSMSEMI FD6288Q is gone from LCSC and JLCPCB. The Fortior original is $1.15 to $2.37 and out of stock, so the ESC design needs a driver source.
+  - **ESC gate driver:** the cheaper JSMSEMI FD6288Q is no longer listed at LCSC (its page says "Part not found"), and JLCPCB's page shows no stock or price. The Fortior original is $1.15 to $2.37 and out of stock at LCSC. A search engine's cached page still showed the JSMSEMI part in stock, which LCSC's own page and API contradict. Iteration 41 looked for alternatives.
   - **Bare NEO-M9N:** $16.15 to $16.55 at LCSC, against $10.99 to $16.04 before. Symmetry's cheaper price could not be re-read: its page now redirects to Braemac.
   - **2207 motor:** the T-Motor V2207 V2 was sold out at Pyrodrone ($16.99), and T-Motor's store blocked reading. The row is now a known-brand 2207, priced from the EMAX E3 at $14.99 to $17.99, against $10 to $13.50 before.
   - **Pix32 v6:** $189.00 to $252.97, so a used v5 at $149 now saves $40 to $104.
@@ -695,3 +695,21 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - The website's cost page says prices were seen up to the cutoff, instead of "many are older".
   - Older entries in this log and in the history keep the old figures as records of their time.
 - A test pinned the shipped PLA price. It now expects $10.29.
+- Pushed 2026-10-27 (c611e7e) after the owner's "ok". The workflow passed. The live site reports commit c611e7e, the 2026-10-27 cutoff and 47 of 51 sourced prices dated, and its cost page carries the new banner.
+
+## Iteration 41: the ESC gate driver (planned and done 2026-10-27)
+
+- Owner input: the owner replied "ok" to the question about pushing iteration 40. The one open computer-only item was a source for the gate driver, so the agent looked for one.
+- Read live at LCSC through its product API, which returns nothing for a part that is no longer listed:
+
+  | Part | Package | In stock | Price, one piece to the largest break |
+  |---|---|---|---|
+  | Fortior FD6288Q (the part the model prices) | QFN-24 | 0 | $2.37 to $1.15 at 1,000 |
+  | Fortior FD6288T (same family) | TSSOP-20 | 0 | $0.88 to $0.49 at 1,000 |
+  | JSMSEMI FD6288Q and FD6288T | | not listed | |
+  | EG Micro EG2133 (C190343) | TSSOP-20 | 3,996 | $0.46 to $0.27 at 2,000 |
+  | TI DRV8300DIPWR | TSSOP-20 | 203 | $1.23 to $0.71 at 1,000 |
+
+- The EG2133's datasheet reportedly has active-low low-side inputs (found in a search summary of a Chinese datasheet, version 1.0, 2017; not read in full), so it may not be a drop-in. The DRV8300 is a different family: 100 V, 750 mA and 1.5 A drive. Neither is checked against an ESC design, because none is drawn yet.
+- The model still prices the FD6288Q. Swapping to either alternative would lower an ESC by about $2 to $8, so the totals stand. The material's note lists the alternatives.
+- Search snippets disagreed with the live pages on stock: one cached page showed 61,569 FD6288T in stock, and another showed the JSMSEMI part in stock. Stock here is what the LCSC API said on 2026-10-27. LCSC's stock is not JLCPCB's assembly library: stock for factory assembly needs a check on JLCPCB's parts page.

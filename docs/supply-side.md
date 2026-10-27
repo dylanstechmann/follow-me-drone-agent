@@ -14,7 +14,7 @@ Prices come from [bom/materials.json](../bom/materials.json) and [bom/catalog.js
 | Electrical steel | None yet | $1.44 to $2.09 per kg (Q2 2026 benchmarks); small lots cost more | Buy a small sheet for etching tests. |
 | Magnet wire | Retail spool about $44.57 per kg | Factory $7 to $10 per kg at 300 kg | Salvage, or buy a 1 kg spool. The factory minimum is far too large. |
 | Complete motors | Known-brand 2207 $14.99 to $17.99 each | Factory 2207 about $11 each at 10 pieces (undated) | A few dollars a motor at most, before shipping and duty. The gain is in the parts. |
-| ESC | Hand-assembled own design, $15.92 to $87.74 | Factory-assembled own design, $20.66 to $85.65 | Factory assembly from the fab's own parts stock. FD6288Q drivers are $1.15 to $2.37 and were out of stock on 2026-10-27. The MOSFET price is still a placeholder. |
+| ESC | Hand-assembled own design, $15.92 to $87.74 | Factory-assembled own design, $20.66 to $85.65 | Factory assembly from the fab's own parts stock. FD6288Q drivers are $1.15 to $2.37 and were out of stock at LCSC on 2026-10-27; in-stock alternatives are listed in [make-own-ladder.md](make-own-ladder.md). The MOSFET price is still a placeholder. |
 | Autopilot board | Hand-assembled own design, $14.33 to $49.76 | Factory-assembled, $18.59 to $46.80 | Factory assembly suits the fine-pitch MCU and the LGA IMU. |
 | GPS | Holybro M9N board $54.99 to $74.90 | Own board with a bare M9N, factory-assembled, $21.33 to $28.86 | Go upstream. The largest single saving. No compass yet. |
 | Tag | ESP32-C3 module ($2.01 to $3.06) and M9N | CH592 BLE chip ($0.45 to $0.86) and a clone GNSS module ($1.83 to $3.27); the tag board is $8.20 to $16.01 | Test both new parts against the old ones before switching. |

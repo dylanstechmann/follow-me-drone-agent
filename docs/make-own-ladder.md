@@ -71,7 +71,7 @@ Salvage is a real source: crashed flight controllers (MCU, IMU, regulators), pho
   - Hand-assembled: $15.92 to $87.74.
   - Factory-assembled: $20.66 to $85.65.
 - **The range is mostly the MOSFET price,** not the design. Use LCSC's parametric search for 30 V PDFN5x6 parts.
-- **The gate driver needs a source.** On 2026-10-27 the cheaper JSMSEMI FD6288Q was gone from LCSC and JLCPCB, and the Fortior original was out of stock. Find an in-stock equivalent before the design is fixed.
+- **The gate driver needs a choice.** On 2026-10-27 the FD6288 family had none in stock at LCSC, from Fortior in either package, and the cheaper JSMSEMI versions are no longer listed there. Two three-phase drivers were in stock: EG Micro's EG2133 at $0.27 to $0.46 (3,996 in stock; its datasheet reportedly has active-low low-side inputs, so it is not a drop-in) and TI's DRV8300DIPWR at $0.71 to $1.23 (203 in stock; 100 V, weaker drive). Neither is checked against the design. The model still prices the FD6288Q, so a cheaper driver would lower the ESC by about $2 to $8.
 - **Firmware:** AM32 supports the AT32F421. Check its LICENSE.
 - Test at low voltage with a current limit, with props off. No LiPo until a reviewer has checked the build.
 

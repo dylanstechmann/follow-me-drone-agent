@@ -113,7 +113,7 @@ This is for exploring only. The owner has not set a number of drones. Each cell 
 - **Lab lamination etching.** An unverified process with a placeholder cost.
 - **Ceramic GNSS antenna, gimbal pots, steel shaft, charger, LiPo bag and PETG.** All placeholders.
 - **Four sourced prices that could not be re-read on 2026-10-27:** the used Pix32 v5, the FR4 board, magnets by weight and factory stator cores.
-- **The ESC gate driver.** The cheaper FD6288Q was gone and the original out of stock on 2026-10-27.
+- **The ESC gate driver.** On 2026-10-27 the FD6288Q the model prices had none in stock at LCSC, and the cheaper JSMSEMI version is no longer listed. Two other three-phase drivers were in stock, and neither is checked as a replacement ([make-own-ladder.md](make-own-ladder.md)).
 
 ## Repeating the loop
 

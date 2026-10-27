@@ -153,8 +153,8 @@
     },
     "fd6288q_each": {
       "unit": "each", "low": 1.15, "high": 2.37, "status": "snapshot", "checked": "2026-10-27",
-      "source": "https://www.lcsc.com/product-detail/C328453.html",
-      "note": "Three-phase 250 V gate driver used in many ESCs, one per motor. On 2026-10-27 the JSMSEMI FD6288Q ($0.27 to $0.55 before) was gone from LCSC and JLCPCB. The Fortior original at LCSC: $2.37 for one to $1.15 at 1,000, out of stock. Find an in-stock equivalent before an ESC design is fixed."
+      "source": "https://www.lcsc.com/product-detail/C328453.html; https://www.lcsc.com/product-detail/C190343.html; https://www.lcsc.com/product-detail/C2862908.html",
+      "note": "Three-phase gate driver, one per motor. The price is the Fortior FD6288Q (250 V, QFN-24) at LCSC on 2026-10-27: $2.37 for one to $1.15 at 1,000, none in stock. The same maker's FD6288T (TSSOP-20) was $0.88 to $0.49, also none in stock. The JSMSEMI versions ($0.27 to $0.55 before) are no longer listed at LCSC, and JLCPCB's page shows no stock or price. In stock at LCSC that day: EG Micro EG2133 (TSSOP-20, 300 V) at $0.46 for one to $0.27 at 2,000, 3,996 in stock, whose datasheet reportedly has active-low low-side inputs, so it is not a drop-in; and TI DRV8300DIPWR (TSSOP-20, 100 V, 750 mA and 1.5 A drive) at $1.23 for one to $0.71 at 1,000, 203 in stock. None is checked as a replacement, and the totals still price the FD6288Q, so a cheaper driver would lower the ESC by about $2 to $8. Choose the driver with the ESC design."
     },
     "passives_kit_each": {
       "unit": "each", "low": 1.0, "high": 3.0, "status": "estimate", "checked": "",

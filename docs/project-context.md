@@ -155,7 +155,7 @@ Read [make-own-ladder.md](make-own-ladder.md) and [supply-side.md](supply-side.m
 
 **For an agent:**
 
-1. Find an in-stock equivalent of the FD6288Q gate driver, and re-check the four prices that could not be read on 2026-10-27: the used Pix32 v5, the FR4 board, magnets by weight and factory stator cores. Record the date seen.
+1. Re-check the four prices that could not be read on 2026-10-27: the used Pix32 v5, the FR4 board, magnets by weight and factory stator cores. Record the date seen. The ESC gate driver also needs a choice when the ESC is designed: the FD6288Q was out of stock at LCSC ([make-own-ladder.md](make-own-ladder.md)).
 2. Price 30 V power MOSFETs on LCSC. This is the largest open placeholder.
 3. Read the LICENSE files named above.
 4. Update the group-order plan when the owner reports news.
