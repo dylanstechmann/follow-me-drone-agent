@@ -516,6 +516,16 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - **Live camera mode:** with Chromium's fake camera playing the same picture, it ran at 73 ms a frame and stopped cleanly.
   - **Layout:** no errors or sideways scrolling at desktop width in the light theme and phone width in the dark theme.
 
+## Iteration 34: checks and docs (done: 329 Python and 12 JavaScript tests pass)
+
+- Checked a full build in a headless browser:
+  - all five pages at 1280 px in the light theme and 390 px in the dark theme, with no errors, failed requests or sideways scrolling;
+  - every same-site link loads;
+  - the parts page still re-renders in 0.3 s;
+  - the replay page's four examples load, and a GPX still opens through the refactored worker.
+- Docs: [camera.md](camera.md) covers the detector, its speed and the camera page; [privacy-and-rules.md](privacy-and-rules.md) covers the page's rules; decision D24 records the blur-everything design. The history has a new phase.
+- Not done: a camera on a drone, detection measured on real rides, and the Pi Zero 2 W timing measured on a real board (`tools/detect_bench.mjs` is ready for it).
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

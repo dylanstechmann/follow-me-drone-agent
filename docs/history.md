@@ -81,6 +81,15 @@ The owner asked what else could be done before work away from the computer. The 
 - **Iteration 29:** after the owner's "yeah", the agent pushed iterations 26 to 28 and added a safety margin: the controller is shown the rider 2.5 sigmas of the estimate's uncertainty closer than estimated. With honest 3 m errors, a standing rider is no longer approached closer than 8 m, against 0.3 to 1.8 m. The margin relies on honest reported accuracy, which real recordings must check.
 - **Iteration 30:** the website's distance chart shows the band the controller aims for, pushed out by the margin, with a too-close line. A tile shows the time spent closer than the band.
 
+## Phase 13: the camera (iterations 31 to 34, 2026-10-26 and 27)
+
+After the owner's "ok", the agent pushed the safety margin and started the camera batch agreed earlier.
+
+- **Iteration 31:** a simulated camera in the kinematic simulation. It is idealised, and passes its boxes through `camera_estimate`. With a phone at 4 m accuracy, adding it turned a degraded follow 21 to 38 m behind into tracking about 87% of the time at about 11 m, and it bridged a gap in the fixes.
+- **Iteration 32:** a person detector, YOLOX-Nano (Apache-2.0), in onnxruntime-web (MIT). Ultralytics' YOLOs are AGPL-3.0 and YOLOv7 and v9 GPL-3.0, so they were passed over. It takes about 70 ms a frame on this laptop-class machine. About 4 frames a second on a Pi Zero 2 W is an estimate from ncnn's published benchmark. Checked on three COCO photos.
+- **Iteration 33:** the website's camera page. It follows only the person holding a printed marker, blurs everything else before drawing, and runs the repo's Python for what the drone would do. It was checked with a photo and with Chromium's fake camera.
+- **Iteration 34:** final checks of all five pages, and the docs.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.
