@@ -111,7 +111,9 @@ The photos were used only on the agent's machine and are not in the repo.
 On the website, the visitor starts their camera or chooses a photo:
 1. A worker runs the detector on each frame (`site/assets/camera-worker.js`).
 2. js-aruco2 (MIT) looks for the printed marker: ArUco marker 0 from the `ARUCO_MIP_36h12` dictionary, which the page draws for printing.
-3. The rider is the person whose box holds the marker's centre (`site/assets/rider.js`). If the marker is hidden, the same person is kept for one second by box overlap, then let go. Without the marker, nobody is followed.
+3. The marker starts the follow, for the person whose box holds the marker's centre (`site/assets/rider.js`). After that, the same person is followed by box overlap from frame to frame, even when the marker is too small to read: a 15 cm marker is about 7 pixels wide at 10 m on a 640-pixel webcam. The follow stops if the person is lost for a second, or if two people overlap the rider's last box; it never guesses between people. Without the marker, nobody is followed.
+   - While the rider is followed, or briefly waited for, the detector looks at a crop around their last box: three times their height, at least 160 pixels, enlarged. Otherwise it looks at the whole frame.
+   - A rider who is lost this frame is not drawn sharp and gets no box sent on, because someone else may stand where they were.
 4. The picture is drawn blurred, by shrinking and enlarging it, and only the rider's box is drawn sharp on top. A person the detector missed stays blurred.
 5. The rider's box, as shares of the frame, goes to the repo's own Python, run in the tab by Pyodide. `follow_me.camera_view.CameraView` keeps one council between frames, so a hidden marker walks down the modes in seconds, as on the drone. The page shows the estimate, the safety margin, the mode and the command.
 
@@ -121,6 +123,16 @@ Checked in a headless browser on 2026-10-27, with a COCO photo of 11 people and 
 - **Photo mode:** it found all 11, followed only the marked person, and blurred the rest. A bystander's region fell from 12.5 to 1.9 on a sharpness measure, and the rider's stayed at 14.5 of 15.1.
 - **Live camera mode:** Chromium's fake camera played the same image. It ran at 73 ms a frame, followed the marked person, and stopped cleanly.
 - **Layout:** no errors or sideways scrolling, at desktop width in the light theme and phone width in the dark theme.
+
+Checked again on 2026-10-27 with a fake camera playing a made-up video. It used the rider cut out of the test photo, alone on a plain background, with a bystander to the side, shrinking from 332 to 93 pixels tall:
+- The marker started the follow, then could no longer be read once the rider was under about 266 pixels tall.
+- The page kept following the same person by overlap through the crop.
+- At 93 pixels, where the whole frame no longer found the rider, the crop kept finding them for over 10 seconds. The bystander stayed blurred.
+
+Two lessons from building this check:
+- **A dense group shrunk this far stops the follow,** because the people's boxes overlap and the page will not guess. That is intended.
+- **A marker that covers most of the torso hides the person from the detector at a distance.** My first test image had one, and the rider vanished below about 150 pixels. A 15 to 20 cm marker on an adult is about the right size, and the page now says so.
+- Through JPEG, as a camera sends it, this rider was found by the crop down to 93 pixels tall, but not at 66.
 
 ## Privacy
 

@@ -23,7 +23,7 @@ The IEEE group order plan ([group-order.md](group-order.md)) is public. It names
 
 - The tracked person is the owner. If anyone else ever carries a tag or is filmed, they must agree first.
 - Footage stays on the owner's device unless every person in it has agreed to sharing.
-- The website's camera page follows only a person who shows the printed marker. It blurs the whole picture except that person's box before drawing it, so anyone the detector misses stays blurred too. Nobody else is tracked, nothing is recorded or uploaded, and the camera stops when the page is hidden. The page says to point it only at people who agree.
+- The website's camera page starts a follow only for a person who shows the printed marker. After that it keeps following the same person by box overlap, and stops if they are lost for a second or if two people overlap their last box: it never guesses between people. It blurs the whole picture except that person's box before drawing it, so anyone the detector misses stays blurred too. Nobody else is tracked, nothing is recorded or uploaded, and the camera stops when the page is hidden. The page says to point it only at people who agree.
 
 ## Bystanders and airspace
 

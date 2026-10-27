@@ -63,14 +63,15 @@
       <div class="card">
         <h2>Print the marker</h2>
         <div class="marker" id="marker" role="img" aria-label="The marker to print, an ArUco square pattern"></div>
-        <p>Print it at least 15 cm across, on any printer, and hold it flat in front of your chest. The detector finds people; the marker tells it which one is the rider. Without the marker, nobody is followed.</p>
+        <p>Print it 15 to 20 cm across, on any printer, and hold it flat in front of your chest. Much bigger can hide you from the person detector. The detector finds people; the marker tells it which one is the rider. Without the marker, nobody is followed. It reads from a few meters away; after that, the page keeps following the same person.</p>
         <button class="btn" type="button" id="print-marker">Print the marker</button>
       </div>
       <div class="card">
         <h2>How it works</h2>
         <ul class="small muted" style="padding-left: 1.1em; margin: 0">
           <li><strong>People:</strong> YOLOX-Nano finds people in each frame, in this tab, about 70 to 120 ms a frame on a laptop.</li>
-          <li><strong>The rider:</strong> the person whose box holds the marker. If the marker is hidden, the same person is kept for one second by box overlap, then let go.</li>
+          <li><strong>The rider:</strong> the marker starts the follow, for the person whose box holds it. After that, the same person is followed by box overlap from frame to frame, even when the marker is too small to read. The follow stops if they are lost for a second, or if two people overlap their last box: it never guesses between people.</li>
+          <li><strong>Cropping:</strong> while following, the detector looks at a crop around the rider, three times their height, enlarged. On COCO photos that found people 16 to 48 pixels tall 57 to 70% of the time, against 12 to 46% in the whole picture.</li>
           <li><strong>Privacy:</strong> the whole picture is blurred, then only the rider's box is drawn sharp. A missed or unknown person stays blurred.</li>
           <li><strong>The follow logic:</strong> the rider's box goes to the repo's own Python, run here by Pyodide: the camera estimate, the safety margin, the mode and the command, as in the replay viewer. Hide the marker and watch the modes fall back.</li>
           <li><strong>Distance</strong> comes from the box's height, assuming a 1.75 m person and the field of view above. It is rough.</li>

@@ -100,6 +100,14 @@ The owner asked again what could be done before work away from the computer. The
   - That showed a trap at phone accuracy, which a crop around the expected rider breaks in simulation.
 - **Iteration 36:** two recordings of the same walk, from two phones, run as phone and tag. The summary checks the phones' reported accuracy against how far apart they really were. A made-up check showed understated accuracy bringing the drone too close.
 
+## Phase 15: cropping around the rider (iterations 37 to 39, 2026-10-27)
+
+After the owner's "ok", the agent pushed iterations 35 and 36 and added cropping.
+
+- **Iteration 37:** measured on COCO, a crop around a person, enlarged with no extra camera detail, found people 16 to 48 pixels tall 57 to 70% of the time, against 12 to 46% in the whole photo.
+- **Iteration 38:** the simulated camera crops around where the council last placed the rider. At phone accuracy, a 4 m/s follow went from 36.8 m behind with 4% tracking to 15.7 m with 65%.
+- **Iteration 39:** the camera page. The marker starts a follow, box overlap continues it, and ambiguity stops it. The detector crops around the rider. A fake-camera check followed a rider shrinking to 93 pixels tall, where the whole frame lost them.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

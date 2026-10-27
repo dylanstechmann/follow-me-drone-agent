@@ -627,3 +627,22 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - `sim.Camera(crop=True)` crops around where the council last placed the rider: three times the expected height, at least a third of the frame. When that crop holds the rider (`sim.crop_holds`: centred near them, and they fit), the measured crop recall applies. Otherwise the whole frame's applies.
 - Results: at phone accuracy, cropping takes a 4 m/s follow from 36.8 m behind with 4% tracking to 15.7 m with 65%, and a 2 m/s follow from 17.6 m and 29% to 14.2 m and 66%. The example ride tracks 89% of the time at 10.7 m. A camera zooming 2x into spare pixels does about as well.
 - Tests: the trap broken by the measured crop and by a 2x zoom; when a crop holds the rider.
+
+## Iteration 39: cropping on the camera page (done: 339 Python and 15 JavaScript tests pass)
+
+- `rider.js`:
+  - The marker starts a follow, and box overlap from frame to frame continues it, even when the marker is too small to read. Before, overlap kept a rider for one second.
+  - The follow stops after a second lost, or at once when two people overlap the rider's last box. It never guesses between people (decision D25).
+  - While a lost rider is waited for, the page neither draws their old box sharp nor sends it on.
+  - `cropAround` gives the crop: three times the rider's height, at least 160 pixels, inside the frame.
+- `camera.js`:
+  - While there is a rider, followed or waited for, the detector looks at the crop around their last box, enlarged, and the page draws the crop dashed. Otherwise it looks at the whole frame.
+  - Found while testing: switching back to the whole frame after a single missed detection lost a small rider within a second, because the whole frame finds them far less often. Waiting now keeps the crop.
+- Checked in a headless browser:
+  - The photo mode is unchanged.
+  - With a fake camera playing a made-up video, a lone rider shrinking from 332 to 93 pixels tall was followed throughout: by the marker, then by overlap once the marker could not be read, through the crop. That held for over 10 seconds at a size where the whole frame no longer found them.
+- Also found while testing:
+  - My first test image had a marker covering most of the torso, which hid the person from the detector at a distance. The page now advises a 15 to 20 cm marker.
+  - A dense group shrunk this far stops the follow as intended.
+  - After JPEG compression this rider was found down to 93 pixels tall, not at 66.
+- JavaScript tests: following by overlap for as long as it lasts, waiting unseen and letting go, stopping when two people overlap, and the crop's geometry.

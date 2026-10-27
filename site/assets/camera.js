@@ -2,8 +2,8 @@
 // blurred picture, and the repo's follow logic. Frames stay in the tab: each one is
 // drawn blurred except for the rider's box, then dropped. Nothing is recorded or sent.
 import { clear, fetchJSON, fixed, h, initPage, modeInfo, signed } from "./common.js";
-import { INPUT, PAD, fitScale } from "./detector.js";
-import { MARKER_DICTIONARY, MARKER_ID, pickRider, shareBox } from "./rider.js";
+import { INPUT, PAD } from "./detector.js";
+import { MARKER_DICTIONARY, MARKER_ID, cropAround, pickRider, shareBox } from "./rider.js";
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -14,7 +14,7 @@ const frame = document.createElement("canvas"); // the frame being worked on, ne
 const square = document.createElement("canvas"); // the detector's letterboxed input
 const small = document.createElement("canvas"); // the picture shrunk, for the blur
 square.width = square.height = INPUT;
-const state = { stream: null, video: null, running: false, rider: null, ready: false, detectMs: 0, frames: 0 };
+const state = { stream: null, video: null, running: false, rider: null, ready: false, detectMs: 0, frames: 0, crop: null };
 let markers = null; // js-aruco2's detector
 let detector = null; // camera-worker.js
 let follower = null; // follow-worker.js
@@ -54,22 +54,28 @@ async function setUp(aspect) {
 }
 
 // Find people and the marker in the frame on `frame`, pick the rider, and step the follow logic.
+// While there is a rider, found last frame or being waited for, the detector looks at a
+// crop around their last box, enlarged, which finds a small rider far more often, and
+// where a briefly missed rider most likely still is. Otherwise it looks at the whole frame.
 async function work(width, height) {
   const fctx = frame.getContext("2d", { willReadFrequently: true });
   const seen = markers.detect(fctx.getImageData(0, 0, width, height));
-  const scale = fitScale(width, height);
   const sctx = square.getContext("2d", { willReadFrequently: true });
   sctx.fillStyle = `rgb(${PAD}, ${PAD}, ${PAD})`;
   sctx.fillRect(0, 0, INPUT, INPUT);
-  sctx.drawImage(frame, 0, 0, Math.round(width * scale), Math.round(height * scale));
+  state.crop = state.rider ? cropAround(state.rider.box, width, height) : null;
+  const region = state.crop || { x: 0, y: 0, side: Math.max(width, height) };
+  const scale = INPUT / region.side;
+  sctx.drawImage(frame, region.x, region.y, region.side, region.side, 0, 0, INPUT, INPUT);
   const pixels = sctx.getImageData(0, 0, INPUT, INPUT).data.buffer;
   const found = await ask(detector, { pixels, scale }, [pixels]);
   state.detectMs = found.ms;
-  state.rider = pickRider(found.people, seen, state.rider, performance.now());
-  const box = state.rider ? shareBox(state.rider.box, width, height) : null;
+  const people = found.people.map((p) => ({ ...p, x: p.x + region.x, y: p.y + region.y }));
+  state.rider = pickRider(people, seen, state.rider, performance.now());
+  const box = state.rider && state.rider.found ? shareBox(state.rider.box, width, height) : null;
   const reply = await ask(follower, { kind: "step", now: performance.now() / 1000, box });
   draw(width, height, seen);
-  panel(JSON.parse(reply.tick), found.people.length, seen.some((m) => m.id === MARKER_ID));
+  panel(JSON.parse(reply.tick), people.length, seen.some((m) => m.id === MARKER_ID));
 }
 
 // Blur the whole picture, then draw only the rider's box sharp, so anyone the detector
@@ -85,7 +91,15 @@ function draw(width, height, seen) {
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(small, 0, 0, width, height);
   const line = Math.max(2, Math.round(width / 240));
-  if (state.rider) {
+  if (state.crop) {
+    ctx.setLineDash([6, 6]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.strokeRect(state.crop.x, state.crop.y, state.crop.side, state.crop.side);
+    ctx.setLineDash([]);
+  }
+  // Only a rider found in this very frame is drawn sharp: a lost rider's last box may hold someone else.
+  if (state.rider && state.rider.found) {
     const b = state.rider.box;
     const x = Math.max(0, Math.floor(b.x));
     const y = Math.max(0, Math.floor(b.y));
@@ -104,9 +118,13 @@ function draw(width, height, seen) {
     ctx.strokeStyle = "#2a78d6";
     ctx.stroke();
   }
-  els.caption.textContent = state.rider
-    ? (state.rider.byMarker ? "Following the person holding the marker. Everything else is blurred." : "The marker is hidden: keeping the same person for a moment.")
-    : "Nobody is followed: everything is blurred. Show the marker to be followed.";
+  const cropping = state.crop ? " The detector looked at the dashed crop around them." : "";
+  els.caption.textContent = !state.rider
+    ? "Nobody is followed: everything is blurred. Show the marker to start a follow."
+    : !state.rider.found
+      ? "Lost the rider: waiting a moment, with everything blurred, before the follow stops."
+      : (state.rider.byMarker ? "Following the person holding the marker." : "Following the same person by box overlap; the marker can be too small to read.") +
+        ` Everything else is blurred.${cropping}`;
 }
 
 function commandRows(command) {
@@ -133,7 +151,7 @@ function panel(tick, people, markerSeen) {
   clear(els.panel).append(
     h("div", { class: "tick-head" },
       h("span", { class: "chip" }, h("span", { class: "dot", style: { background: info.color } }), `${info.icon} ${info.label}`),
-      h("span", { class: "small muted" }, `${people} ${people === 1 ? "person" : "people"} found, marker ${markerSeen ? "seen" : "not seen"}, ${fixed(state.detectMs, 0)} ms to detect`)),
+      h("span", { class: "small muted" }, `${people} ${people === 1 ? "person" : "people"} found${state.crop ? " in the crop" : ""}, marker ${markerSeen ? "seen" : "not seen"}, ${fixed(state.detectMs, 0)} ms to detect`)),
     h("div", { class: "panel-block" }, h("h3", {}, "Where the rider is"), h("p", { class: "small" }, where)),
     h("div", { class: "panel-block" }, h("h3", {}, "What the drone would do"), h("div", { class: "cmd" }, commandRows(tick.command))),
     h("p", { class: "small muted" }, "The drone does not move here, so a lost rider walks down the modes: dead reckoning, hold after 5 s, a return-home request after 50 s."),
