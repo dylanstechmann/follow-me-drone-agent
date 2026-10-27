@@ -13,7 +13,7 @@ Recorded tracks are location data too:
 - A GPX recording from a phone stays on the owner's machine. `python -m follow_me.recording` reads it and prints to the terminal; it writes no files. The website's replay page reads it inside the browser tab and uploads nothing.
 - The importer keeps only offsets in meters from the first fix and seconds from the first fix. It drops the coordinates, dates and names as each point is read.
 - A trace made from a real recording still holds the route's shape, so it is not committed either. Name it `*.trace.json` and keep it outside the repo. `.gitignore` excludes `*.gpx` and `*.trace.json` as a safety net.
-- Record only yourself, or a rider who has agreed.
+- Record only yourself, or a rider who has agreed. Two recordings of the same walk, from two phones, follow the same rules.
 
 ## Group orders stay anonymous
 

@@ -19,6 +19,7 @@ of these that applies, and the summary says how many fixes used each:
 Usage:
   python -m follow_me.recording walk.gpx                    # a summary of the simulated follow
   python -m follow_me.recording --json walk.gpx > walk.trace.json   # a trace for the replay viewer
+  python -m follow_me.recording android.gpx iphone.gpx      # the same walk on two phones
 Keep recordings and their traces out of the repo: they hold a real route.
 """
 
@@ -99,8 +100,9 @@ def _accuracy(point: ET.Element, osmand: bool, default_m: float) -> tuple[float,
     return default_m, "default"
 
 
-def read_gpx(text: str, default_accuracy_m: float = DEFAULT_ACCURACY_M) -> Recording:
-    """The track points of a GPX file as offsets from its first fix, in time order."""
+def _parse(text: str, default_accuracy_m: float) -> tuple[list[tuple], int]:
+    """A GPX file's track points as (POSIX time, lat, lon, accuracy, source), in time
+    order, and how many points were skipped. Callers turn them into offsets at once."""
     if len(text) > MAX_CHARS:
         raise ValueError("the file is too large")
     # GPX needs no document type, and refusing one rules out entity expansion tricks.
@@ -131,9 +133,12 @@ def read_gpx(text: str, default_accuracy_m: float = DEFAULT_ACCURACY_M) -> Recor
         raw.append((t, lat, lon, *_accuracy(point, osmand, default_accuracy_m)))
     if len(raw) < 2:
         raise ValueError("the file needs at least two track points with times")
-
     raw.sort(key=lambda p: p[0])
-    t0, lat0, lon0 = raw[0][0], raw[0][1], raw[0][2]
+    return raw, skipped
+
+
+def _offsets(raw: list[tuple], skipped: int, t0: float, lat0: float, lon0: float) -> Recording:
+    """Raw points as seconds and meters from an origin. The coordinates and times go no further."""
     fixes: list[RiderFix] = []
     counts: dict[str, int] = {}
     for t, lat, lon, accuracy, source in raw:
@@ -151,22 +156,108 @@ def read_gpx(text: str, default_accuracy_m: float = DEFAULT_ACCURACY_M) -> Recor
     return Recording(fixes, skipped, counts)
 
 
-def run_gpx(text: str, dt: float = 0.5) -> dict:
-    """Read a GPX file and simulate a drone following it. Returns a trace with a summary."""
-    rec = read_gpx(text)
-    if rec.fixes[-1].t > MAX_DURATION_S:
-        raise ValueError("the recording is longer than 2 hours: trim it or split it")
-    trace = trace_track(rec.fixes, dt=dt, note=NOTE)
-    path = sum(
-        math.hypot(b.east - a.east, b.north - a.north) for a, b in zip(rec.fixes, rec.fixes[1:])
-    )
-    trace["recording"] = {
+def read_gpx(text: str, default_accuracy_m: float = DEFAULT_ACCURACY_M) -> Recording:
+    """The track points of a GPX file as offsets from its first fix, in time order."""
+    raw, skipped = _parse(text, default_accuracy_m)
+    return _offsets(raw, skipped, raw[0][0], raw[0][1], raw[0][2])
+
+
+def read_gpx_pair(
+    first: str, second: str, default_accuracy_m: float = DEFAULT_ACCURACY_M,
+) -> tuple[Recording, Recording]:
+    """Two recordings of the same walk or ride, on two phones, as offsets from one shared
+    origin: the first recording's first fix, and the earlier of the two start times.
+    GPX times are UTC, so the two line up; they must overlap."""
+    raw_a, skipped_a = _parse(first, default_accuracy_m)
+    raw_b, skipped_b = _parse(second, default_accuracy_m)
+    t0 = min(raw_a[0][0], raw_b[0][0])
+    lat0, lon0 = raw_a[0][1], raw_a[0][2]
+    a = _offsets(raw_a, skipped_a, t0, lat0, lon0)
+    b = _offsets(raw_b, skipped_b, t0, lat0, lon0)
+    if min(a.fixes[-1].t, b.fixes[-1].t) <= max(a.fixes[0].t, b.fixes[0].t):
+        raise ValueError("the two recordings do not overlap in time")
+    return a, b
+
+
+def _position_at(fixes: list[RiderFix], t: float) -> tuple[float, float, float]:
+    """East, north and accuracy between the fixes around t."""
+    lo, hi = 0, len(fixes) - 1
+    while hi - lo > 1:
+        mid = (lo + hi) // 2
+        if fixes[mid].t <= t:
+            lo = mid
+        else:
+            hi = mid
+    a, b = fixes[lo], fixes[hi]
+    s = min(1.0, max(0.0, (t - a.t) / (b.t - a.t))) if b.t > a.t else 0.0
+    return (a.east + s * (b.east - a.east), a.north + s * (b.north - a.north),
+            a.accuracy_m + s * (b.accuracy_m - a.accuracy_m))
+
+
+# A 2D normal error's radius holding 68% (how Android reports accuracy) is 1.51 times
+# its one-axis sigma; the distance between two such errors has median 1.18 times its sigma.
+R68 = math.sqrt(-2.0 * math.log(0.32))
+RAYLEIGH_MEDIAN = math.sqrt(2.0 * math.log(2.0))
+
+
+def apart(a: Recording, b: Recording, step_s: float = 1.0) -> dict:
+    """How far apart two phones put the rider over their shared time, against the median
+    their reported accuracies predict if both are honest (read as 68% radii). Errors the
+    phones share, from the sky and nearby buildings, cancel, so the true error of each is
+    at least this large."""
+    start, end = max(a.fixes[0].t, b.fixes[0].t), min(a.fixes[-1].t, b.fixes[-1].t)
+    seps, predicted = [], []
+    k = 0
+    while start + k * step_s <= end + 1e-9:
+        t = start + k * step_s
+        ea, na, acc_a = _position_at(a.fixes, t)
+        eb, nb, acc_b = _position_at(b.fixes, t)
+        seps.append(math.hypot(ea - eb, na - nb))
+        predicted.append(RAYLEIGH_MEDIAN * math.hypot(acc_a, acc_b) / R68)
+        k += 1
+    seps.sort()
+    median = seps[len(seps) // 2]
+    expected = sorted(predicted)[len(predicted) // 2]
+    ratio = median / expected if expected > 0 else math.inf
+    return {
+        "shared_s": round(end - start, 1),
+        "median_m": round(median, 2),
+        "p95_m": round(seps[min(len(seps) - 1, int(0.95 * len(seps)))], 2),
+        "predicted_median_m": round(expected, 2),
+        "ratio": round(ratio, 2),
+        "verdict": "optimistic" if ratio > 1.5 else ("cautious" if ratio < 0.67 else "about right"),
+    }
+
+
+def _recording_info(rec: Recording) -> dict:
+    path = sum(math.hypot(b.east - a.east, b.north - a.north) for a, b in zip(rec.fixes, rec.fixes[1:]))
+    return {
         "fixes": len(rec.fixes),
         "skipped": rec.skipped,
         "accuracy_from": rec.accuracy_from,
-        "duration_s": rec.fixes[-1].t,
+        "duration_s": round(rec.fixes[-1].t - rec.fixes[0].t, 3),
         "path_m": round(path, 1),
     }
+
+
+def run_gpx(text: str, dt: float = 0.5, second: str | None = None) -> dict:
+    """Read a GPX file and simulate a drone following it. Returns a trace with a summary.
+
+    With `second`, a recording of the same ride on another phone, the first phone is
+    the phone_gnss source and the second stands in for the tag (tag_gnss), and the
+    summary says how far apart the two phones were.
+    """
+    if second is None:
+        rec, other = read_gpx(text), None
+    else:
+        rec, other = read_gpx_pair(text, second)
+    if rec.fixes[-1].t - rec.fixes[0].t > MAX_DURATION_S:
+        raise ValueError("the recording is longer than 2 hours: trim it or split it")
+    trace = trace_track(rec.fixes, dt=dt, note=NOTE, second=other.fixes if other else None)
+    trace["recording"] = _recording_info(rec)
+    if other is not None:
+        trace["recording"]["second"] = _recording_info(other)
+        trace["recording"]["apart"] = apart(rec, other)
     return trace
 
 
@@ -174,27 +265,39 @@ def summary_lines(trace: dict) -> list[str]:
     rec, s = trace["recording"], trace["summary"]
     sources = ", ".join(f"{k} {v}" for k, v in sorted(rec["accuracy_from"].items()))
     modes = ", ".join(f"{k} {v:g} s" for k, v in s["seconds_in_mode"].items())
-    near, far = s["band_m"]
-    return [
+    near, _ = s["band_m"]
+    lines = [
         f"fixes: {rec['fixes']} (skipped {rec['skipped']}); accuracy from: {sources}",
         f"recording: {rec['duration_s']:g} s, {rec['path_m']:g} m of track; "
         f"simulated every {trace['settings']['dt_s']:g} s",
+    ]
+    if "second" in rec:
+        second, gap = rec["second"], rec["apart"]
+        lines += [
+            f"second phone, as the tag: {second['fixes']} fixes (skipped {second['skipped']})",
+            f"the phones were apart by a median {gap['median_m']:g} m (95% within {gap['p95_m']:g} m) over "
+            f"{gap['shared_s']:g} s; their reported accuracy predicts {gap['predicted_median_m']:g} m: "
+            f"{gap['verdict']} (ratio {gap['ratio']:g})",
+        ]
+    lines += [
         f"time in each mode: {modes}",
-        f"follow band {near:g} to {far:g} m: the rider was inside it {s['in_band_share']:.0%} of the time",
+        f"closer than the band's near edge ({near:g} m): {s.get('too_close_share', 0):.0%} of the time",
         f"distance to the rider: median {s['median_distance_m']:g} m, max {s['max_distance_m']:g} m",
         f"return-home requested: {'yes' if s['return_home_requested'] else 'no'}",
     ]
+    return lines
 
 
 def main(argv: list[str]) -> int:
     args = argv[1:]
     as_json = "--json" in args
     files = [a for a in args if a != "--json"]
-    if len(files) != 1 or not files[0].lower().endswith(".gpx"):
-        print("usage: python -m follow_me.recording [--json] RECORDING.gpx", file=sys.stderr)
+    if len(files) not in (1, 2) or not all(f.lower().endswith(".gpx") for f in files):
+        print("usage: python -m follow_me.recording [--json] RECORDING.gpx [SECOND_PHONE.gpx]", file=sys.stderr)
         return 2
     try:
-        trace = run_gpx(Path(files[0]).read_text(encoding="utf-8"))
+        texts = [Path(f).read_text(encoding="utf-8") for f in files]
+        trace = run_gpx(texts[0], second=texts[1] if len(texts) == 2 else None)
     except (OSError, UnicodeDecodeError, ValueError) as e:
         print(f"could not use the recording: {e}", file=sys.stderr)
         return 1

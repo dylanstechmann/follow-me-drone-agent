@@ -12,14 +12,15 @@ async function start() {
 }
 
 self.addEventListener("message", async (event) => {
-  const { id, text } = event.data;
+  const { id, text, second } = event.data;
   try {
     ready = ready || start();
     const pyodide = await ready;
     self.postMessage({ id, status: "running" });
     pyodide.globals.set("gpx_text", text);
+    pyodide.globals.set("gpx_second", second || null);
     const trace = pyodide.runPython(
-      "import json\nfrom follow_me.recording import run_gpx\ntry:\n    out = json.dumps(run_gpx(gpx_text))\nfinally:\n    del gpx_text\nout",
+      "import json\nfrom follow_me.recording import run_gpx\ntry:\n    out = json.dumps(run_gpx(gpx_text, second=gpx_second))\nfinally:\n    del gpx_text, gpx_second\nout",
     );
     self.postMessage({ id, trace });
   } catch (error) {

@@ -105,6 +105,7 @@ class SimTick:
     readings: list[Reading]
     result: TickResult
     flown: Command  # what the drone did: the council's command, or the one it held
+    second: tuple[float, float] | None = None  # where a second phone's track was, if one was given
 
     @property
     def distance(self) -> float:
@@ -238,6 +239,7 @@ def simulate(
     noise_m: float = 0.0,
     seed: int = 0,
     camera: Camera | None = None,
+    second: list[RiderFix] | None = None,
 ) -> list[SimTick]:
     """Fly the point drone after the rider, one council tick every dt seconds.
 
@@ -248,7 +250,10 @@ def simulate(
 
     noise_m adds made-up Gaussian error to each fix, drawn once per fix from `seed`,
     to test how the follow logic copes with a noisy receiver. The track stays the truth.
-    A `camera` adds a camera reading on each tick the rider is in view.
+    A `camera` adds a camera reading on each tick the rider is in view. A `second`
+    track, the same ride recorded on another phone, stands in for the tag: its fixes
+    become tag_gnss readings, and the rider is taken to be midway between the two
+    tracks wherever both have fixes.
     """
     _check(fixes, dt)
     if noise_m < 0:
@@ -258,6 +263,9 @@ def simulate(
     rng = random.Random(seed)
     errors = [(rng.gauss(0.0, noise_m), rng.gauss(0.0, noise_m)) if noise_m else (0.0, 0.0) for _ in fixes]
     camera_rng = random.Random(camera.seed) if camera else None
+    if second is not None:
+        _check(second, dt)
+    j = 0
     held = Command(0.0, 0.0, 0.0)
     ticks = []
     t0 = fixes[0].t
@@ -275,6 +283,19 @@ def simulate(
             )
             readings.append(Reading("phone_gnss", est, age_s=max(0.0, t - fix.t)))
         rider = _rider_at(fixes, i, t)
+        other = None
+        if second is not None:
+            while j + 1 < len(second) and second[j + 1].t <= t + EPS:
+                j += 1
+            tag = second[j]
+            if 0.0 <= t - tag.t <= max_age_s + EPS:
+                est = offset_estimate(
+                    tag.east - drone.east, tag.north - drone.north, tag.accuracy_m, drone.heading_deg
+                )
+                readings.append(Reading("tag_gnss", est, age_s=t - tag.t))
+            if second[0].t <= t <= second[-1].t:
+                other = _rider_at(second, j, t)
+                rider = ((rider[0] + other[0]) / 2.0, (rider[1] + other[1]) / 2.0)
         if camera is not None:
             seen = _camera_reading(camera, camera_rng, council, drone, rider)
             if seen is not None:
@@ -283,7 +304,7 @@ def simulate(
         if result.estimate is not None:
             held = result.command
         flown = held if result.hold_last_command else result.command
-        ticks.append(SimTick(t, drone, rider, readings, result, flown))
+        ticks.append(SimTick(t, drone, rider, readings, result, flown, other))
         drone = _move(drone, flown, limits, dt)
     return ticks
 
@@ -320,10 +341,11 @@ def trace_track(
     limits: Limits = Limits(),
     note: str = "",
     camera: Camera | None = None,
+    second: list[RiderFix] | None = None,
 ) -> dict:
     """Simulate a track and return a trace the replay viewer reads, with the drone's world."""
     council = council or Council()
-    ticks = simulate(fixes, council, dt, limits, camera=camera)
+    ticks = simulate(fixes, council, dt, limits, camera=camera, second=second)
     out = []
     for s in ticks:
         log_tick = {
@@ -344,6 +366,8 @@ def trace_track(
                 "forward": _round(s.flown.forward, 4),
             },
         }
+        if s.second is not None:
+            entry["world"]["second"] = [_round(s.second[0]), _round(s.second[1])]
         out.append(entry)
     settings = trace_settings(council)
     settings.update({

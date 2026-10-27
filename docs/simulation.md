@@ -142,9 +142,33 @@ PYTHONPATH=src python3 -m follow_me.recording --json ~/walk.gpx > ~/walk.trace.j
 
   With a phone's typical accuracy, expect most of the track to be degraded (see the findings above).
 
+## Two phones on the same walk (iteration 36)
+
+Record the same walk on two phones at once, for example with OsmAnd on both, and give both files:
+
+```
+PYTHONPATH=src python3 -m follow_me.recording ~/android.gpx ~/iphone.gpx
+```
+
+How it works:
+- **One origin.** The two recordings share one origin: the first recording's first fix, and the earlier start time. GPX times are UTC, so they line up.
+- **Two sources.** The first phone is the `phone_gnss` source, and the second stands in for the tag (`tag_gnss`). So the council's gate meets real disagreement between two receivers.
+- **A comparison.** The summary says how far apart the phones were (median and 95%), against the median their reported accuracies predict if both are honest. It reads the accuracies as 68% radii, as Android reports them. A ratio above 1.5 is called optimistic.
+- **A lower bound.** Errors both phones share, from the sky and nearby buildings, cancel. So each phone is off by at least the separation.
+- **No ground truth.** With two recordings, the rider's position is the midpoint of the phones, which is itself uncertain. Distances to the rider are to that midpoint.
+
+A made-up check, two walks with 2 m of error per axis on each phone:
+
+| Reported accuracy | Verdict | Median distance | Closer than the band | Dead reckoning |
+|---|---|---|---|---|
+| 3.02 m, honest as a 68% radius | About right, ratio 1.05 | 11.7 m | 0% | None |
+| 1 m, understated | Optimistic, ratio 3.18 | 7.7 m | 2% | 11.5 s |
+
+Understated accuracy makes the safety margin too small, so the drone comes too close. It also makes the gate throw out readings that disagree by more than their claimed accuracy allows. This is why the margin needs a check on real recordings.
+
 ## In the browser
 
-The website's replay page has the made-up example ride, and it opens a GPX recording too. It runs this same Python in the browser tab with Pyodide, and draws three things:
+The website's replay page has the made-up example ride, and it opens a GPX recording too. It runs this same Python in the browser tab with Pyodide, and opens one recording or two (two phones, as above). It draws three things:
 - the distance to the rider over time, with the follow band shaded;
 - a top-down view of both paths, relative to the start, with no map;
 - the time in each mode.

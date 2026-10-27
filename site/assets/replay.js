@@ -129,55 +129,81 @@ function recordingNote(name, rec) {
   const sources = Object.entries(rec.accuracy_from)
     .map(([key, n]) => `${ACCURACY_FROM[key] || key} for ${n}`)
     .join("; ");
-  return `Your recording, ${name}: ${rec.fixes} fixes over ${fixed(rec.duration_s, 0)} s and ${fixed(rec.path_m, 0)} m of track, ` +
+  let note = `Your recording, ${name}: ${rec.fixes} fixes over ${fixed(rec.duration_s, 0)} s and ${fixed(rec.path_m, 0)} m of track, ` +
     `simulated in this tab. It was not uploaded, and only meters and seconds from its first fix were kept. Accuracy: ${sources}.` +
     (rec.skipped ? ` ${rec.skipped} points were skipped (no usable time or position, or a repeated time).` : "");
+  if (rec.apart) {
+    const gap = rec.apart;
+    note += ` The second phone stands in for the tag. The phones were apart by a median ${fixed(gap.median_m, 1)} m ` +
+      `(95% within ${fixed(gap.p95_m, 1)} m) over ${fixed(gap.shared_s, 0)} s; their reported accuracy predicts ${fixed(gap.predicted_median_m, 1)} m, ` +
+      `so it looks ${gap.verdict}. Errors both phones share cancel, so each is off by at least this much.`;
+  }
+  return note;
 }
 
-function openRecording(file) {
+function readText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(`could not read ${file.name}`));
+    reader.readAsText(file);
+  });
+}
+
+async function openRecording(files) {
   if (!state.python) {
     showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
     return;
   }
-  if (file.size > 50e6) {
-    showMessage(`${file.name} is over 50 MB, more than a recording should need.`, true);
+  if (files.length > 2) {
+    showMessage("Open one recording, or two of the same walk from two phones.", true);
     return;
   }
-  const reader = new FileReader();
-  reader.onload = () => {
-    const id = ++jobs;
-    const w = pythonWorker();
-    showMessage(`Starting Python in this tab to read ${file.name}. The first time downloads about 6 MB from this site; nothing is uploaded.`);
-    const onMessage = (event) => {
-      const msg = event.data;
-      if (msg.id !== id) return;
-      if (msg.status === "running") {
-        showMessage(`Simulating a drone following ${file.name}…`);
-        return;
-      }
-      w.removeEventListener("message", onMessage);
-      if (msg.error) {
-        showMessage(`Could not use ${file.name}: ${msg.error}`, true);
-        return;
-      }
-      const data = JSON.parse(msg.trace);
-      const problem = problemWith(data);
-      if (problem) {
-        showMessage(problem, true);
-        return;
-      }
-      addTrace(`gpx:${file.name}:${traces.size}`, `Your recording: ${file.name}`, data, recordingNote(file.name, data.recording));
-    };
-    w.addEventListener("message", onMessage);
-    w.postMessage({ id, text: reader.result });
+  const big = files.find((f) => f.size > 50e6);
+  if (big) {
+    showMessage(`${big.name} is over 50 MB, more than a recording should need.`, true);
+    return;
+  }
+  const file = files[0];
+  const name = files.map((f) => f.name).join(" and ");
+  let texts;
+  try {
+    texts = await Promise.all(files.map(readText));
+  } catch (error) {
+    showMessage(`Could not read ${name}: ${error.message}`, true);
+    return;
+  }
+  const id = ++jobs;
+  const w = pythonWorker();
+  showMessage(`Starting Python in this tab to read ${name}. The first time downloads about 6 MB from this site; nothing is uploaded.`);
+  const onMessage = (event) => {
+    const msg = event.data;
+    if (msg.id !== id) return;
+    if (msg.status === "running") {
+      showMessage(`Simulating a drone following ${name}…`);
+      return;
+    }
+    w.removeEventListener("message", onMessage);
+    if (msg.error) {
+      showMessage(`Could not use ${name}: ${msg.error}`, true);
+      return;
+    }
+    const data = JSON.parse(msg.trace);
+    const problem = problemWith(data);
+    if (problem) {
+      showMessage(problem, true);
+      return;
+    }
+    addTrace(`gpx:${name}:${traces.size}`, `Your recording: ${files.length === 2 ? `${file.name} and one more` : file.name}`, data, recordingNote(name, data.recording));
   };
-  reader.onerror = () => showMessage(`Could not read ${file.name}.`, true);
-  reader.readAsText(file);
+  w.addEventListener("message", onMessage);
+  w.postMessage({ id, text: texts[0], second: texts[1] || null });
 }
 
-function openAny(file) {
-  if (/\.gpx$/i.test(file.name)) openRecording(file);
-  else openFile(file);
+function openAny(files) {
+  const gpx = files.filter((f) => /\.gpx$/i.test(f.name));
+  if (gpx.length) openRecording(gpx);
+  else if (files[0]) openFile(files[0]);
 }
 
 // ---- the top-down plot ---------------------------------------------------
@@ -747,6 +773,11 @@ function drawWorld() {
   const path = (key) => ticks.map((t, i) => `${i ? "L" : "M"}${px(t.world[key][0]).toFixed(1)},${py(t.world[key][1]).toFixed(1)}`).join("");
   svg("path", { d: path("rider"), fill: "none", stroke: "var(--s-phone)", "stroke-width": 2, "stroke-linejoin": "round" }, plot);
   svg("path", { d: path("drone"), fill: "none", stroke: "var(--ink-2)", "stroke-width": 1.5, "stroke-dasharray": "5 4", "stroke-linejoin": "round" }, plot);
+  const seconds = ticks.filter((t) => t.world.second);
+  if (seconds.length > 1) {
+    const d = seconds.map((t, i) => `${i ? "L" : "M"}${px(t.world.second[0]).toFixed(1)},${py(t.world.second[1]).toFixed(1)}`).join("");
+    svg("path", { d, fill: "none", stroke: "var(--s-tag)", "stroke-width": 1.5, "stroke-linejoin": "round", "stroke-opacity": 0.85 }, plot);
+  }
   const [se, sn] = ticks[0].world.rider;
   svg("circle", { cx: px(se), cy: py(sn), r: 4, fill: "var(--surface)", stroke: "var(--ink)", "stroke-width": 1.5 }, plot);
   svg("text", { x: px(se) + 7, y: py(sn) + 4, class: "halo", "stroke-width": 4 }, plot).textContent = "start";
@@ -756,9 +787,13 @@ function drawWorld() {
   const drone = svg("path", { d: "M0,-10 L7,7 L-7,7 Z", fill: "var(--ink)", stroke: "var(--surface)", "stroke-width": 1.5 }, plot);
 
   clear(els.worldLegend).append(
-    h("li", {}, h("span", { class: "key-line", style: { color: "var(--s-phone)" }, "aria-hidden": "true" }), "Rider, from the track"),
+    h("li", {}, h("span", { class: "key-line", style: { color: "var(--s-phone)" }, "aria-hidden": "true" }),
+      ticks.some((t) => t.world.second) ? "Rider, midway between the two phones" : "Rider, from the track"),
     h("li", {}, h("span", { class: "key-line dashed", style: { color: "var(--ink-2)" }, "aria-hidden": "true" }), "Drone, simulated"),
     h("li", {}, h("span", { "aria-hidden": "true" }, "▲"), "Drone now, pointing where its nose points"),
+    ...(ticks.some((t) => t.world.second)
+      ? [h("li", {}, h("span", { class: "key-line", style: { color: "var(--s-tag)" }, "aria-hidden": "true" }), "Second phone, as the tag")]
+      : []),
   );
   return { px, py, link, rider, drone };
 }
@@ -879,13 +914,11 @@ function wire() {
   });
 
   els.file.addEventListener("change", () => {
-    const file = els.file.files && els.file.files[0];
-    if (file) openAny(file);
+    if (els.file.files && els.file.files.length) openAny([...els.file.files]);
     els.file.value = "";
   });
   els.gpx.addEventListener("change", () => {
-    const file = els.gpx.files && els.gpx.files[0];
-    if (file) openRecording(file);
+    if (els.gpx.files && els.gpx.files.length) openRecording([...els.gpx.files]);
     els.gpx.value = "";
   });
   window.addEventListener("hashchange", () => {
@@ -906,8 +939,8 @@ function wire() {
   document.addEventListener("drop", (e) => {
     e.preventDefault();
     document.body.classList.remove("dragging");
-    const file = e.dataTransfer && e.dataTransfer.files[0];
-    if (file) openAny(file);
+    const files = e.dataTransfer ? [...e.dataTransfer.files] : [];
+    if (files.length) openAny(files);
   });
 }
 

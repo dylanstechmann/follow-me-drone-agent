@@ -575,3 +575,25 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - mechanism tests use a camera that always sees;
   - the measured camera helps a degraded follow only a little, and the crop breaks the trap.
 - The camera page now states the detector's range.
+
+## Iteration 36: two phones on the same walk (planned and done 2026-10-27)
+
+- The plan, from the owner's earlier "both" (they have an Android phone and an iPhone) and the agent's recommendation on 2026-10-27: run two recordings of the same walk as phone and tag, and check the phones' reported accuracy, which the safety margin relies on.
+- `recording.read_gpx_pair` reads two GPX files onto one origin: the first recording's first fix, and the earlier start time. They must overlap in time. The parsing was split from the offsetting so both files share it, and the coordinates and times still go no further than the importer.
+- `recording.apart` compares the phones:
+  - the median and 95% separation over their shared time;
+  - the median their reported accuracies predict if honest, read as 68% radii as Android reports them;
+  - a verdict: optimistic above a 1.5 ratio, cautious below 0.67.
+
+  Errors both phones share cancel, so the separation is a lower bound on each phone's error.
+- `sim.simulate(..., second=...)` adds the second phone as `tag_gnss` readings, and takes the rider to be midway between the phones. Traces carry the second track. The CLI accepts two files, and the replay page opens one or two and draws the second phone's track.
+- Made-up check, two walks with 2 m of error per axis:
+  - **Honestly reported:** "about right", ratio 1.05; median distance 11.7 m and never too close.
+  - **Understated as 1 m:** "optimistic", ratio 3.18; median 7.7 m, 2% of the time closer than the band, and 11.5 s of dead reckoning where the gate threw out readings that disagreed more than their claimed accuracy allowed.
+- Tests:
+  - a shared origin and clock, and recordings that do not overlap refused;
+  - honest pairs called about right and understated ones optimistic;
+  - the phone and tag sources;
+  - the gate rejecting a phone 15 m off;
+  - the CLI with two files.
+- Checked in a headless browser: two files opened together, the note gave the verdict, and the second track was drawn, with no errors.

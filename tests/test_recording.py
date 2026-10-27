@@ -148,3 +148,75 @@ def test_main_refuses_other_files_and_reports_bad_ones(tmp_path, capsys):
 def test_git_ignores_recordings_and_their_traces():
     ignored = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
     assert "*.gpx" in ignored and "*.trace.json" in ignored
+
+
+# Two phones on the same walk (iteration 36).
+
+import random as _random
+
+from follow_me.recording import apart, read_gpx_pair
+
+
+def noisy_walk(seconds=300, speed=1.5, start=0, sigma=0.0, reported=None, seed=0, east_bias=0.0):
+    """A made-up walk north, one fix a second, with made-up per-axis error and an accuracy extension."""
+    rng = _random.Random(seed)
+    pts = []
+    for s in range(start, start + seconds + 1):
+        e = east_bias + (rng.gauss(0.0, sigma) if sigma else 0.0)
+        n = speed * s + (rng.gauss(0.0, sigma) if sigma else 0.0)
+        inner = f"<extensions><accuracy>{reported}</accuracy></extensions>" if reported else ""
+        pts.append(point(north_m=n, east_m=e, time=f"2026-10-27T12:{s // 60:02d}:{s % 60:02d}Z", inner=inner))
+    return gpx(pts)
+
+
+def test_two_recordings_share_one_origin_and_clock():
+    a, b = read_gpx_pair(noisy_walk(seconds=60), noisy_walk(seconds=60, start=10, east_bias=1.0))
+    assert (a.fixes[0].t, a.fixes[0].north) == (0.0, 0.0)
+    assert b.fixes[0].t == 10.0  # the second phone started 10 s later
+    assert b.fixes[0].north == pytest.approx(15.0, abs=0.01)  # where the walk was at 10 s
+    assert b.fixes[0].east == pytest.approx(1.0, abs=0.01)
+
+
+def test_recordings_that_do_not_overlap_are_refused():
+    with pytest.raises(ValueError, match="overlap"):
+        read_gpx_pair(noisy_walk(seconds=30), noisy_walk(seconds=30, start=100))
+
+
+def test_honest_phones_are_apart_about_as_their_accuracy_predicts():
+    # 2 m of error per axis on each phone, reported as a 68% radius of 3.02 m, as Android does.
+    a, b = read_gpx_pair(noisy_walk(sigma=2.0, reported=3.02, seed=1), noisy_walk(sigma=2.0, reported=3.02, seed=2))
+    gap = apart(a, b)
+    assert gap["verdict"] == "about right"
+    assert gap["median_m"] == pytest.approx(gap["predicted_median_m"], rel=0.25)
+
+
+def test_phones_that_understate_their_error_are_called_optimistic():
+    a, b = read_gpx_pair(noisy_walk(sigma=2.0, reported=1.0, seed=1), noisy_walk(sigma=2.0, reported=1.0, seed=2))
+    gap = apart(a, b)
+    assert gap["verdict"] == "optimistic" and gap["ratio"] > 2.0
+
+
+def test_two_phones_run_as_phone_and_tag():
+    trace = run_gpx(noisy_walk(sigma=1.0, reported=2.0, seed=1), second=noisy_walk(sigma=1.0, reported=2.0, seed=2))
+    sources = {r["source"] for t in trace["ticks"] for r in t["readings"]}
+    assert sources == {"phone_gnss", "tag_gnss"}
+    assert "second" in trace["ticks"][10]["world"]
+    assert set(trace["recording"]["apart"]) >= {"median_m", "predicted_median_m", "verdict"}
+    assert trace["recording"]["second"]["fixes"] == 301
+
+
+def test_the_gate_rejects_a_phone_that_disagrees_badly():
+    # The second phone is 15 m east of the first throughout: the council cannot trust both.
+    trace = run_gpx(noisy_walk(reported=2.0), second=noisy_walk(reported=2.0, east_bias=15.0))
+    statuses = [r["status"] for t in trace["ticks"] for r in t["readings"]]
+    assert "rejected" in statuses
+
+
+def test_main_compares_two_phones(tmp_path, capsys):
+    first, second = tmp_path / "android.gpx", tmp_path / "iphone.gpx"
+    first.write_text(noisy_walk(sigma=1.0, reported=2.0, seed=1), encoding="utf-8")
+    second.write_text(noisy_walk(sigma=1.0, reported=2.0, seed=2), encoding="utf-8")
+    assert recording.main(["recording", str(first), str(second)]) == 0
+    out = capsys.readouterr().out
+    assert "second phone, as the tag" in out and "the phones were apart by a median" in out
+    assert recording.main(["recording", str(first), str(second), str(first)]) == 2

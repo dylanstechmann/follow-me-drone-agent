@@ -70,7 +70,7 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `motion.py` | The rider's velocity over the ground: a constant-velocity Kalman filter in a local frame, from the fused estimates and the drone's pose. | `test_motion.py` |
 | `sim.py` | A kinematic follow simulation: a point drone that turns and moves as the council commands, after a rider who moves. Not a flight simulator, and not the SITL gate. | `test_sim.py` |
 | `camera_view.py` | One camera box at a time through a council kept between frames, for the website's camera page (run in the browser by Pyodide). | `test_camera_view.py` |
-| `recording.py` | Reads a GPX recording as offsets and seconds from its first fix, dropping coordinates and dates, and runs it through the simulation. Writes no files. | `test_recording.py` |
+| `recording.py` | Reads a GPX recording as offsets and seconds from its first fix, dropping coordinates and dates, and runs it through the simulation. Two recordings of the same walk run as phone and tag, with a check of their reported accuracy. Writes no files. | `test_recording.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
@@ -180,6 +180,7 @@ PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
+PYTHONPATH=src python3 -m follow_me.recording ~/android.gpx ~/iphone.gpx  # the same walk on two phones
 node --test "tests/js/*.test.mjs"                     # the JavaScript tests (the detector's decoding)
 node tools/detect_bench.mjs _site/assets/vendor        # time the person detector (needs a build made with --vendor)
 python3 tools/detector_recall.py prepare _site/recall-check  # then open it in a browser and run analyse: how far the detector sees

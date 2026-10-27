@@ -90,6 +90,16 @@ After the owner's "ok", the agent pushed the safety margin and started the camer
 - **Iteration 33:** the website's camera page. It follows only the person holding a printed marker, blurs everything else before drawing, and runs the repo's Python for what the drone would do. It was checked with a photo and with Chromium's fake camera.
 - **Iteration 34:** final checks of all five pages, and the docs.
 
+## Phase 14: measuring the detector, and two phones (iterations 35 and 36, 2026-10-27)
+
+The owner asked again what could be done before work away from the computer. The agent recommended measuring the detector's range, then two-phone support, then refreshing stale prices, and started the first two.
+
+- **Iteration 35:** a tool that measures the detector on COCO photos.
+  - It found 89% of people closer than about 4 m with a 70 degree camera, two thirds at 5 to 11 m, half at 11 to 16 m, and few beyond 22 m.
+  - The simulated camera now uses that curve instead of an optimistic placeholder.
+  - That showed a trap at phone accuracy, which a crop around the expected rider breaks in simulation.
+- **Iteration 36:** two recordings of the same walk, from two phones, run as phone and tag. The summary checks the phones' reported accuracy against how far apart they really were. A made-up check showed understated accuracy bringing the drone too close.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.
