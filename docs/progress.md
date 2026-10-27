@@ -525,6 +525,13 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - the replay page's four examples load, and a GPX still opens through the refactored worker.
 - Docs: [camera.md](camera.md) covers the detector, its speed and the camera page; [privacy-and-rules.md](privacy-and-rules.md) covers the page's rules; decision D24 records the blur-everything design. The history has a new phase.
 - Not done: a camera on a drone, detection measured on real rides, and the Pi Zero 2 W timing measured on a real board (`tools/detect_bench.mjs` is ready for it).
+- Published `ed81598` on 2026-10-27 after the owner's "ok". The workflow run passed, including the 12 JavaScript tests in CI.
+- The live check:
+  - GitHub Pages serves the runtime's `.mjs` as JavaScript and its `.wasm` as `application/wasm`.
+  - A first start downloads about 13.6 MB compressed; the page says about 15 MB.
+  - In a headless browser, the live camera page followed only the marked person in a test photo, at desktop and phone widths, and blurred the bystander, at 102 to 107 ms a frame.
+  - Chromium's fake camera ran and stopped cleanly.
+  - There were no errors.
 
 ## Next candidates (not started)
 
