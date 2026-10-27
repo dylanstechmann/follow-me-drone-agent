@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- Runs the person detector on the photos prepared by tools/detector_recall.py, in this
+     browser, and offers predictions.json to save. Copied into the check folder inside a
+     site build; never part of the published site. -->
+<meta charset="utf-8">
+<title>Detector recall check</title>
+<p id="status">Loading the detector…</p>
+<p><a id="save" hidden download="predictions.json">Save predictions.json</a></p>
+<script type="module">
+import { INPUT, PAD, detectPeople, fitScale } from "../assets/detector.js";
+
+const status = document.getElementById("status");
+const ort = await import("../assets/vendor/onnxruntime/ort.wasm.min.mjs");
+ort.env.wasm.wasmPaths = new URL("../assets/vendor/onnxruntime/", location.href).href;
+ort.env.wasm.numThreads = 1;
+const model = await (await fetch("../assets/vendor/yolox/yolox_nano.onnx")).arrayBuffer();
+const session = await ort.InferenceSession.create(model, { executionProviders: ["wasm"] });
+const manifest = await (await fetch("manifest.json")).json();
+const square = new OffscreenCanvas(INPUT, INPUT);
+const sq = square.getContext("2d", { willReadFrequently: true });
+const predictions = [];
+const times = [];
+for (const [i, item] of manifest.entries()) {
+  const img = new Image();
+  img.src = item.file;
+  await img.decode();
+  const scale = fitScale(img.width, img.height);
+  sq.fillStyle = `rgb(${PAD}, ${PAD}, ${PAD})`;
+  sq.fillRect(0, 0, INPUT, INPUT);
+  sq.drawImage(img, 0, 0, Math.round(img.width * scale), Math.round(img.height * scale));
+  const started = performance.now();
+  // A low threshold, so the analysis can try several.
+  const people = await detectPeople(ort, session, sq.getImageData(0, 0, INPUT, INPUT).data, scale, { threshold: 0.05 });
+  times.push(performance.now() - started);
+  predictions.push({ file: item.file, boxes: people.map((p) => [p.x, p.y, p.w, p.h, p.score]) });
+  status.textContent = `${i + 1} of ${manifest.length} photos`;
+}
+times.sort((a, b) => a - b);
+const result = { predictions, median_ms: times[times.length >> 1] };
+window.__predictions = result; // for a headless browser
+const save = document.getElementById("save");
+save.href = URL.createObjectURL(new Blob([JSON.stringify(result)], { type: "application/json" }));
+save.hidden = false;
+status.textContent = `Done: ${manifest.length} photos, median ${result.median_ms.toFixed(0)} ms a photo.`;
+</script>

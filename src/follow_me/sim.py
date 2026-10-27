@@ -42,21 +42,44 @@ class Limits:
     max_yaw_rate_dps: float = 90.0
 
 
+# How often the person detector (YOLOX-Nano at a 0.35 score) found people in 500 COCO
+# validation photos, by the person's height in its 416-pixel input: (height px, share
+# found). All people, partly hidden ones included, so a rider in clear view is found
+# somewhat more often. Measured with tools/detector_recall.py on 2026-10-27; see
+# docs/camera.md. Heights are bin middles; beyond the last point the share stays level.
+MEASURED_RECALL = (
+    (4.0, 0.01), (10.0, 0.01), (14.0, 0.05), (20.0, 0.12), (28.0, 0.31),
+    (40.0, 0.47), (56.0, 0.66), (80.0, 0.69), (112.0, 0.82), (160.0, 0.89),
+)
+INPUT_FRAME_PX = 312.0  # a 4:3 frame's height in the detector's 416-pixel input
+
+
+def recall_at(height_px: float, curve: tuple = MEASURED_RECALL) -> float:
+    """The share of people found at a height on screen, between the curve's points."""
+    if height_px <= curve[0][0]:
+        return curve[0][1]
+    for (h0, r0), (h1, r1) in zip(curve, curve[1:]):
+        if height_px <= h1:
+            return r0 + (r1 - r0) * (height_px - h0) / (h1 - h0)
+    return curve[-1][1]
+
+
 @dataclass(frozen=True)
 class Camera:
-    """A simulated camera on the drone's nose, standing in for a person detector.
+    """A simulated camera on the drone's nose, standing in for the person detector.
 
     Each tick it sees the rider only inside the council's field of view and its range
-    limit, and misses them at random `miss_rate` of the time. It makes the box a
-    detector would, with made-up error of the size sources.camera_estimate assumes,
-    and passes the box through camera_estimate. There are no other people, no wrong
-    detections and nothing in the way. The limits and errors are placeholders.
+    limit, and only as often as the detector found people of the rider's height on
+    screen (`recall`, measured on COCO photos). It makes the box a detector would, with
+    the error sources.camera_estimate assumes, and passes the box through that function.
+    There are no other people, no wrong detections and nothing in the way.
     """
 
-    max_range_m: float = 30.0  # farther, a person is too small to detect
-    bearing_sigma_rad: float = 0.05
+    max_range_m: float = 60.0
+    bearing_sigma_rad: float = 0.05  # placeholders, as in sources.camera_estimate
     range_sigma_frac: float = 0.15
-    miss_rate: float = 0.1
+    recall: tuple = MEASURED_RECALL
+    frame_px: float = INPUT_FRAME_PX
     seed: int = 1
 
 
@@ -172,7 +195,8 @@ def _camera_reading(
     distance, bearing = math.hypot(x, y), math.atan2(y, x)
     if distance < 0.5 or distance > camera.max_range_m or abs(bearing) > council.hfov_rad / 2.0:
         return None
-    if rng.random() < camera.miss_rate:
+    height_px = camera.frame_px * PERSON_HEIGHT_M / (2.0 * distance * math.tan(council.vfov_rad / 2.0))
+    if rng.random() >= recall_at(height_px, camera.recall):
         return None
     seen_range = distance * max(0.2, 1.0 + rng.gauss(0.0, camera.range_sigma_frac))
     seen_bearing = bearing + rng.gauss(0.0, camera.bearing_sigma_rad)

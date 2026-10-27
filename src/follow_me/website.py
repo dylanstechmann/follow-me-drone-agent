@@ -217,8 +217,8 @@ def sim_example_data(variant: str = "now") -> dict:
     if variant == "now":
         return trace_track(example_track(), note=EXAMPLE_NOTE)
     if variant == "camera":
-        note = EXAMPLE_NOTE + (" A simulated camera also sees the rider when in view and misses 10% of the"
-                               " time; there are no other people. Its error model is a placeholder.")
+        note = EXAMPLE_NOTE + (" A simulated camera also sees the rider, when in view, as often as the person"
+                               " detector found people of that size in COCO photos; there are no other people.")
         return trace_track(example_track(), note=note, camera=Camera())
     if variant == "before":
         note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward and the safety margin, for comparison."

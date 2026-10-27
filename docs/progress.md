@@ -548,3 +548,30 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - Do you already own an ELRS-compatible transmitter? It is the largest placeholder in the drone passes ($60 to $120).
 - What tools can FAU engineering and IEEE lend or book: a PCB mill or etching setup, soldering and hot-air stations, a bench power supply, a load cell, a laser cutter? See [lab-access.md](lab-access.md). (Money is not on this list: the owner does not like asking for it.)
 - How many is "tons" of drones, what would count as success, and how should the first flying drone be paid for without asking for money? See [vision.md](vision.md).
+
+## Iteration 35: how far the detector can see (planned and done 2026-10-27)
+
+- Owner input (2026-10-27): the owner asked what else could be done before work away from the computer. The agent recommended measuring the detector's range and putting it into the simulated camera, then two-phone support, then refreshing stale prices. It started the first. The plan was given in the conversation and is written here with the result.
+- `tools/detector_recall.py` and `tools/detector_recall.html` measure recall on a seeded sample of COCO validation photos. The detector runs in a browser on photos placed inside a site build, and the script matches its detections to the drawn boxes.
+  - The first run was a prototype in the agent's scratch space. Re-run through the committed tool, it gave identical detections, 500 photos in 43 s.
+  - The photos stay on the machine that runs the tool and are never committed.
+- Result, at the camera page's 0.35 score, for all 1,950 people:
+  - 89% found when 128 px or taller in the input (under 4 m with a 70 degree camera);
+  - 66 to 69% at 48 to 96 px (5 to 11 m);
+  - 47% at 32 to 48 px (11 to 16 m);
+  - 31% at 24 to 32 px;
+  - 12% at 16 to 24 px;
+  - under 5% below 16 px.
+
+  It made 0.33 wrong detections per photo. Clearly visible people (10 or more of 17 body points marked) were found about 10 points more often. The table is in [camera.md](camera.md).
+- The simulated camera now sees the rider only as often as this measured curve gives (`MEASURED_RECALL`, by height on screen). That replaces the placeholder of 90% out to 30 m, which was far too optimistic.
+- Found:
+  - At phone accuracy, the safety margin keeps the drone 15 to 40 m back, where the rider is seldom found. With the measured camera, a 4 m/s follow stays at 36.8 m with 4% tracking, a trap.
+  - A 2x crop around where the council expects the rider breaks it: 15.8 m with 64% tracking.
+  - A narrower lens did worse, but that is confounded, because the box-height controller moves the follow distance out with a narrower lens.
+  - Cropping is listed as the next camera candidate.
+- Tests:
+  - the recall curve and its sampling;
+  - mechanism tests use a camera that always sees;
+  - the measured camera helps a degraded follow only a little, and the crop breaks the trap.
+- The camera page now states the detector's range.

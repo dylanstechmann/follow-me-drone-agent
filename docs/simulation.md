@@ -92,32 +92,28 @@ What this shows:
 
 Each is a change to the follow logic, so it needs simulation tests first.
 
-## A simulated camera (iteration 31)
+## A simulated camera (iterations 31 and 35)
 
-`simulate(..., camera=Camera())` adds a camera on the drone's nose, as a stand-in for a person detector:
-- It sees the rider only inside the 90 degree field of view and within 30 m, and misses them at random 10% of the time.
-- It makes the box a detector would, with the error `sources.camera_estimate` assumes (0.05 rad of bearing, 15% of range), and passes the box through that function. So the simulation exercises the real camera code.
+`simulate(..., camera=Camera())` adds a camera on the drone's nose, as a stand-in for the person detector:
+- **What it sees.** Only inside the field of view and within 60 m. Since iteration 35, it sees the rider only as often as the detector found people of the rider's height on screen in 500 COCO photos (`MEASURED_RECALL`; see [camera.md](camera.md)).
+- **How its readings are made.** It makes the box a detector would, with the error `sources.camera_estimate` assumes, and passes the box through that function.
+- **What it leaves out.** There are no other people, no wrong detections and nothing in the way.
 
-It is idealised. There are no other people, no wrong detections and nothing in the way, and every number is a placeholder until a real detector is measured.
+Iteration 31 first gave it a placeholder that saw 90% of the time out to 30 m, which made the camera look far more useful than the measurement does.
 
-Median distance behind the rider, and the share of time in full tracking:
+Median distance behind the rider, and the share of time in full tracking. All columns use the simulation's default camera, 90 degrees across and 60 high. A 2x crop means running the detector on a crop around where the council expects the rider, which doubles their height on screen:
 
-| Case | Phone only | Phone and camera |
-|---|---|---|
-| 2 m/s, phone at 4 m | 21.3 m, 0% tracking | 11.0 m, 87% |
-| 4 m/s, phone at 4 m | 38.0 m, 0% | 11.1 m, 87% |
-| 4 m/s, phone at 1 m | 10.1 m, 100% | 8.6 m, 100% |
-| Sudden stop from 4 m/s, phone at 3 m | 21.9 m | 10.0 m |
-| 90 degree turn at 4 m/s, phone at 3 m | 29.1 m | 10.4 m |
-| Standing, made-up 3 m errors | 13.1 to 13.5 m | 9.7 to 10.1 m |
-| The example ride | 12.2 m, 60% | 9.7 m, 96% |
+| Case | Phone only | Phone and camera | Phone and camera, 2x crop |
+|---|---|---|---|
+| 2 m/s, phone at 4 m | 21.3 m, 0% tracking | 17.6 m, 29% | 14.2 m, 67% |
+| 4 m/s, phone at 4 m | 38.0 m, 0% | 36.8 m, 4% | 15.8 m, 64% |
+| 4 m/s, phone at 1 m | 10.1 m, 100% | 9.0 m, 100% | 8.7 m, 100% |
+| The example ride | 12.2 m, 60% | 11.7 m, 72% | 10.7 m, 90% |
 
 What this shows:
-- **A camera turns a degraded phone follow into tracking.** Its estimate is tighter than a phone's, so the fused uncertainty and the safety margin shrink, and the drone follows closer.
-- **It bridges gaps in the fixes.** During the example ride's 15 s without fixes, the camera keeps tracking, so there is no hold.
+- **At phone accuracy, the camera alone barely helps.** The safety margin keeps the drone far back, where the rider is small on screen and seldom found. That keeps the estimate uncertain and the drone back: a trap.
+- **Cropping breaks the trap.** Detection runs on a crop around where the council expects the rider, using the GPS estimate, which a phone already gives. It needs a camera with enough real pixels to crop into.
 - **It is never too close.** In no case did the drone come closer than the band's near edge.
-
-A real detector will miss more, and see other people. The website's camera page (iteration 33) tests the detector and the marker that tells the rider from everyone else.
 
 ## Replaying your own recording
 
@@ -162,7 +158,12 @@ The recording is not uploaded. See [website.md](website.md).
 - stale fixes, the dead-reckoning hold, and fallback timing at two loop rates;
 - the trace format and the summary, including the closest approach;
 - for the original controller (`feed_forward=False, margin_sigmas=0`), the iteration 21 findings: the trailing distance against the controller's arithmetic, the speed ceiling, and the phone case;
-- the simulated camera: seen only in view and in range, readings through `camera_estimate`, a degraded phone follow turned into tracking, a gap bridged, never too close with noisy fixes, and the miss rate;
+- the simulated camera:
+  - seen only in view and in range, with readings through `camera_estimate`;
+  - the measured recall curve and its sampling;
+  - a gap bridged by a camera that always sees;
+  - a degraded phone follow helped only a little at the measured recall, and the trap broken by a 2x crop;
+  - never too close with noisy fixes;
 - the safety margin: noisy fixes kept at a distance, the limit when accuracy is under-reported, following and stopping with the margin, and the margin's size;
 - with feed-forward and no margin:
   - riders at 2 to 7 m/s are kept close;

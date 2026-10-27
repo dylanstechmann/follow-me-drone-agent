@@ -182,6 +182,7 @@ PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
 node --test "tests/js/*.test.mjs"                     # the JavaScript tests (the detector's decoding)
 node tools/detect_bench.mjs _site/assets/vendor        # time the person detector (needs a build made with --vendor)
+python3 tools/detector_recall.py prepare _site/recall-check  # then open it in a browser and run analyse: how far the detector sees
 PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
 PYTHONPATH=src python3 -m follow_me.website --render-parts  # with the 3D libraries and rendered parts (needs the network and Node.js)
 PYTHONPATH=src python3 -m follow_me.parts              # list the printable parts and their values

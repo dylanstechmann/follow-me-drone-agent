@@ -8,7 +8,8 @@ The camera is one of the council's sources. A person detector finds people in a 
 - **A person detector that runs in the browser and in Node.js.** YOLOX-Nano runs in onnxruntime-web, and `site/assets/detector.js` prepares the frame and decodes the model's output. Its decoding is tested with Node's test runner (`tests/js/detector.test.mjs`), also in CI.
 - **A timing tool.** `node tools/detect_bench.mjs [VENDOR_DIR]` times the detector on whatever machine runs it, for example a Raspberry Pi.
 - **The website's camera page** (`site/camera.html`), described below.
-- **Not yet:** a camera on a drone, and detection quality measured on rides.
+- **A measurement of how far it can see**, on 500 COCO photos (below), and a tool to repeat it.
+- **Not yet:** a camera on a drone, detection measured on real rides, and cropping around the expected rider.
 
 ## The detector
 
@@ -35,6 +36,39 @@ The build downloads the model from the YOLOX release, checked against a sha512 h
 | Raspberry Pi Zero 2 W, ncnn, 4 threads | About 250 ms, about 4 frames a second, **an estimate** | ncnn's published benchmark on that board has NanoDet-m at 166 ms for 0.72 GFLOPs. YOLOX-Nano needs 1.08 GFLOPs, so scaling by compute gives about 250 ms. |
 
 onnxruntime or WebAssembly on the Pi would be slower than ncnn. A few frames a second is enough to correct the GPS fixes, with the Kalman filter carrying the estimate between frames. It needs measuring: run the timing tool on a Pi. On a Pi it measures WebAssembly, which gives an upper bound.
+
+## How far it can see (iteration 35)
+
+`tools/detector_recall.py` ran the detector on a seeded sample of 500 COCO validation photos with people (1,950 people; crowd regions do not count). It matched each detection to the hand-drawn boxes, needing an IoU of 0.5 or more. The share found depends on a person's height in the detector's 416-pixel input. For a 1.75 m person in a 4:3 frame from a 70 degree camera, that height is 520 divided by the distance in meters.
+
+At the camera page's score threshold of 0.35, with 0.33 wrong detections per photo:
+
+| Height in the input | Distance, 70 degree camera | All people | Clearly visible |
+|---|---|---|---|
+| 128 px and up | Under 4 m | 89% of 497 | 92% of 355 |
+| 96 to 128 px | 4 to 5 m | 82% of 165 | 91% of 115 |
+| 64 to 96 px | 5 to 8 m | 69% of 270 | 80% of 157 |
+| 48 to 64 px | 8 to 11 m | 66% of 163 | 80% of 75 |
+| 32 to 48 px | 11 to 16 m | 47% of 231 | 59% of 49 |
+| 24 to 32 px | 16 to 22 m | 31% of 131 | Too few |
+| 16 to 24 px | 22 to 32 m | 12% of 183 | Too few |
+| 12 to 16 px | 32 to 43 m | 5% of 118 | Too few |
+| Under 12 px | Over 43 m | 1% of 192 | Too few |
+
+"Clearly visible" means 10 or more of COCO's 17 body points marked, a proxy for a person not hidden behind something.
+
+Limits of this measurement:
+- COCO photos are not a drone's view of a skater from behind.
+- Small people in COCO are often partly hidden, so the all-people figures are cautious for a rider in clear view.
+- A score threshold of 0.25 finds a few points more, with 0.51 wrong detections per photo. A threshold of 0.5 finds fewer, with 0.15.
+
+What it means:
+- The simulated camera's first numbers (seen 90% of the time out to 30 m) were far too optimistic. The simulation now uses the all-people column ([simulation.md](simulation.md)).
+- At phone accuracy, the safety margin keeps the drone 15 to 40 m back, where the rider is seldom found, so the estimate stays uncertain. That is a trap.
+- Running the detector on a crop around where the council expects the rider doubles their height on screen. In the simulation, at 4 m/s with a phone, that changed the follow from 36.8 m behind and 4% tracking to 15.8 m behind and 64% tracking. It needs a camera with enough real pixels to crop into, such as a 1080p or higher sensor.
+- A narrower lens did worse in the simulation. That result is confounded: the controller sets its distance from how much of the frame the rider fills, so a narrower lens also moves the follow distance out.
+
+To repeat the measurement, see the steps at the top of `tools/detector_recall.py`. The photos stay on the machine that runs it.
 
 ## A check on real photos
 
