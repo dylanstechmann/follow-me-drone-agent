@@ -488,6 +488,17 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
   - the miss rate holds, and the seed repeats.
 - The website has a third simulated example, the same ride with the camera (`data/sim-example-camera.json`).
 
+## Iteration 32: a person detector (done: 324 Python and 7 JavaScript tests pass)
+
+- Chose YOLOX-Nano: Apache-2.0, the authors' own ONNX export (3.7 MB), 25.8 mAP on COCO. The common alternatives' licences were checked on GitHub: Ultralytics' YOLOv5, v8 and 11 are AGPL-3.0, YOLOv7 and v9 are GPL-3.0, and Yolo-FastestV2 has no licence.
+- The model runs with onnxruntime-web 1.30.0 (MIT). That release is from 2026-09-14; the 1.31.1 released that day was passed over as too new.
+- The build pins both pieces: the runtime by npm's hash, and the model by a sha512 hash taken on first download, because GitHub publishes none. `fetch_vendor` can now copy a single file as well as files from a tarball.
+- `site/assets/detector.js` prepares the frame, decodes the 3,549 candidate boxes, keeps people and removes overlaps. It runs unchanged in the browser and in Node.js. Seven tests run with Node's own test runner, and CI now runs them.
+- Timing on this machine (Intel i9-11980HK): about 70 ms per frame on one thread in Node.js. On the Raspberry Pi Zero 2 W, the estimate is about 250 ms, or 4 frames a second, with ncnn. That scales ncnn's published Pi Zero 2 W result for NanoDet-m (166 ms for 0.72 GFLOPs) to YOLOX-Nano's 1.08 GFLOPs. `node tools/detect_bench.mjs` measures it on a real Pi, as an upper bound.
+- Checked on three COCO validation photos in a headless browser: 1, 11 and 4 people found, with the boxes in place, at 71 to 119 ms per frame. This confirms the input format: raw BGR values, padded at the top left. The photos stayed on the agent's machine.
+- Found while testing: this onnxruntime-web build cannot use threads in Node.js, so the timing tool uses one.
+- See [camera.md](camera.md).
+
 ## Next candidates (not started)
 
 - In the order the owner agreed on 2026-10-26:

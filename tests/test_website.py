@@ -245,9 +245,23 @@ def test_check_integrity_needs_sha512():
 
 def test_vendor_pins_exact_versions_and_hashes():
     for spec in VENDOR.values():
-        assert re.search(r"-\d+\.\d+\.\d+\.tgz$", spec["url"]), spec["url"]
+        npm = re.search(r"^https://registry\.npmjs\.org/.+-\d+\.\d+\.\d+\.tgz$", spec["url"])
+        release = re.search(r"^https://github\.com/[\w.-]+/[\w.-]+/releases/download/[\w.-]+/[\w.-]+$", spec["url"])
+        assert npm or release, spec["url"]
+        assert ("files" in spec) == bool(npm) and ("file" in spec) == bool(release)
         assert spec["integrity"].startswith("sha512-") and len(spec["integrity"]) > 80
         assert spec["license"]
+
+
+def test_fetch_vendor_copies_a_single_pinned_file(tmp_path):
+    data = b"model bytes"
+    integrity = "sha512-" + base64.b64encode(hashlib.sha512(data).digest()).decode("ascii")
+    spec = {"m": {"url": "https://github.com/o/r/releases/download/1.0/m.onnx", "integrity": integrity, "file": "m/m.onnx"}}
+    assert fetch_vendor(tmp_path / "out", tmp_path / "cache", spec, lambda url: data) == ["m/m.onnx"]
+    assert (tmp_path / "out" / "m" / "m.onnx").read_bytes() == data
+    bad = {"m": {**spec["m"], "integrity": "sha512-" + base64.b64encode(b"y" * 64).decode("ascii")}}
+    with pytest.raises(ValueError, match="pinned"):
+        fetch_vendor(tmp_path / "out2", tmp_path / "cache2", bad, lambda url: data)
 
 
 def test_main_rejects_unknown_flags(capsys):

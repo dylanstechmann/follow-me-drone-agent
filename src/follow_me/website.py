@@ -52,8 +52,9 @@ README_BLOCKS = {
     "<!-- build:readme-built -->": "How this was built",
 }
 
-# Browser libraries: npm tarballs pinned by version and by the registry's sha512 hash.
-# Only the listed files are copied, under assets/vendor/.
+# Browser libraries and the detector's model, pinned by version and by a sha512 hash:
+# the registry's for npm tarballs, of which only the listed files are copied, and our
+# own for a single file from a GitHub release. Everything lands under assets/vendor/.
 VENDOR = {
     "three": {
         "version": "0.186.1",
@@ -92,6 +93,28 @@ VENDOR = {
             "package/python_stdlib.zip": "pyodide/python_stdlib.zip",
             "package/pyodide-lock.json": "pyodide/pyodide-lock.json",
         },
+    },
+    "onnxruntime-web": {
+        "version": "1.30.0",
+        "license": "MIT",
+        "url": "https://registry.npmjs.org/onnxruntime-web/-/onnxruntime-web-1.30.0.tgz",
+        "integrity": "sha512-q0y+JrrtukXSzsBWEMccVfqX25LRmosXHF+CaRJmg8pZClzcV7svNc4rKY3jL02Vb7QmRMDs1SigqR4CXAfKYQ==",
+        "source": "https://github.com/microsoft/onnxruntime",
+        "files": {
+            "package/dist/ort.wasm.min.mjs": "onnxruntime/ort.wasm.min.mjs",
+            "package/dist/ort-wasm-simd-threaded.mjs": "onnxruntime/ort-wasm-simd-threaded.mjs",
+            "package/dist/ort-wasm-simd-threaded.wasm": "onnxruntime/ort-wasm-simd-threaded.wasm",
+        },
+    },
+    "yolox-nano": {
+        "version": "YOLOX release 0.1.1rc0, yolox_nano.onnx (trained on COCO)",
+        "license": "Apache-2.0",
+        # GitHub publishes no hash for release files; this one was computed when the
+        # file was first downloaded, on 2026-10-26.
+        "url": "https://github.com/Megvii-BaseDetection/YOLOX/releases/download/0.1.1rc0/yolox_nano.onnx",
+        "integrity": "sha512-9p7CLs2vOmfVyQ6OY1mdigX52NusRiEUopIWL7sUJm4xurLQIl3UGU9dyJ8rSrCe1mIj+ZOVEAbPK9ZTT4mKxg==",
+        "source": "https://github.com/Megvii-BaseDetection/YOLOX",
+        "file": "yolox/yolox_nano.onnx",
     },
 }
 OPENSCAD_JS = "assets/vendor/openscad/openscad.js"
@@ -290,6 +313,12 @@ def fetch_vendor(dest: Path, cache: Path, vendor: dict = VENDOR, download=_downl
         if not cached.is_file():
             cache.mkdir(parents=True, exist_ok=True)
             cached.write_bytes(data)
+        if "file" in spec:  # a single file, copied as it is
+            path = dest / spec["file"]
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(data)
+            written.append(spec["file"])
+            continue
         with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as tar:
             for member, target in spec["files"].items():
                 handle = tar.extractfile(member)  # read named members only; nothing is unpacked

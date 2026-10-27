@@ -179,6 +179,8 @@ PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
+node --test "tests/js/*.test.mjs"                     # the JavaScript tests (the detector's decoding)
+node tools/detect_bench.mjs _site/assets/vendor        # time the person detector (needs a build made with --vendor)
 PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
 PYTHONPATH=src python3 -m follow_me.website --render-parts  # with the 3D libraries and rendered parts (needs the network and Node.js)
 PYTHONPATH=src python3 -m follow_me.parts              # list the printable parts and their values
@@ -227,6 +229,7 @@ Start here, then follow the question you have.
 - [architecture.md](architecture.md): the council design.
 - [build-plan.md](build-plan.md): the gates from software to free flight.
 - [simulation.md](simulation.md): the kinematic follow simulation, what it shows and what it does not.
+- [camera.md](camera.md): the camera source, the person detector, its licence, speed and privacy.
 - [safety.md](safety.md): the safety plan that must be met before flight.
 - [privacy-and-rules.md](privacy-and-rules.md): privacy, consent and the rules to verify.
 - [sensors-and-companion.md](sensors-and-companion.md): sensors and the companion device.

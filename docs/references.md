@@ -23,6 +23,19 @@ Website ([website.md](website.md)):
 - ISO 178 (plastics, flexural properties) is the source of the test bars' 80 x 10 x 4 mm shape. Only the shape is borrowed; the home test is not the standard's method.
 - The chart colours, status colours and freshness ramp follow a colour-blind-checked palette from the data-visualization guidance the coding agent used, checked with its validator on 2026-10-26.
 
+Camera ([camera.md](camera.md)):
+
+- YOLOX (Apache-2.0), and the YOLOX-Nano ONNX model from release 0.1.1rc0. The figures for YOLOX-Nano (25.8 mAP on COCO, 0.91M parameters, 1.08 GFLOPs at 416) are from its README: https://github.com/Megvii-BaseDetection/YOLOX
+- Ge, Liu, Wang, Li and Sun, "YOLOX: Exceeding YOLO Series in 2021", arXiv:2107.08430 (2021), checked against arXiv on 2026-10-27: https://arxiv.org/abs/2107.08430
+- onnxruntime-web 1.30.0 (MIT), the runtime that runs the model in the browser and in Node.js: https://github.com/microsoft/onnxruntime
+- COCO, the dataset the model was trained and scored on. Three validation photos were used for a local check only: https://cocodataset.org/
+- ncnn's benchmark results, including the Raspberry Pi Zero 2 W (BCM2710A1, 4 x Cortex-A53 at 1.0 GHz), read on 2026-10-27: https://github.com/Tencent/ncnn/blob/master/benchmark/README.md
+- Licences of other detectors, as GitHub reports them, read on 2026-10-27:
+  - Ultralytics YOLOv5, YOLOv8 and YOLO11: AGPL-3.0;
+  - YOLOv7 and YOLOv9: GPL-3.0;
+  - NanoDet: Apache-2.0;
+  - Yolo-FastestV2: no licence.
+
 Recordings and simulation ([simulation.md](simulation.md)):
 
 - GPX 1.1, the track format the importer reads: https://www.topografix.com/GPX/1/1/
