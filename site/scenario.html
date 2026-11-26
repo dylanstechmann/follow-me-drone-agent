@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scenario sandbox · Follow-me drone</title>
+  <meta name="description" content="An interactive synthetic 3D field lab for follow-me and retrieval scenarios. Simplified kinematics only; no hardware exists or has flown.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/scenario.css">
+  <script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+  <script type="importmap">{"imports": {"three": "./assets/vendor/three/three.module.js", "three/addons/": "./assets/vendor/three/addons/"}}</script>
+  <script type="module" src="assets/scenario.js"></script>
+</head>
+<body class="scenario-page">
+  <header class="site-header">
+    <div class="bar">
+      <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="">Follow-me drone</a>
+      <nav class="site-nav" aria-label="Pages">
+        <a href="index.html">Overview</a>
+        <a href="replay.html">Replay</a>
+        <a href="camera.html">Camera</a>
+        <a href="scenario.html" aria-current="page">Scenario</a>
+        <a href="costs.html">Costs</a>
+        <a href="parts.html">Parts</a>
+        <a href="https://github.com/dylanstechmann/follow-me-drone-agent">GitHub</a>
+      </nav>
+      <button class="icon-btn" type="button" data-theme-toggle aria-label="Theme: auto">◐ Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="scenario-intro">
+      <p class="eyebrow">Synthetic field lab / flight console</p>
+      <h1>Scenario sandbox</h1>
+      <p class="lede">Run a pennyboard follow shot, retrieve a soccer ball on land or shallow water, pick up a soda across a living room, relocate a pennyboard, or configure a generic object. Scrub the mission, inspect each event, and switch between an external orbit and the simulated onboard view.</p>
+      <div class="notice scenario-warning" role="note">
+        <p><strong>This is a simplified synthetic kinematic simulation.</strong> Nothing has flown. No drone, waterproof tentacle, gripper, or other hardware exists or has been tested. This is not PX4 or ArduPilot SITL, not realistic fluid or contact physics, and not evidence that a mission is safe or possible. The onboard view is simulated footage, never a recording.</p>
+      </div>
+    </section>
+
+    <section class="card console-section" aria-labelledby="scenario-setup-title">
+      <div class="section-heading">
+        <div><p class="console-kicker">01 / Mission setup</p><h2 id="scenario-setup-title">Choose a preset or configure the sandbox</h2></div>
+        <span class="console-tag">LOCAL · Z-UP · METRES</span>
+      </div>
+      <div class="scenario-select-row">
+        <label for="scenario-select">Scenario preset</label>
+        <select id="scenario-select">
+          <option value="follow_ride">Follow-me pennyboard footage</option>
+          <option value="soccer_land">Outdoor soccer pickup · land</option>
+          <option value="soccer_water">Waterproof soccer retrieval · shallow water</option>
+          <option value="indoor_soda">Indoor soda pickup · living room</option>
+          <option value="pennyboard_land">Pennyboard pickup · land</option>
+          <option value="object_sandbox" selected>Generic object sandbox · land or water</option>
+        </select>
+      </div>
+      <form id="sandbox-form" class="sandbox-grid">
+        <label>Target
+          <select id="sandbox-target">
+            <option value="object">Generic object</option>
+            <option value="soccer_ball">Soccer ball</option>
+            <option value="soda_can">Soda can</option>
+            <option value="pennyboard">Pennyboard</option>
+          </select>
+        </label>
+        <label>Setting
+          <select id="sandbox-setting"><option value="outdoor">Outdoor</option><option value="indoor">Indoor living room</option></select>
+        </label>
+        <label>Surface
+          <select id="sandbox-surface"><option value="land">Land / floor</option><option value="water">Shallow water</option></select>
+        </label>
+        <label class="waterproof-control"><input id="sandbox-waterproof" type="checkbox" checked> Waterproof tentacle <span class="small muted">(required for water)</span></label>
+        <label>Illustrative generic mass (kg)
+          <input id="sandbox-mass" type="number" min="0.05" max="20" step="0.05" value="0.25" inputmode="decimal">
+        </label>
+        <div class="scenario-actions">
+          <button class="btn primary" id="run-scenario" type="submit">Run scenario</button>
+          <button class="btn" id="reset-scenario" type="button">Reset to preset</button>
+        </div>
+      </form>
+      <p class="scenario-setup-note" id="preset-description">Presets load a trace generated when the site was built. Custom settings run the same Python locally in a worker; no backend or upload is used.</p>
+      <p class="message" id="load-status" role="status">Loading the prebuilt sandbox trace…</p>
+      <p class="message error" id="scenario-error" role="alert" hidden></p>
+      <p class="sr-only" id="mission-announcement" aria-live="polite" aria-atomic="true"></p>
+    </section>
+
+    <section class="scenario-workbench">
+      <div class="card viewport-card">
+        <div class="section-heading compact">
+          <div><p class="console-kicker">02 / Synthetic viewport</p><h2 id="viewport-title">External inspection</h2></div>
+          <span class="view-badge" id="view-badge">SIMULATED WORLD</span>
+        </div>
+        <div id="scenario-viewer" class="scenario-viewer" role="img" aria-label="Interactive synthetic 3D scenario world. Use the camera and playback controls below; drag to orbit and scroll or pinch to zoom when WebGL is available."></div>
+        <p class="message" id="viewer-status">Starting the procedural 3D view…</p>
+        <div class="controls camera-controls" aria-label="Camera controls">
+          <label>Camera
+            <select id="camera-select"><option value="external">External orbit</option><option value="onboard">Onboard · simulated footage</option></select>
+          </label>
+          <button class="btn" id="reset-camera" type="button">Reset camera</button>
+        </div>
+        <div class="controls camera-nudges" role="group" aria-label="External camera keyboard-accessible alternatives">
+          <span class="small muted">External view</span>
+          <button class="btn" type="button" data-camera-nudge="left" aria-label="Orbit left">↶ Orbit</button>
+          <button class="btn" type="button" data-camera-nudge="right" aria-label="Orbit right">Orbit ↷</button>
+          <button class="btn" type="button" data-camera-nudge="up" aria-label="Raise orbit angle">Raise</button>
+          <button class="btn" type="button" data-camera-nudge="down" aria-label="Lower orbit angle">Lower</button>
+          <button class="btn" type="button" data-camera-nudge="in" aria-label="Zoom in">Zoom +</button>
+          <button class="btn" type="button" data-camera-nudge="out" aria-label="Zoom out">Zoom −</button>
+        </div>
+        <p class="small muted viewport-help">External: drag to orbit, scroll or pinch to zoom; the adjacent native buttons provide the same actions. Onboard: the ideal stabilized camera pose is separate from the drone state; the view is simulated footage, not actual recording.</p>
+      </div>
+
+      <aside class="card telemetry-card" aria-labelledby="telemetry-title">
+        <p class="console-kicker">03 / Live telemetry</p>
+        <h2 id="telemetry-title">Current frame</h2>
+        <div class="kpis scenario-kpis" id="scenario-kpis"></div>
+        <p id="frame-description" class="frame-description">No scenario frame loaded.</p>
+        <dl class="facts scenario-facts" id="scenario-facts"></dl>
+      </aside>
+    </section>
+
+    <section class="card transport-card" aria-labelledby="transport-title">
+      <div class="section-heading compact"><div><p class="console-kicker">04 / Timeline</p><h2 id="transport-title">Mission playback</h2></div><span id="frame-counter" class="console-tag">0 / 0</span></div>
+      <div class="transport" role="group" aria-label="Scenario playback">
+        <button class="btn" type="button" id="btn-previous" aria-label="Previous frame">◀ Previous</button>
+        <button class="btn primary" type="button" id="btn-play" aria-pressed="false" disabled>▶ Play</button>
+        <button class="btn" type="button" id="btn-next" aria-label="Next frame">Next ▶</button>
+        <label class="small muted">Speed
+          <select id="playback-speed"><option value="0.5">0.5×</option><option value="1">1×</option><option value="2">2×</option><option value="4" selected>4×</option><option value="8">8×</option></select>
+        </label>
+      </div>
+      <label class="timeline-label" for="timeline">Timeline scrubber <output id="timeline-output">0.0 s</output></label>
+      <input type="range" id="timeline" min="0" max="0" value="0" step="1" aria-label="Scenario frame">
+      <div class="phase-rail" id="phase-rail" aria-hidden="true"></div>
+      <p class="small muted">Space plays or pauses; Left and Right Arrow step one frame when focus is not in a native control. Playback never starts automatically and stops at a terminal frame.</p>
+    </section>
+
+    <section class="grid-2 scenario-details">
+      <div class="card">
+        <p class="console-kicker">05 / Mission record</p>
+        <h2>Events</h2>
+        <p class="small muted">Each row is generated by the Python scenario. Use its time button to jump to that event.</p>
+        <div class="table-wrap event-table-wrap"><table id="event-table"><thead><tr><th>Time</th><th>Phase</th><th>Event</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <p class="console-kicker">06 / Model boundary</p>
+        <h2>What this does not prove</h2>
+        <ul class="limitations-list">
+          <li>Fixed-step positions and speeds are scripted kinematics. There is no aerodynamic model, battery, wind, collision, obstacle avoidance, autopilot, or flight validation.</li>
+          <li>The tentacle is one idealized prismatic line with a fixed gripper offset. There is no physical tentacle, gripper design, waterproofing test, contact dynamics, or payload demonstration.</li>
+          <li>Water is a translucent visual plane with fixed-depth illustrative buoyancy and zero drag, not fluid physics. Non-waterproof water missions stop before submerging; the page never changes the checkbox to make them pass.</li>
+          <li>Object dimensions and masses are illustrative, not measured product or hardware specifications. Generic mass only changes the payload check.</li>
+          <li>The follow rider is synthetic and explicitly consenting. There are no bystanders, real people, real footage, coordinates, or routes.</li>
+          <li>The onboard camera is ideal and stabilized, with no lens distortion, occlusion, detection noise, or recording. Framing statistics describe this model only.</li>
+        </ul>
+        <p class="small muted">Full preset and control notes: <a href="https://github.com/dylanstechmann/follow-me-drone-agent/blob/main/docs/scenarios.md">docs/scenarios.md</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>A personal hobby and learning project. The code, tests, docs and this site were written by AI coding agents at the owner's direction. No review of the code by the owner is recorded.</p>
+    <p>Everything in this sandbox is synthetic and untested on hardware. Nothing has flown. This is not PX4/ArduPilot SITL and nothing here claims the drone is safe, autonomous or ready to fly.</p>
+    <p><a href="https://github.com/dylanstechmann/follow-me-drone-agent">Source and docs on GitHub</a>. <span data-build></span></p>
+  </footer>
+</body>
+</html>

@@ -5,8 +5,8 @@
   PYTHONPATH=src python3 -m follow_me.website --vendor --render-parts   # what CI runs
   python3 -m http.server -d _site 8000                 # preview at http://localhost:8000
 
-The data under data/ is written from the cost model, the replay tool and the
-parts list at each build, and a GitHub Actions workflow builds and publishes the
+The data under data/ is written from the cost model, the replay tool, the
+scenario core and the parts list at each build, and a GitHub Actions workflow builds and publishes the
 site on every push to main, so the published site cannot fall behind the repo.
 Standard library only. The pages have no backend, analytics or cookies, and a
 file a visitor opens in the replay viewer stays in their browser.
@@ -14,8 +14,9 @@ file a visitor opens in the replay viewer stays in their browser.
 --vendor downloads the browser libraries from the npm registry, pinned to exact
 versions and checked against the registry's published hashes, so no library code is
 kept in git and the site makes no requests to other servers: three.js and OpenSCAD's
-WebAssembly build for the parts page, and Pyodide, which runs the repo's own Python
-in the replay page so a visitor's recording never leaves their browser.
+WebAssembly build for the parts page and the scenario view, and Pyodide, which runs
+the repo's own Python in the replay and scenario pages so recordings and custom
+settings never leave the visitor's browser.
 --render-parts then renders each part's default STL with Node.js and that same
 OpenSCAD build.
 """
@@ -41,6 +42,7 @@ from follow_me import bom, parts
 from follow_me.council import Council
 from follow_me.replay import trace
 from follow_me.sim import EXAMPLE_NOTE, Camera, example_track, trace_track
+from follow_me.scenario import PRESET_IDS, preset_catalog, trace_scenario
 
 ROOT = Path(__file__).resolve().parents[2]
 REPO_URL = "https://github.com/dylanstechmann/follow-me-drone-agent"
@@ -130,7 +132,7 @@ VENDOR = {
     },
 }
 OPENSCAD_JS = "assets/vendor/openscad/openscad.js"
-PYODIDE_JS = "assets/vendor/pyodide/pyodide.mjs"
+PYODIDE_JS = "assets/vendor/pyodide/pyodide.mjs"  # SECRETS-GUARD-IGNORE: public asset path
 CAMERA_FILES = (  # what the camera page needs besides Python
     "assets/vendor/onnxruntime/ort.wasm.min.mjs",
     "assets/vendor/yolox/yolox_nano.onnx",
@@ -141,7 +143,7 @@ CAMERA_FILES = (  # what the camera page needs besides Python
 # checks that they import nothing else from the package.
 PY_MODULES = (
     "__init__", "camera_view", "companion", "context", "controller", "council", "fusion",
-    "geo", "mode", "motion", "recording", "replay", "sim", "sources",
+    "geo", "mode", "motion", "recording", "replay", "scenario", "sim", "sources",
 )
 
 
@@ -224,6 +226,39 @@ def sim_example_data(variant: str = "now") -> dict:
         note = EXAMPLE_NOTE + " Followed by the controller as it was before feed-forward and the safety margin, for comparison."
         return trace_track(example_track(), council=Council(feed_forward=False, margin_sigmas=0.0), note=note)
     raise ValueError(f"unknown example {variant!r}")
+
+
+SCENARIO_LABELS = {
+    "follow_ride": "Follow-me pennyboard footage",
+    "soccer_land": "Outdoor soccer pickup on land",
+    "soccer_water": "Waterproof soccer retrieval in shallow water",
+    "indoor_soda": "Indoor soda pickup across a living room",
+    "pennyboard_land": "Pennyboard pickup on land",
+    "object_sandbox": "Generic object sandbox on land or water",
+}
+
+
+def scenario_data(preset_id: str = "object_sandbox") -> dict:
+    """One deterministic, JSON-compatible trace for the interactive scenario page."""
+    # Normalize tuples (for example camera UVs) to the arrays in the emitted JSON.
+    return json.loads(json.dumps(trace_scenario(preset_id), allow_nan=False))
+
+
+def scenario_catalog() -> list[dict]:
+    """Compact preset metadata; full traces are separate so only the selected one loads."""
+    return [
+        {
+            "id": preset_id,
+            "label": SCENARIO_LABELS[preset_id],
+            "file": f"data/scenario-{preset_id}.json",
+            "mode": config.mode,
+            "target_kind": config.target_kind,
+            "setting": config.setting,
+            "surface": config.surface,
+            "waterproof": config.waterproof,
+        }
+        for preset_id, config in preset_catalog().items()
+    ]
 
 
 def _catalog_grams(item: bom.Item | None) -> dict | None:
@@ -401,6 +436,9 @@ def build(
     _write_json(out / "data" / "sim-example.json", sim_example_data())
     _write_json(out / "data" / "sim-example-camera.json", sim_example_data("camera"))
     _write_json(out / "data" / "sim-example-before.json", sim_example_data("before"))
+    for preset_id in PRESET_IDS:
+        _write_json(out / "data" / f"scenario-{preset_id}.json", scenario_data(preset_id))
+    _write_json(out / "data" / "scenario-catalog.json", {"presets": scenario_catalog()})
     shutil.copy2(root / "examples" / "replay.example.json", out / "data" / "replay.example.json")
     package = out / "py" / "follow_me"
     package.mkdir(parents=True)
@@ -412,6 +450,7 @@ def build(
     _write_json(out / "data" / "build.json", {
         "commit": commit, "built": built, "python": (out / PYODIDE_JS).is_file(),
         "camera": (out / PYODIDE_JS).is_file() and all((out / f).is_file() for f in CAMERA_FILES),
+        "scenario3d": (out / "assets/vendor/three/three.module.js").is_file(),
     })
 
     index = out / "index.html"

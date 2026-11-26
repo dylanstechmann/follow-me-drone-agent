@@ -2,7 +2,7 @@
 
 Read [AGENTS.md](../AGENTS.md) first for the rules, then this page. It is written for any coding agent (Claude Code, Codex, Grok, Cline or another) that picks up this repo with no memory of earlier sessions. It tells you what the project is, what exists, what is only a plan, what the owner wants, and what to avoid.
 
-Facts here are a snapshot dated 2026-10-26. Where a number comes from a generated table, the table is the source of truth, not this page.
+Facts here are a snapshot dated 2026-11-15; price findings retain their own cutoff. Where a number comes from a generated table, the table is the source of truth, not this page.
 
 ## 1. What this is
 
@@ -14,9 +14,9 @@ The repo holds five things today:
 2. **A data-driven cost and supply model** that prices building the drone in different ways, from retail parts to parts the owner designs and has made closer to the maker.
 3. **A public group-order plan** for the owner's IEEE club.
 4. **Documents**: plans, findings, decisions and this record.
-5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer that also simulates a visitor's GPX recording in the browser, a camera page with a person detector, a cost explorer, and the printable parts in 3D ([website.md](website.md)).
+5. **A website** at https://dylanstechmann.github.io/follow-me-drone-agent/, built from the repo's data and published by GitHub Actions: a replay viewer that also simulates a visitor's GPX recording in the browser, a camera page with a person detector, an interactive synthetic 3D scenario sandbox, a cost explorer, and the printable parts in 3D ([website.md](website.md)).
 
-Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. Four printable parts exist as OpenSCAD models, rendered by an agent but never printed or tested. No PCB or firmware file exists.
+Nothing has flown. No hardware has been built or tested. No supplier has been contacted. Nothing has been ordered. Four printable parts exist as OpenSCAD models, rendered by an agent but never printed or tested. No PCB or firmware file exists. No tentacle, gripper, or waterproof hardware exists; those appear only in the synthetic scenario.
 
 The wider direction, set by the owner on 2026-10-24, is in [vision.md](vision.md): curiosity about building many drones and the software that may power them, with the owner getting each part themselves, somewhat, instead of using off-the-shelf components.
 
@@ -57,6 +57,8 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 5. **Control.** The follow controller turns the estimate into normalized yaw, forward and climb commands.
 6. **Adapter.** Commands would go to an autopilot. This does not exist. It needs simulation first.
 
+The independent `scenario.py` path is `preset/sandbox config -> deterministic z-up retrieval or synthetic follow -> frames/events/summary -> prebuilt JSON or same-origin Pyodide worker -> 3D/SVG viewer`. It does not call the council or alter the old 2D follow behavior, and it is not PX4/ArduPilot SITL.
+
 | Module in `src/follow_me/` | Role | Tests |
 |---|---|---|
 | `controller.py` | Follow controller: a person's box to yaw, forward and climb commands, plus the rider's speed fed forward when it is known. | `test_controller.py` |
@@ -66,16 +68,18 @@ sources -> readings -> attention -> fusion -> mode -> controller -> (adapter, no
 | `context.py` | Attention weights. Weather provider (Open-Meteo, with injected fetch) and a TTL cache. | `test_context.py` |
 | `geo.py`, `places.py` | Geodesy helpers. Place profiles and approach detection. | `test_places.py` |
 | `mode.py` | The mode machine. | `test_mode.py` |
-| `council.py`, `replay.py` | One tick end to end. A replay tool for JSON logs, and a JSON trace of each tick (`--json`) for the website. | `test_pipeline.py`, `test_replay.py` |
+| `council.py`, `replay.py` | One tick end to end. The replay tool reads JSON logs and writes a trace of each tick (`--json`) for the website or an offline estimate-loss report (`--outages`). | `test_pipeline.py`, `test_replay.py` |
 | `motion.py` | The rider's velocity over the ground: a constant-velocity Kalman filter in a local frame, from the fused estimates and the drone's pose. | `test_motion.py` |
 | `sim.py` | A kinematic follow simulation: a point drone that turns and moves as the council commands, after a rider who moves. Not a flight simulator, and not the SITL gate. | `test_sim.py` |
+| `scenario.py` | Independent deterministic 3D retrieval/follow presets, sandbox settings, mission phases, water/capability checks, separate onboard/external camera poses, events and summaries. Simplified synthetic kinematics, not SITL or a hardware claim. | `test_scenario.py` |
+| `handoff.py` | Offline privacy-reduced synthetic retrieval handoff reports and conversion to the version-1 aerial handoff/evidence consumer schema. Requires an explicit deadline and output path; never infers evidence receipts, prerequisites, delivery, inspection, readiness, or physical grasp. | `test_handoff.py` |
 | `camera_view.py` | One camera box at a time through a council kept between frames, for the website's camera page (run in the browser by Pyodide). | `test_camera_view.py` |
 | `recording.py` | Reads a GPX recording as offsets and seconds from its first fix, dropping coordinates and dates, and runs it through the simulation. Two recordings of the same walk run as phone and tag, with a check of their reported accuracy. Writes no files. | `test_recording.py` |
 | `bom.py` | The cost and supply model: materials, catalog, passes, price dates, minimum orders, and the cost per drone for a number of drones. | `test_bom.py` |
 | `group_order.py` | The group-order plan: lines, quotes, totals, per-member shares. | `test_group_order.py` |
 | `docs_sync.py` | Rewrites generated tables in the docs from the data. | `test_docs_sync.py` |
 | `parts.py` | The printable parts: print cards in `cad/parts.json` and each `.scad` file's adjustable values. | `test_parts.py` |
-| `website.py` | Builds the website from `site/` and data written by the modules above; fetches its pinned browser libraries and renders the parts on request. | `test_website.py` |
+| `website.py` | Builds the website from `site/` and data written by the modules above, including six prebuilt scenario traces; fetches its pinned browser libraries and renders the parts on request. | `test_website.py` |
 
 Everything is standard-library Python 3.10 or later, plus pytest. There is no package install step. Every module has tests, and the suite also checks that the generated docs are current and that this page lists every doc.
 
@@ -180,9 +184,11 @@ PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
 PYTHONPATH=src python3 -m follow_me.replay --outages examples/replay.example.json  # estimate gaps and recovery
+PYTHONPATH=src python3 -m follow_me.handoff report TRACE.trace.json --output REPORT.json  # offline synthetic source report
+PYTHONPATH=src python3 -m follow_me.handoff convert REPORT.json --output HANDOFFS.json --due-minute 1  # explicit synthetic deadline
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
 PYTHONPATH=src python3 -m follow_me.recording ~/android.gpx ~/iphone.gpx  # the same walk on two phones
-node --test "tests/js/*.test.mjs"                     # the JavaScript tests (the detector's decoding)
+node --test "tests/js/*.test.mjs"                     # JavaScript tests (detector, rider and scenario helpers)
 node tools/detect_bench.mjs _site/assets/vendor        # time the person detector (needs a build made with --vendor)
 python3 tools/detector_recall.py prepare _site/recall-check  # then open it in a browser and run analyse: how far the detector sees
 PYTHONPATH=src python3 -m follow_me.website            # build the website into _site/
@@ -210,6 +216,7 @@ python3 -m http.server -d _site 8000                   # preview it
 - **Fresh:** a price seen with month precision within 12 months of the cutoff.
 - **Owner-designed:** a composed item, whoever builds it.
 - **Tag:** the small device the rider carries, with a GNSS receiver and a radio.
+- **Scenario sandbox:** `scenario.py`'s independent z-up retrieval/follow traces and the interactive 3D/SVG page. Simplified synthetic kinematics, not SITL.
 - **Kinematic simulation:** `sim.py`'s point drone, which turns and moves as commanded within placeholder limits, with no physics, wind, autopilot or camera. It is a step before the SITL gate, not the gate.
 - **Measurement age:** how long ago a reading's measurement was taken. A slow source repeats its last measurement with a growing age, and the motion filter uses each measurement only once.
 - **Follow band:** the distances between which the controller asks neither to approach nor to back off: 3.79 to 5.05 m with the default settings, plus the safety margin.
@@ -234,6 +241,7 @@ Start here, then follow the question you have.
 - [architecture.md](architecture.md): the council design.
 - [build-plan.md](build-plan.md): the gates from software to free flight.
 - [simulation.md](simulation.md): the kinematic follow simulation, what it shows and what it does not.
+- [scenarios.md](scenarios.md): the six 3D presets, sandbox controls, mission states, camera separation, limitations and commands.
 - [camera.md](camera.md): the camera source, the person detector, its licence, speed and privacy.
 - [safety.md](safety.md): the safety plan that must be met before flight.
 - [privacy-and-rules.md](privacy-and-rules.md): privacy, consent and the rules to verify.

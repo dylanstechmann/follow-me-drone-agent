@@ -51,3 +51,7 @@ Rules and places (found by agent web searches on 2026-10-26, not confirmed with 
 - Boca Raton Airport, drone notification procedures (LAANC): https://bocaairport.com/drone-notification-procedures/
 - Boca Raton Airport overview: https://en.wikipedia.org/wiki/Boca_Raton_Airport
 - FAU Lab Schools' drone teams (the only FAU drone club the search found, at K-12 level): https://www.fau.edu/newsdesk/articles/fau-lab-schools-drone-teams-fly-high-in-state-national-competitions.php
+
+Offline handoff export ([scenarios.md](scenarios.md)):
+
+- The owner's separate `aerial-workload-study` project supplies the read-only `synthetic-aerial-handoffs/1` JSON Schema and README consumer semantics, reviewed on 2026-11-26. The exporter records that versioned contract but does not import code, read schema files, or depend on a sibling path at runtime.

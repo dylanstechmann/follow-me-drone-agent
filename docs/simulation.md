@@ -8,7 +8,7 @@
 PYTHONPATH=src python3 -m follow_me.replay --outages examples/replay.example.json
 ```
 
-The JSON report groups consecutive ticks without a fused estimate. Each group records the preceding estimate time, the first and last missing samples, the number of missing ticks, every sampled fallback transition, and the first recovered estimate and its mode. A missing preceding estimate marks loss from the start of the log. A `null` recovery marks an outage still open at the end. A degraded estimate counts as recovery. The timestamps bracket onset and recovery at the log's sampling resolution. The report requires finite timestamps in nondecreasing order. Keep any private input logs local.
+The JSON report groups consecutive ticks without a fused estimate. Each group records the preceding estimate time, the first and last missing samples, the number of missing ticks, every sampled fallback transition, and the first recovered estimate and its mode. A missing preceding estimate marks loss from the start of the log. A `null` recovery marks an outage still open at the end. A degraded estimate counts as recovery. The timestamps bracket onset and recovery at the log's sampling resolution. The report requires finite timestamps in nondecreasing order and rejects them before replay. Keep any private input logs local.
 
 ## What it is, and what it is not
 
@@ -209,3 +209,14 @@ The recording is not uploaded. See [website.md](website.md).
   - degraded still halves the whole command.
 
 `tests/test_motion.py` checks the Kalman filter, and `tests/test_controller.py` the feed-forward and its fade.
+
+
+## Independent 3D scenario sandbox (iterations 42 and 43)
+
+`src/follow_me/scenario.py` is a second, deliberately independent model for interactive retrieval and follow-footage scenarios. It does not reuse or change `sim.py`, the controller, motion filter, or their 2D behavior. It uses local z-up metres and fixed 0.1 s steps to generate serializable frames, events, and summaries for six presets: follow ride, soccer on land, soccer in shallow water, indoor soda, pennyboard on land, and a generic-object sandbox.
+
+The retrieval sequence is approach, align, descend, extend, grasp, lift, carry, release, complete. Waterproof-off water configurations stop before submerging; supported water retrievals submerge only the schematic tentacle tip while the drone body remains dry. The follow preset uses a synthetic explicitly consenting rider and reports ideal camera-framing statistics. Drone flight state, onboard camera pose, and the external viewer camera are separate fields.
+
+The website renders these traces as a procedural three.js world or a top-down SVG fallback. Default traces are generated at build time; customized settings run this same Python in a same-origin Pyodide worker. Controls, mission descriptions, and event tables remain available if 3D cannot start. See [scenarios.md](scenarios.md) for the API, controls, presets, and commands.
+
+This model is **not** more physically realistic than the old point simulation merely because it is drawn in 3D. It has no aerodynamics, wind, battery, collision or obstacle model, contact dynamics, flexible tentacle, fluid physics, PX4, or ArduPilot. Water is a translucent plane with fixed-depth illustrative buoyancy and zero drag. Objects attach and release scriptingly. Nothing has flown, no tentacle or waterproof hardware exists, and the simulator gate remains unpassed.

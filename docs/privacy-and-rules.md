@@ -14,6 +14,7 @@ Recorded tracks are location data too:
 - The importer keeps only offsets in meters from the first fix and seconds from the first fix. It drops the coordinates, dates and names as each point is read.
 - A trace made from a real recording still holds the route's shape, so it is not committed either. Name it `*.trace.json` and keep it outside the repo. `.gitignore` excludes `*.gpx` and `*.trace.json` as a safety net.
 - Record only yourself, or a rider who has agreed. Two recordings of the same walk, from two phones, follow the same rules.
+- The scenario page's follow rider is a geometric synthetic figure with explicit scripted consent. It is not a real person, no real footage is recorded, and no bystanders, real coordinates, or real routes are represented. The onboard view is labelled simulated footage. These synthetic constraints do not weaken the consent and bystander rules for the separate camera page or any future real recording.
 
 ## Group orders stay anonymous
 

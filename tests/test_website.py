@@ -15,13 +15,14 @@ from follow_me import bom
 from follow_me.replay import trace
 from follow_me.council import Council
 from follow_me.sim import EXAMPLE_NOTE, Camera, example_track, trace_track
+from follow_me.scenario import PRESET_IDS, trace_scenario
 from follow_me.website import (
     MARKER, PY_MODULES, VENDOR, build, check_integrity, costs_data, fetch_vendor, main, markdown_section,
-    replay_data, sim_example_data,
+    replay_data, scenario_catalog, scenario_data, sim_example_data,
 )
 
 REPO = Path(__file__).resolve().parents[1]
-PAGES = ("index.html", "replay.html", "camera.html", "costs.html", "parts.html")
+PAGES = ("index.html", "replay.html", "camera.html", "scenario.html", "costs.html", "parts.html")
 # Stricter than the group-order check: a package@version string is not an email.
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(\.[\w-]+)*\.[A-Za-z]{2,}\b")
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
@@ -48,7 +49,10 @@ class _Links(HTMLParser):
 def test_site_builds_every_page_and_its_data(site):
     for name in (*PAGES, "assets/style.css", "assets/common.js", "data/costs.json",
                  "data/replay-example.json", "data/replay.example.json", "data/sim-example.json",
-                 "data/build.json", "assets/replay-worker.js", "py/manifest.json", ".nojekyll"):
+                 "data/build.json", "assets/replay-worker.js", "assets/scenario-worker.js",
+                 "assets/scenario.js", "assets/scene3d.js", "assets/scenario-utils.js",
+                 "assets/scenario.css", "data/scenario-catalog.json", "py/manifest.json", ".nojekyll",
+                 *(f"data/scenario-{preset_id}.json" for preset_id in PRESET_IDS)):
         assert (site / name).is_file(), name
     index = (site / "index.html").read_text(encoding="utf-8")
     assert "<!-- build:" not in index
@@ -95,6 +99,23 @@ def test_sim_example_is_the_made_up_ride_followed_by_the_simulated_drone(site):
     assert camera["summary"]["median_distance_m"] < data["summary"]["median_distance_m"]
 
 
+def test_scenario_presets_are_prebuilt_from_the_core(site):
+    assert tuple(PRESET_IDS) == (
+        "follow_ride", "soccer_land", "soccer_water", "indoor_soda", "pennyboard_land", "object_sandbox"
+    )
+    catalog = scenario_catalog()
+    assert [row["id"] for row in catalog] == list(PRESET_IDS)
+    for row in catalog:
+        data = json.loads((site / row["file"]).read_text(encoding="utf-8"))
+        assert data == scenario_data(row["id"])
+        assert data == json.loads(json.dumps(trace_scenario(row["id"])))
+        assert data["config"]["preset_id"] == row["id"]
+        assert data["frames"] and data["summary"]["success"] is True
+        assert data["frames"][0]["onboard_camera_pose"] != data["frames"][0]["drone_flight"]
+    assert (site / "scenario.html").is_file()
+    assert "scenario" in PY_MODULES
+
+
 def test_browser_python_is_the_repo_code_and_imports_only_itself(site):
     manifest = json.loads((site / "py" / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["files"] == [f"{name}.py" for name in PY_MODULES]
@@ -112,6 +133,7 @@ def test_build_says_whether_the_browser_has_python(site):
     build_info = json.loads((site / "data" / "build.json").read_text(encoding="utf-8"))
     assert build_info["python"] is False  # Pyodide comes only with --vendor
     assert build_info["camera"] is False  # and so do the detector and the marker library
+    assert build_info["scenario3d"] is False  # the SVG scenario fallback works without three.js
 
 
 def test_every_local_link_and_import_resolves(site):
@@ -160,6 +182,7 @@ def test_pages_carry_the_honest_framing(site):
         assert "hobby and learning project" in text.lower(), page
         assert "written by AI coding agents" in text, page
         assert "No review of the code by the owner is recorded" in text, page
+        assert 'href="scenario.html"' in text, page
     assert "Nothing has flown" in (site / "index.html").read_text(encoding="utf-8")
 
 

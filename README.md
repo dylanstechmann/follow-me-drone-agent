@@ -8,7 +8,7 @@ A personal hobby and learning project: a drone that follows a skater (pennyboard
 - **Why this exists and where it is going:** [docs/vision.md](docs/vision.md).
 - **What was decided, and what was corrected:** [docs/decisions.md](docs/decisions.md).
 - **What was discussed and done, in order:** [docs/history.md](docs/history.md).
-- **The website:** https://dylanstechmann.github.io/follow-me-drone-agent/, a replay viewer, a cost explorer and printable parts in 3D, built from this repo's data and published by GitHub Actions ([docs/website.md](docs/website.md)).
+- **The website:** https://dylanstechmann.github.io/follow-me-drone-agent/, a replay viewer, an interactive synthetic 3D scenario sandbox, a cost explorer and printable parts in 3D, built from this repo's data and published by GitHub Actions ([docs/website.md](docs/website.md)).
 
 ## Direction
 
@@ -18,11 +18,11 @@ The owner does not like asking for money. Nothing in the plan depends on outside
 
 ## Status
 
-- **Built and tested (standard-library Python plus pytest):** the follow controller, fusion of several position sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, a Kalman filter for the rider's motion with the speed fed forward into the follow command, a safety margin that holds the drone back when the rider's position is uncertain, a kinematic follow simulation (a point drone flown by the follow logic, not a flight simulator), and a data-driven cost and supply model with a dependency check and costs for any number of drones. These run on recorded or synthetic data only. A website shows the replay, the simulated follow and the costs in the browser, and runs the simulation on a visitor's own GPX recording without uploading it. Its camera page runs a person detector in the browser, follows only the person holding a printed marker, and blurs everyone else.
+- **Built and tested (standard-library Python plus pytest):** the follow controller, fusion of several position sources, weather and place-based weights, a mode machine that falls back when sensors drop out, companion GNSS for a phone and a tag, a replay tool, a Kalman filter for the rider's motion with the speed fed forward into the follow command, a safety margin that holds the drone back when the rider's position is uncertain, a kinematic follow simulation (a point drone flown by the follow logic, not a flight simulator), and a data-driven cost and supply model with a dependency check and costs for any number of drones. A separate 3D scenario core generates six deterministic follow/retrieval presets and configurable sandbox traces; it is simplified kinematics, not PX4/ArduPilot SITL. These run on recorded or synthetic data only. A website shows the replay, the simulated follow, an interactive 3D scenario sandbox and the costs in the browser, and runs the simulation on a visitor's own GPX recording without uploading it. Its camera page runs a person detector in the browser, follows only the person holding a printed marker, and blurs everyone else.
 - **Planned and documented:** the routes to make each part ([docs/make-own-ladder.md](docs/make-own-ladder.md)), the factory and lab routes ([docs/supply-side.md](docs/supply-side.md)), and a public IEEE group order plan ([docs/group-order.md](docs/group-order.md)) that nobody has acted on yet.
 - **Designed, not printed:** four printable parts as adjustable OpenSCAD models (test bars, a hole-size gauge, a thrust-stand jig and the tag case), shown in 3D on the website. None has been printed or tested.
 - **Not built:** person detection on a drone (it runs only in the browser so far), the simulator bridge, any flight adapter, and any PCB or firmware file.
-- **Never done:** flying, building or testing hardware, contacting a supplier, or placing an order.
+- **Never done:** flying, building or testing hardware, contacting a supplier, or placing an order. No tentacle or waterproof gripper hardware exists; those are schematic scenario elements only.
 - Do not use this code to fly anything near people until the safety plan in [docs/safety.md](docs/safety.md) is met.
 
 ## Budget
@@ -38,11 +38,11 @@ The working budget is $100 for the bench and pipeline work, so simulation comes 
 
 ## Development
 
-The code is Python 3.10 or later with pytest only. Run `python3 -m pytest`. Docker Compose and uv, which the owner's other repos use, are planned and not added yet. Tables in the docs are generated from the data under `bom/`: run `PYTHONPATH=src python3 -m follow_me.docs_sync` after changing it. Build the website with `PYTHONPATH=src python3 -m follow_me.website` and preview it with `python3 -m http.server -d _site 8000`. The commands are in [docs/project-context.md](docs/project-context.md).
+The code is Python 3.10 or later with pytest only. Run `python3 -m pytest`. Docker Compose and uv, which the owner's other repos use, are planned and not added yet. Tables in the docs are generated from the data under `bom/`: run `PYTHONPATH=src python3 -m follow_me.docs_sync` after changing it. Build the website with `PYTHONPATH=src python3 -m follow_me.website` and preview it with `python3 -m http.server -d _site 8000`. Add `--vendor` to include the pinned three.js/Pyodide runtime for scenario customization and 3D; all six default scenario traces work without it. Run JavaScript helper tests with `node --test "tests/js/*.test.mjs"`. The commands are in [docs/project-context.md](docs/project-context.md) and the sandbox is documented in [docs/scenarios.md](docs/scenarios.md).
 
 ## How this was built
 
-This is an AI-assisted hobby project. All the code, tests, docs, part models and the website so far were written by AI coding agents (Claude Code, with several assistant models over the sessions) at the owner's direction. The owner supplied the direction, the decisions and the real-world facts: the budget, access to 3D printers, that the IEEE club can run group orders, and the preference not to ask for money. No review of the code by the owner is recorded.
+This is an AI-assisted hobby project. All the code, tests, docs, part models and the website so far were written by AI coding agents (including Claude Code and Kilo, with several assistant models over the sessions) at the owner's direction. The owner supplied the direction, the decisions and the real-world facts: the budget, access to 3D printers, that the IEEE club can run group orders, and the preference not to ask for money. No review of the code by the owner is recorded.
 
 The agents ran the web research. Search snippets and fetched pages are not verified, and the prices and licence notes drawn from them are provisional. Design research draws on public PX4, ArduPilot and MAVSDK documentation. The website uses three.js and a WebAssembly build of OpenSCAD. Sources are in [docs/references.md](docs/references.md).
 

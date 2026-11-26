@@ -5,7 +5,7 @@ A plain account for agents and for the owner. It follows the order of events. Th
 ## Who did what
 
 - **The owner** gave the direction and the decisions, and supplied facts only the owner knows: the $100 budget, access to 3D printers at FAU's engineering building and the IEEE club, that the IEEE club can run group orders, the purchase of a used Pixel 8a for $250, the preference not to ask for money, and the interest in building many drones.
-- **AI coding agents** (Claude Code) wrote all the code, tests and docs, ran the web research, and did the calculations. The assistant model changed over the session: the commit trailers show Claude Haiku 5.5 for the first thirteen commits, Claude Opus 5.5 for one, and Claude Sonnet 5.5 for one.
+- **AI coding agents** wrote all the code, tests and docs, ran the web research, and did the calculations. Claude Code wrote the earlier sessions (the commit trailers show Claude Haiku 5.5 for the first thirteen commits, Claude Opus 5.5 for one, and Claude Sonnet 5.5 for one); Kilo wrote the 2026-11-15 scenario integration.
 - **Not done by anyone yet:** building or testing any hardware, contacting any supplier, ordering anything, reading the licence files, visiting a lab, running a flight, printing a part, or opening a PCB file. The only CAD files are the four OpenSCAD parts an agent wrote and rendered on 2026-10-26. No review of the code by the owner is recorded.
 
 ## Phase 0: origin
@@ -126,3 +126,18 @@ Codex added diagnostics for input files the replay CLI cannot open, decode or pa
 - Report outcomes faithfully. Keep AI assistance visible. Keep the hobby and learning framing.
 - Keep the repo public and free of personal data.
 - Do not ask for money on the owner's behalf.
+
+
+## Phase 17: the interactive scenario field lab (iterations 42 and 43, 2026-11-15)
+
+The owner requested outdoor ball and board retrieval, shallow-water pickup with waterproof tentacles, an indoor soda mission, generic objects, and footage following a consenting synthetic pennyboard rider. An AI agent first added an independent standard-library `scenario.py` core with six stable presets, fixed-step z-up traces, retrieval phases, water/capability checks, explicit follow consent metadata, separate drone/onboard/external camera state, events and summaries. Its 61 focused tests and 78 regression tests passed without changing the old 2D follow implementation.
+
+A second AI coding wave connected that core to the static site. `follow_me.website` now generates all six default traces, so presets work without downloading Python. Custom settings run the same module in a same-origin Pyodide worker with stale-response rejection. The new page offers accessible transport and sandbox controls, status and event views, external orbit and simulated onboard cameras, and explicit non-waterproof failure explanations. A procedural three.js renderer draws the schematic world on demand; import/WebGL failure or a non-vendored build uses a top-down SVG instead. No backend, uploads, analytics, external runtime requests, or new vendor dependency were added.
+
+The result is a visualization of simplified synthetic kinematics only. Nothing has flown; no drone, tentacle, gripper, or waterproof hardware exists or has been tested; it is not PX4/ArduPilot SITL and has no realistic fluid or contact physics. The full validation after integration was 401 Python tests and 26 JavaScript tests passing, generated-docs and whitespace checks passing, both non-vendored and fully vendored/rendered site builds succeeding, and a direct vendored-Pyodide custom non-waterproof run returning the expected stopped result. No commit, push, deployment, owner review, or hardware action was performed.
+
+## Phase 19: offline synthetic handoff export (iteration 45, 2026-11-26)
+
+At the owner's request, an AI coding agent preserved the uncommitted scenario and replay-outage work and added a separate offline handoff report plus conversion CLI. It reads existing synthetic retrieval traces, uses anonymous IDs and deterministic relative-minute conversion, and targets the read-only `synthetic-aerial-handoffs/1` consumer contract without importing or editing the aerial repository. Because the source traces contain no deadlines, prerequisites, or evidence-receipt events, conversion requires an explicit synthetic deadline and never fabricates the other fields. Script phases, grasp, and completion are not physical validation, real delivery, inspection acceptance, or flight readiness.
+
+The 28 focused export tests, 126 focused export/scenario/replay/website tests, full 434 Python tests, 26 JavaScript tests, generated-docs check, and offline `soccer_land` example passed. No commit, push, deployment, owner review, hardware, SITL, or flight action was performed.
