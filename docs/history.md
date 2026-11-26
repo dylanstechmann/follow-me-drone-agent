@@ -118,6 +118,8 @@ After the owner's "ok", the agent pushed iterations 37 to 39 and re-checked the 
 
 An AI coding agent added a report for missing estimates in synthetic logs. Each outage records the adjacent estimate times and the fallback modes that appeared at the sampled ticks.
 
+Codex added diagnostics for input files the replay CLI cannot open, decode or parse.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

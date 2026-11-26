@@ -228,7 +228,11 @@ def main(argv: list[str]) -> int:
     if len(files) != 1 or len(selected) > 1:
         print("usage: python -m follow_me.replay [--json | --outages] LOG.json", file=sys.stderr)
         return 2
-    log = json.loads(Path(files[0]).read_text(encoding="utf-8"))
+    try:
+        log = json.loads(Path(files[0]).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        print(f"could not load replay log {files[0]!r}: {error}", file=sys.stderr)
+        return 2
     if "--outages" in selected:
         try:
             report = outage_report(log)

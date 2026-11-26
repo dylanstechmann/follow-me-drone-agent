@@ -188,6 +188,23 @@ def test_main_outages_rejects_nonfinite_time(tmp_path, capsys):
     assert "finite tick times" in err
 
 
+@pytest.mark.parametrize("flags", [[], ["--json"], ["--outages"]])
+@pytest.mark.parametrize(("contents", "error_detail"), [
+    (None, "No such file"),
+    (b"\xff", "utf-8"),
+    (b"{\n  broken\n}", "line 2 column 3"),
+])
+def test_main_reports_input_file_errors(tmp_path, capsys, flags, contents, error_detail):
+    log = tmp_path / "replay.json"
+    if contents is not None:
+        log.write_bytes(contents)
+    assert main(["replay", *flags, str(log)]) == 2
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert err.startswith(f"could not load replay log {str(log)!r}: ")
+    assert error_detail in err
+
+
 def test_outages_rejects_reverse_order_before_replay(monkeypatch):
     def should_not_replay(log):
         pytest.fail("Invalid timestamps must be rejected before replay")
