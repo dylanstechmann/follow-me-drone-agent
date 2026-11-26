@@ -114,6 +114,10 @@ After the owner's "ok", the agent pushed iterations 37 to 39 and re-checked the 
 
 - **Iteration 40:** 37 of the 41 undated or stale prices were seen on sellers' pages on 2026-10-27, so 47 of 51 sourced prices are now dated within 12 months. The Raspberry Pi 5 4 GB costs $110, not $70. The ESC gate driver the model prices was out of stock at LCSC, and its cheaper second source is no longer listed there. The bare M9N and known-brand 2207 motors cost more. Pass 10 is $239.66 to $544.96 per drone, and the bench kit with a made tag still fits $100, at $69.13 to $99.20.
 
+## Offline replay diagnostics (2026-11-26)
+
+An AI coding agent added a report for missing estimates in synthetic logs. Each outage records the adjacent estimate times and the fallback modes that appeared at the sampled ticks.
+
 ## Standing instructions from the owner
 
 - Work in plan, do and record cycles, and keep going until told to stop. Each plan goes in [progress.md](progress.md) before the work.

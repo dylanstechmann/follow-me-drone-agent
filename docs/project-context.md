@@ -179,6 +179,7 @@ PYTHONPATH=src python3 -m follow_me.docs_sync --check  # fail if any table is st
 PYTHONPATH=src python3 -m follow_me.replay examples/replay.example.json
 PYTHONPATH=src python3 -m follow_me.group_order        # print the group-order tables
 PYTHONPATH=src python3 -m follow_me.replay --json examples/replay.example.json  # trace for the website
+PYTHONPATH=src python3 -m follow_me.replay --outages examples/replay.example.json  # estimate gaps and recovery
 PYTHONPATH=src python3 -m follow_me.recording ~/walk.gpx  # simulate following a recording; keep it outside the repo
 PYTHONPATH=src python3 -m follow_me.recording ~/android.gpx ~/iphone.gpx  # the same walk on two phones
 node --test "tests/js/*.test.mjs"                     # the JavaScript tests (the detector's decoding)

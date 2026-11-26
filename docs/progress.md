@@ -713,3 +713,9 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 - The EG2133's datasheet reportedly has active-low low-side inputs (found in a search summary of a Chinese datasheet, version 1.0, 2017; not read in full), so it may not be a drop-in. The DRV8300 is a different family: 100 V, 750 mA and 1.5 A drive. Neither is checked against an ESC design, because none is drawn yet.
 - The model still prices the FD6288Q. Swapping to either alternative would lower an ESC by about $2 to $8, so the totals stand. The material's note lists the alternatives.
 - Search snippets disagreed with the live pages on stock: one cached page showed 61,569 FD6288T in stock, and another showed the JSMSEMI part in stock. Stock here is what the LCSC API said on 2026-10-27. LCSC's stock is not JLCPCB's assembly library: stock for factory assembly needs a check on JLCPCB's parts page.
+
+## Offline replay outage analysis (2026-11-26)
+
+The plan is to compare missing and recovered estimates in a synthetic log, group consecutive missing samples, and check the output against known timestamp boundaries and each observed mode change.
+
+The implementation adds `--outages` to the offline replay CLI. Regression cases cover the shipped trace, a log that starts and ends with a missing estimate, and invalid timestamps. The default text and website trace formats keep their existing entry points.
