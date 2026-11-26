@@ -2,6 +2,14 @@
 
 `src/follow_me/sim.py` flies a point drone after a rider, using the council's commands. It sits between the replay tool and the SITL gate. It closes the loop: where the drone goes changes what the next reading says. Like the rest of the repo, it was written by AI coding agents at the owner's direction, and nothing here has flown.
 
+## Offline estimate-loss report
+
+```bash
+PYTHONPATH=src python3 -m follow_me.replay --outages examples/replay.example.json
+```
+
+The JSON report groups consecutive ticks without a fused estimate. Each group records the preceding estimate time, the first and last missing samples, the number of missing ticks, every sampled fallback transition, and the first recovered estimate and its mode. A missing preceding estimate marks loss from the start of the log. A `null` recovery marks an outage still open at the end. A degraded estimate counts as recovery. The timestamps bracket onset and recovery at the log's sampling resolution. The report requires finite timestamps in nondecreasing order. Keep any private input logs local.
+
 ## What it is, and what it is not
 
 - **The drone** is a point in a flat local frame, in meters east and north of the track's first fix. Each tick, 0.5 s by default, it does two things, both scaled by the council's normalized commands:

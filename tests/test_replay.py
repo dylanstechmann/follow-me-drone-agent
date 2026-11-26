@@ -8,7 +8,7 @@ from follow_me.context import Conditions, WeatherReport
 from follow_me.council import Council
 from follow_me.fusion import Estimate, Reading, fuse
 from follow_me.mode import Mode, ModeMachine
-from follow_me.replay import TRACE_FORMAT, main, replay, trace
+from follow_me.replay import OUTAGE_FORMAT, TRACE_FORMAT, main, outage_report, replay, trace
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "replay.example.json"
 
@@ -140,3 +140,63 @@ def test_main_json_prints_a_trace(capsys):
     assert data["format"] == TRACE_FORMAT
     assert data["note"].startswith("Synthetic")
 
+
+def test_main_outages_reports_the_full_fallback_sequence(capsys):
+    assert main(["replay", "--outages", str(EXAMPLE)]) == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report == {"format": OUTAGE_FORMAT, "outages": [{
+        "last_estimate_s": 3.0,
+        "first_missing_s": 3.5,
+        "last_missing_s": 55.0,
+        "recovered_s": 55.5,
+        "recovered_mode": "tracking",
+        "missing_ticks": 104,
+        "mode_transitions": [
+            {"time_s": 3.5, "mode": "dead_reckoning"},
+            {"time_s": 8.5, "mode": "hold"},
+            {"time_s": 53.5, "mode": "return_home_requested"},
+        ],
+    }]}
+
+
+def test_outages_distinguish_startup_recovery_and_end_of_log():
+    # A degraded estimate still closes an outage. Irregular timestamps are retained.
+    weak_fix = {"source": "camera", "x": 10.0, "y": 0.0, "variance": 20.0}
+    log = {"ticks": [
+        {"t": 0.0},
+        {"t": 0.4},
+        {"t": 2.0, "readings": [weak_fix]},
+        {"t": 9.5},
+    ]}
+    assert outage_report(log)["outages"] == [
+        {"last_estimate_s": None, "first_missing_s": 0.0, "last_missing_s": 0.4,
+         "recovered_s": 2.0, "recovered_mode": "degraded",
+         "missing_ticks": 2, "mode_transitions": [{"time_s": 0.0, "mode": "dead_reckoning"}]},
+        {"last_estimate_s": 2.0, "first_missing_s": 9.5, "last_missing_s": 9.5,
+         "recovered_s": None, "recovered_mode": None,
+         "missing_ticks": 1, "mode_transitions": [{"time_s": 9.5, "mode": "hold"}]},
+    ]
+    assert outage_report({"ticks": []})["outages"] == []
+
+
+def test_main_outages_rejects_nonfinite_time(tmp_path, capsys):
+    log = tmp_path / "bad-time.json"
+    log.write_text('{"ticks":[{"t":"nan"}]}', encoding="utf-8")
+    assert main(["replay", "--outages", str(log)]) == 2
+    out, err = capsys.readouterr()
+    assert out == ""
+    assert "finite tick times" in err
+
+
+def test_outages_rejects_reverse_order_before_replay(monkeypatch):
+    def should_not_replay(log):
+        pytest.fail("Invalid timestamps must be rejected before replay")
+
+    monkeypatch.setattr("follow_me.replay.replay", should_not_replay)
+    with pytest.raises(ValueError, match="nondecreasing order"):
+        outage_report({"ticks": [{"t": 2.0}, {"t": 1.0}]})
+
+
+def test_main_reports_conflicting_output_formats(capsys):
+    assert main(["replay", "--json", "--outages", str(EXAMPLE)]) == 2
+    assert "usage:" in capsys.readouterr().err

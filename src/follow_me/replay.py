@@ -15,18 +15,21 @@ Missing optional fields take the defaults shown in the code.
 Usage:
   python -m follow_me.replay path/to/log.json          # one line per tick
   python -m follow_me.replay --json path/to/log.json   # a trace for the website's replay viewer
+  python -m follow_me.replay --outages path/to/log.json  # fused-estimate loss and recovery
 """
 
 import json
 import math
 import sys
 from pathlib import Path
+from typing import Final
 
 from follow_me.context import COMPANION_GNSS_SOURCES, Conditions, WeatherReport
 from follow_me.council import Council, TickResult
 from follow_me.fusion import DEFAULT_GATE, Estimate, Reading
 
-TRACE_FORMAT = "follow-me-trace/1"
+TRACE_FORMAT: Final[str] = "follow-me-trace/1"
+OUTAGE_FORMAT: Final[str] = "follow-me-outages/1"
 
 
 def _per_source(value) -> dict[str, float]:
@@ -165,6 +168,49 @@ def trace(log: dict, council: Council | None = None) -> dict:
     }
 
 
+def outage_report(log: dict) -> dict:
+    """Group consecutive replay ticks without a fused estimate."""
+    previous_s = -math.inf
+    for tick in log["ticks"]:
+        time_s = float(tick["t"])
+        if not math.isfinite(time_s) or time_s < previous_s:
+            raise ValueError("outage reports require finite tick times in nondecreasing order")
+        previous_s = time_s
+
+    outages = []
+    current = None
+    last_estimate_s = None
+    for time_s, result in replay(log):
+        if result.estimate is not None:
+            if current is not None:
+                current["recovered_s"] = time_s
+                current["recovered_mode"] = result.mode.value
+                current = None
+            last_estimate_s = time_s
+            continue
+
+        if current is None:
+            current = {
+                "last_estimate_s": last_estimate_s,
+                "first_missing_s": time_s,
+                "last_missing_s": time_s,
+                "recovered_s": None,
+                "recovered_mode": None,
+                "missing_ticks": 0,
+                "mode_transitions": [],
+            }
+            outages.append(current)
+
+        current["last_missing_s"] = time_s
+        current["missing_ticks"] += 1
+        transitions = current["mode_transitions"]
+        mode = result.mode.value
+        if not transitions or transitions[-1]["mode"] != mode:
+            transitions.append({"time_s": time_s, "mode": mode})
+
+    return {"format": OUTAGE_FORMAT, "outages": outages}
+
+
 def _format(t: float, r: TickResult) -> str:
     est = "none" if r.estimate is None else f"x={r.estimate.x:6.2f} y={r.estimate.y:6.2f}"
     cmd = r.command
@@ -176,13 +222,22 @@ def _format(t: float, r: TickResult) -> str:
 
 def main(argv: list[str]) -> int:
     args = argv[1:]
-    as_json = "--json" in args
-    files = [a for a in args if a != "--json"]
-    if len(files) != 1:
-        print("usage: python -m follow_me.replay [--json] LOG.json", file=sys.stderr)
+    formats = {"--json", "--outages"}
+    selected = formats.intersection(args)
+    files = [arg for arg in args if arg not in formats]
+    if len(files) != 1 or len(selected) > 1:
+        print("usage: python -m follow_me.replay [--json | --outages] LOG.json", file=sys.stderr)
         return 2
     log = json.loads(Path(files[0]).read_text(encoding="utf-8"))
-    if as_json:
+    if "--outages" in selected:
+        try:
+            report = outage_report(log)
+        except (KeyError, OverflowError, TypeError, ValueError) as error:
+            print(f"outage report: {error}", file=sys.stderr)
+            return 2
+        print(json.dumps(report, indent=1, allow_nan=False))
+        return 0
+    if "--json" in selected:
         print(json.dumps(trace(log), indent=1))
         return 0
     for t, result in replay(log):
