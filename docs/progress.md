@@ -719,3 +719,9 @@ Working loop: plan (write it here), do it (code plus tests), commit and push, re
 The plan is to compare missing and recovered estimates in a synthetic log, group consecutive missing samples, and check the output against known timestamp boundaries and each observed mode change.
 
 The implementation adds `--outages` to the offline replay CLI. Regression cases cover the shipped trace, a log that starts and ends with a missing estimate, and invalid timestamps. The default text and website trace formats keep their existing entry points.
+
+## Offline replay input diagnostics (2026-11-26)
+
+Plan: report missing files, invalid UTF-8 and malformed JSON through the replay CLI's existing error exit. Check the text, trace and outage modes with temporary synthetic inputs.
+
+The three modes report the input path and the reason it could not be loaded on standard error and exit with code 2. The regression cases check missing files, invalid bytes and a JSON syntax error with a line and column.
