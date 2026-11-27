@@ -235,6 +235,7 @@ Start here, then follow the question you have.
 - [decisions.md](decisions.md): decisions, corrections and lessons.
 - [history.md](history.md): what was discussed and done, in order.
 - [progress.md](progress.md): the iteration log, the plans, and open questions.
+- [FRONTIER_VS_ESTABLISHED.md](FRONTIER_VS_ESTABLISHED.md): reproduced offline evidence versus hardware, flight, real-world, SITL and privacy gaps.
 
 **Design and safety**
 

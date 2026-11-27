@@ -765,3 +765,37 @@ The three modes report the input path and the reason it could not be loaded on s
 - The offline `report` and `convert` CLI commands require explicit output paths. Conversion to `synthetic-aerial-handoffs/1` requires an explicit synthetic `--due-minute`, uses tested ceiling seconds-to-minutes conversion, and emits only consumer-schema fields. It omits prerequisites and evidence timestamps, keeps `evidence_recorded=false`, and rejects unsupported report fields, changed safety/privacy labels, follow traces, malformed times, and false physical interpretations.
 - The documented `soccer_land` example wrote a 980-byte report and 381-byte consumer document under ignored `_site/`; release at 15.3 s became minute 1 with deadline minute 1. No aerial repository file was edited, imported, or used as a runtime dependency.
 - Verification passed 28 focused export tests, 126 focused export/scenario/replay/website tests, the full 434-test Python suite, all 26 JavaScript tests, `follow_me.docs_sync --check`, and the deterministic export example. No commit, push, deployment, owner review, hardware, SITL, or flight action was performed.
+
+## Replay file privacy, 2026-11-27
+
+Plan: add a way to discard local trace and GPX imports while keeping the replay viewer open. Check the normal file picker and a pending or failed import with synthetic files.
+
+An agent-run Chromium check opened a synthetic JSON trace, discarded it, repeated the check on malformed JSON and interrupted a synthetic GPX import while its test worker was pending. Each reset returned to the built-in example, removed the imported filename and hid the reset button. The browser made only local GET requests during the check.
+
+To repeat the basic check, save a copy of the built site's data/replay-example.json with a distinctive synthetic filename. Open that copy in the viewer and choose **Forget opened files**. The log selector should show the built-in example, and reopening the picker should allow the same file to be selected again.
+
+
+## Iteration 46 plan: Forget while the Python GPX worker is parsing (2026-11-27)
+
+- Preserve all existing scenario, handoff, replay-outage, and replay-privacy work. This orchestration explicitly prohibits commits and pushes, superseding the usual commit/push loop for this task.
+- Reproduce the existing synthetic offline JSON checks, then add a deterministic regression that invalidates an import before its worker completion is delivered. Add an offline Chromium check using the existing replay reproducer pattern, cached static Pyodide fixtures, and a fake GPX recording only.
+- Exercise Forget after the real Python worker reports that it is running, wait for that worker to finish, and require only the four built-in traces to remain. Retain valid two-tick stepping, malformed-JSON rejection, local-static-GET-only request accounting, and no page errors.
+- If the race fails, change only the replay import/reset path: invalidate pending file and worker completions and restore the built-in example without reloading or resurrecting imported data. Do not alter flight, controller, recording, or simulation behavior.
+- Run the focused JavaScript regression, offline browser checks, full `python3 -m pytest`, JavaScript suite, generated-docs check, and diff checks. Record exact measured request scope, environment limits, and the unchanged HEAD; no commit, push, deployment, external request, hardware, SITL, or flight action.
+
+## Iteration 46 result: Forget during real GPX parsing (done: 434 Python and 28 JavaScript tests pass)
+
+- The new offline browser check failed before the fix with `GPX worker did not finish after Forget`: the existing page reload terminated the active worker. A two-test `ImportRace` regression now pins stale-completion rejection and a fresh generation for a later import.
+- `replay.js` generation-checks JSON reads, GPX file reads, and worker responses. Forget during an active worker parse now removes imported entries, clears both file inputs and the hash, hides Forget, and restores the built-in example in place. The worker finishes, but its stale trace is ignored. Ordinary JSON and pending-file resets retain the reload behavior required by the unchanged original reproducer.
+- The real-worker check exposed and fixed one additional narrow worker bug: Pyodide 314 treated JavaScript `null` as `JsNull`, so a single GPX did not reach Python's `second is None` branch. The worker now maps no second file to Python `None`; no recording or simulation Python code changed.
+- Final offline Chromium 156.0.8078.4 evidence used only a static synthetic two-tick JSON trace, malformed JSON, and a three-fix fake GPX at 0,0. The worker reported running before Forget and returned a nonempty trace afterward; the imported trace stayed absent and exactly four built-ins remained. Valid stepping, malformed rejection, three complete built-in restorations, and no page errors all passed.
+- Request scope: the unchanged original `evidence/drone-replay/check.cjs` run passed with 55 attempted requests, all loopback static GETs over its 10 allowed paths. The extended `tests/browser/replay-forget.cjs` run recorded 66 attempted requests, all loopback static GETs across 33 unique replay/Pyodide/module paths, with zero unexpected requests, request bodies, WebSockets, or page errors. The vendored build used only the existing hash-pinned local cache; no external request was made.
+- Final checks: 434 Python tests, 28 JavaScript tests, generated-docs check, and `git diff --check` passed. HEAD remains `b727254782321e2b2a080e08234ffa395951cce7`; pre-existing scenario, handoff, replay-outage, privacy, documentation, and untracked work remains in place.
+- Environment limitation: the workspace reported no active lease, but the host has no Docker CLI, so the managed project shell/reservation could not start. Checks ran directly with the repository's existing `.venv` (Python 3.12.16), installed Node 24.18.1, Playwright, and Chromium. This is synthetic browser simulation only: no hardware, real coordinates/routes/people, external requests, SITL, flight, commit, push, deployment, or owner review.
+
+## Publication and evidence status (2026-11-27)
+
+- The owner explicitly authorized committing and pushing the completed replay-race work, superseding iteration 46's earlier no-commit constraint. Publication is limited to the race fix, its regression/browser harness, the directly supporting Forget control and replay documentation, and [FRONTIER_VS_ESTABLISHED.md](FRONTIER_VS_ESTABLISHED.md).
+- The evidence boundary now distinguishes reproduced offline software behavior from hardware, flight safety/autonomy, real routes, outdoor operation, SITL/hardware validation, and privacy outside synthetic fixtures. None of those frontier items is claimed.
+- Post-reconciliation validation used an index-only checkout, excluding all unstaged local differences: 443 Python tests and 28 JavaScript tests passed, generated docs were current, and both offline browser checks retained the previously recorded loopback-only outcomes.
+- Fresh `origin/main` history was fetched and merged without rebase, force, or reset. The selected revision was committed to `main`, pushed non-force/fast-forward-only, and checked with `git ls-remote origin main` so the remote SHA equals local HEAD. Unrelated local scenario/handoff/privacy differences and generated `_site/` output are intentionally excluded from publication.

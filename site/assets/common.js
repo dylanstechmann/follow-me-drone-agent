@@ -176,3 +176,20 @@ export function initPage() {
       });
   }
 }
+
+// Invalidates local file and worker callbacks when opened files are forgotten.
+export class ImportRace {
+  #generation = 0;
+
+  begin() {
+    return ++this.#generation;
+  }
+
+  forget() {
+    this.#generation += 1;
+  }
+
+  isCurrent(generation) {
+    return generation === this.#generation;
+  }
+}

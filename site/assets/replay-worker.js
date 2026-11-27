@@ -18,9 +18,9 @@ self.addEventListener("message", async (event) => {
     const pyodide = await ready;
     self.postMessage({ id, status: "running" });
     pyodide.globals.set("gpx_text", text);
-    pyodide.globals.set("gpx_second", second || null);
+    pyodide.globals.set("gpx_second", second || "");
     const trace = pyodide.runPython(
-      "import json\nfrom follow_me.recording import run_gpx\ntry:\n    out = json.dumps(run_gpx(gpx_text, second=gpx_second))\nfinally:\n    del gpx_text, gpx_second\nout",
+      "import json\nfrom follow_me.recording import run_gpx\ntry:\n    out = json.dumps(run_gpx(gpx_text, second=gpx_second or None))\nfinally:\n    del gpx_text, gpx_second\nout",
     );
     self.postMessage({ id, trace });
   } catch (error) {

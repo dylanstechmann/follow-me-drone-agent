@@ -2,7 +2,7 @@
 // or of a simulated follow from `python -m follow_me.recording --json`.
 // Traces are computed by the repo's tested Python; this page only draws them. A GPX
 // recording is simulated by that same Python, run in this tab by replay-worker.js.
-import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
+import { clear, fetchJSON, fixed, h, ImportRace, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
 
 const TRACE_FORMAT = "follow-me-trace/1";
 const MAKE_TRACE = "PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json";
@@ -24,6 +24,7 @@ const els = {
   speed: $("speed"),
   select: $("log-select"),
   file: $("file-input"),
+  forget: $("forget-files"),
   gpx: $("gpx-input"),
   follow: $("follow"),
   kpis: $("follow-kpis"),
@@ -35,6 +36,7 @@ const els = {
 const tip = makeTooltip();
 const traces = new Map(); // option value -> {trace, note}
 const state = { trace: null, index: 0, timer: null, frame: null, layer: null, playhead: null, follow: null, python: false };
+const importRace = new ImportRace();
 
 // ---- loading -------------------------------------------------------------
 
@@ -81,8 +83,11 @@ function addTrace(key, label, trace, note) {
 }
 
 function openFile(file) {
+  const generation = importRace.begin();
+  els.forget.hidden = false;
   const reader = new FileReader();
   reader.onload = () => {
+    if (!importRace.isCurrent(generation)) return;
     let data;
     try {
       data = JSON.parse(reader.result);
@@ -99,7 +104,9 @@ function openFile(file) {
       (data.note ? ` Its note: ${data.note}` : "");
     addTrace(`file:${file.name}:${traces.size}`, `Your file: ${file.name}`, data, note);
   };
-  reader.onerror = () => showMessage(`Could not read ${file.name}.`, true);
+  reader.onerror = () => {
+    if (importRace.isCurrent(generation)) showMessage(`Could not read ${file.name}.`, true);
+  };
   reader.readAsText(file);
 }
 
@@ -107,6 +114,7 @@ function openFile(file) {
 
 let worker = null;
 let jobs = 0;
+let activeWorkerGeneration = 0;
 
 function pythonWorker() {
   if (!worker) {
@@ -151,6 +159,8 @@ function readText(file) {
 }
 
 async function openRecording(files) {
+  const generation = importRace.begin();
+  els.forget.hidden = false;
   if (!state.python) {
     showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
     return;
@@ -170,15 +180,22 @@ async function openRecording(files) {
   try {
     texts = await Promise.all(files.map(readText));
   } catch (error) {
-    showMessage(`Could not read ${name}: ${error.message}`, true);
+    if (importRace.isCurrent(generation)) showMessage(`Could not read ${name}: ${error.message}`, true);
     return;
   }
+  if (!importRace.isCurrent(generation)) return;
   const id = ++jobs;
+  activeWorkerGeneration = generation;
   const w = pythonWorker();
   showMessage(`Starting Python in this tab to read ${name}. The first time downloads about 6 MB from this site; nothing is uploaded.`);
   const onMessage = (event) => {
     const msg = event.data;
     if (msg.id !== id) return;
+    if (msg.status !== "running" && activeWorkerGeneration === generation) activeWorkerGeneration = 0;
+    if (!importRace.isCurrent(generation)) {
+      if (msg.status !== "running") w.removeEventListener("message", onMessage);
+      return;
+    }
     if (msg.status === "running") {
       showMessage(`Simulating a drone following ${name}…`);
       return;
@@ -198,6 +215,35 @@ async function openRecording(files) {
   };
   w.addEventListener("message", onMessage);
   w.postMessage({ id, text: texts[0], second: texts[1] || null });
+}
+
+function forgetFiles() {
+  const workerActive = activeWorkerGeneration !== 0 && importRace.isCurrent(activeWorkerGeneration);
+  importRace.forget();
+  activeWorkerGeneration = 0;
+  if (!workerActive) {
+    els.file.value = "";
+    els.gpx.value = "";
+    history.replaceState(null, "", location.pathname + location.search);
+    location.reload();
+    return;
+  }
+  for (const [key] of traces) {
+    if (!key.startsWith("file:") && !key.startsWith("gpx:")) continue;
+    traces.delete(key);
+    for (const option of [...els.select.options]) {
+      if (option.value === key) option.remove();
+    }
+  }
+  els.file.value = "";
+  els.gpx.value = "";
+  els.forget.hidden = true;
+  history.replaceState(null, "", location.pathname + location.search);
+  const example = traces.get("example");
+  if (example) {
+    els.select.value = "example";
+    load(example.trace, example.note);
+  }
 }
 
 function openAny(files) {
@@ -913,6 +959,8 @@ function wire() {
     if (e.key === " " && tag !== "BUTTON") { play(); e.preventDefault(); }
   });
 
+  // Let the local worker finish, but invalidate its callback before restoring built-ins.
+  els.forget.addEventListener("click", forgetFiles);
   els.file.addEventListener("change", () => {
     if (els.file.files && els.file.files.length) openAny([...els.file.files]);
     els.file.value = "";

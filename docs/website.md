@@ -25,6 +25,7 @@ It can also open a GPX recording from a GPS-logging app, or two recordings of th
 - The worker calls `follow_me.recording.run_gpx`, the same code the tests check and the command line runs, and the viewer draws the trace it returns.
 - The file never leaves the tab. The importer keeps only meters and seconds from the first fix.
 - Pyodide is about 6.4 MB to download, compressed (13.5 MB unpacked). It is loaded from this site the first time a recording is opened.
+- **Forget opened files** removes imported trace/GPX entries and restores the four built-in examples. During an active GPX parse it invalidates the import generation and resets in place, allowing the local worker to finish while ignoring its late trace; an imported trace cannot reappear. Other file resets retain the page-reload behavior.
 
 ## How it is built and published
 
@@ -40,6 +41,7 @@ python3 -m http.server -d _site 8000                 # preview at http://localho
 - The workflow in [.github/workflows/site.yml](../.github/workflows/site.yml) runs the tests and builds the site, with the libraries and the rendered parts, on every push and pull request. On `main` it publishes the site to GitHub Pages. The data is regenerated at every build, so the published site cannot fall behind the repo, and nothing generated is committed.
 - **Pages** was turned on on 2026-10-26, with the owner's agreement, with source "GitHub Actions" (Settings, Pages). Turning it off unpublishes the site, and the deploy step then fails while the tests still run. The upload action skips hidden files, so `.nojekyll` is not published; it is not needed, because Pages does not run Jekyll on Actions deploys.
 - `tests/js/` holds the JavaScript tests, run with `node --test "tests/js/*.test.mjs"` locally and in CI. They cover the person detector's decoding in `site/assets/detector.js`, rider selection/cropping, and the scenario page's pure configuration, timeline, description, validation and formatting helpers.
+- `tests/js/replay-imports.test.mjs` deterministically checks that Forget invalidates a pending worker completion and that a later import receives a fresh generation. `tests/browser/replay-forget.cjs` is the offline Chromium integration check for valid/malformed JSON and a real Pyodide GPX completion racing Forget. It uses only static synthetic fixtures and a loopback static server. Run it against a cached vendored build with `PW_CORE=/path/to/playwright-core CHROME=/path/to/chrome node tests/browser/replay-forget.cjs _site _site/replay-forget-receipt.json`; the receipt records every request and input hash.
 - `tests/test_website.py` builds the site and checks that the data matches the model and the replay, every local link and import resolves, the honesty statements are on every page, there is no email-like or phone-like text, and no place data or coordinates are shipped.
 
 ## Rules for the site
