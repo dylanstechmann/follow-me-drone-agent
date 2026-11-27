@@ -774,3 +774,9 @@ Plan: add a way to discard local trace and GPX imports while keeping the replay 
 An agent-run Chromium check opened a synthetic JSON trace, discarded it, repeated the check on malformed JSON and interrupted a synthetic GPX import while its test worker was pending. Each reset returned to the built-in example, removed the imported filename and hid the reset button. The browser made only local GET requests during the check.
 
 To repeat the basic check, save a copy of the built site's data/replay-example.json with a distinctive synthetic filename. Open that copy in the viewer and choose **Forget opened files**. The log selector should show the built-in example, and reopening the picker should allow the same file to be selected again.
+
+## Local replay file selection, 2026-11-27
+
+Check that dragging several files gives a clear choice between a single JSON trace and up to two GPX recordings. Exercise mixed, empty and oversized selections with synthetic filenames.
+
+The viewer now reports mixed selections and oversized files before reading them. A local Chromium check rejected a mixed drop, opened one synthetic JSON trace, and restored the built-in examples after Forget. The server saw only GET requests and the synthetic filename stayed in the tab. Agent-run checks passed for the static build, 28 JavaScript tests and 443 Python tests.

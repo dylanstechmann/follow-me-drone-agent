@@ -4,6 +4,8 @@
 // recording is simulated by that same Python, run in this tab by replay-worker.js.
 import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
 
+import { replayFileKind } from "./replay-files.js";
+
 const TRACE_FORMAT = "follow-me-trace/1";
 const MAKE_TRACE = "PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json";
 const SIM_CMD = "PYTHONPATH=src python3 -m follow_me.recording --json RECORDING.gpx > recording.trace.json";
@@ -158,15 +160,6 @@ async function openRecording(files) {
     showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
     return;
   }
-  if (files.length > 2) {
-    showMessage("Open one recording, or two of the same walk from two phones.", true);
-    return;
-  }
-  const big = files.find((f) => f.size > 50e6);
-  if (big) {
-    showMessage(`${big.name} is over 50 MB, more than a recording should need.`, true);
-    return;
-  }
   const file = files[0];
   const name = files.map((f) => f.name).join(" and ");
   let texts;
@@ -203,10 +196,17 @@ async function openRecording(files) {
   w.postMessage({ id, text: texts[0], second: texts[1] || null });
 }
 
-function openAny(files) {
-  const gpx = files.filter((f) => /\.gpx$/i.test(f.name));
-  if (gpx.length) openRecording(gpx);
-  else if (files[0]) openFile(files[0]);
+function openAny(files, recordingPicker = false) {
+  let kind;
+  try {
+    kind = replayFileKind(files, recordingPicker);
+  } catch (error) {
+    els.forget.hidden = false;
+    showMessage(error.message, true);
+    return;
+  }
+  if (kind === "recording") openRecording(files);
+  else if (kind === "trace") openFile(files[0]);
 }
 
 // ---- the top-down plot ---------------------------------------------------
@@ -928,7 +928,7 @@ function wire() {
     els.file.value = "";
   });
   els.gpx.addEventListener("change", () => {
-    if (els.gpx.files && els.gpx.files.length) openRecording([...els.gpx.files]);
+    if (els.gpx.files && els.gpx.files.length) openAny([...els.gpx.files], true);
     els.gpx.value = "";
   });
   window.addEventListener("hashchange", () => {
