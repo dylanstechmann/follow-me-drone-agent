@@ -4,8 +4,8 @@
 // recording is simulated by that same Python, run in this tab by replay-worker.js.
 import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
 
-const TRACE_FORMAT = "follow-me-trace/1";
-const MAKE_TRACE = "PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json";
+import { replayFileKind, traceProblem } from "./replay-files.js";
+
 const SIM_CMD = "PYTHONPATH=src python3 -m follow_me.recording --json RECORDING.gpx > recording.trace.json";
 const W = 640; // plot viewBox width
 
@@ -24,6 +24,7 @@ const els = {
   speed: $("speed"),
   select: $("log-select"),
   file: $("file-input"),
+  forget: $("forget-files"),
   gpx: $("gpx-input"),
   follow: $("follow"),
   kpis: $("follow-kpis"),
@@ -37,21 +38,6 @@ const traces = new Map(); // option value -> {trace, note}
 const state = { trace: null, index: 0, timer: null, frame: null, layer: null, playhead: null, follow: null, python: false };
 
 // ---- loading -------------------------------------------------------------
-
-function problemWith(data) {
-  if (!data || typeof data !== "object") return "This file is not a replay trace.";
-  if (data.format !== TRACE_FORMAT) {
-    if (Array.isArray(data.ticks)) return `This looks like a raw log, not a trace. Make a trace first: ${MAKE_TRACE}`;
-    return `This file is not a replay trace (expected format ${TRACE_FORMAT}).`;
-  }
-  if (!Array.isArray(data.ticks) || data.ticks.length === 0) return "This trace has no ticks.";
-  for (const tick of data.ticks) {
-    if (typeof tick.t !== "number" || !Array.isArray(tick.readings) || typeof tick.mode !== "string") {
-      return "This trace has a tick without t, readings or mode.";
-    }
-  }
-  return null;
-}
 
 function showMessage(text, isError = false) {
   els.note.textContent = text;
@@ -81,6 +67,7 @@ function addTrace(key, label, trace, note) {
 }
 
 function openFile(file) {
+  els.forget.hidden = false;
   const reader = new FileReader();
   reader.onload = () => {
     let data;
@@ -90,7 +77,7 @@ function openFile(file) {
       showMessage(`Could not read ${file.name}: ${error.message}`, true);
       return;
     }
-    const problem = problemWith(data);
+    const problem = traceProblem(data);
     if (problem) {
       showMessage(problem, true);
       return;
@@ -151,17 +138,9 @@ function readText(file) {
 }
 
 async function openRecording(files) {
+  els.forget.hidden = false;
   if (!state.python) {
     showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
-    return;
-  }
-  if (files.length > 2) {
-    showMessage("Open one recording, or two of the same walk from two phones.", true);
-    return;
-  }
-  const big = files.find((f) => f.size > 50e6);
-  if (big) {
-    showMessage(`${big.name} is over 50 MB, more than a recording should need.`, true);
     return;
   }
   const file = files[0];
@@ -189,7 +168,7 @@ async function openRecording(files) {
       return;
     }
     const data = JSON.parse(msg.trace);
-    const problem = problemWith(data);
+    const problem = traceProblem(data);
     if (problem) {
       showMessage(problem, true);
       return;
@@ -200,10 +179,17 @@ async function openRecording(files) {
   w.postMessage({ id, text: texts[0], second: texts[1] || null });
 }
 
-function openAny(files) {
-  const gpx = files.filter((f) => /\.gpx$/i.test(f.name));
-  if (gpx.length) openRecording(gpx);
-  else if (files[0]) openFile(files[0]);
+function openAny(files, recordingPicker = false) {
+  let kind;
+  try {
+    kind = replayFileKind(files, recordingPicker);
+  } catch (error) {
+    els.forget.hidden = false;
+    showMessage(error.message, true);
+    return;
+  }
+  if (kind === "recording") openRecording(files);
+  else if (kind === "trace") openFile(files[0]);
 }
 
 // ---- the top-down plot ---------------------------------------------------
@@ -913,12 +899,19 @@ function wire() {
     if (e.key === " " && tag !== "BUTTON") { play(); e.preventDefault(); }
   });
 
+  // A fresh document drops imported traces, pending file readers and the GPX worker together.
+  els.forget.addEventListener("click", () => {
+    els.file.value = "";
+    els.gpx.value = "";
+    history.replaceState(null, "", location.pathname + location.search);
+    location.reload();
+  });
   els.file.addEventListener("change", () => {
     if (els.file.files && els.file.files.length) openAny([...els.file.files]);
     els.file.value = "";
   });
   els.gpx.addEventListener("change", () => {
-    if (els.gpx.files && els.gpx.files.length) openRecording([...els.gpx.files]);
+    if (els.gpx.files && els.gpx.files.length) openAny([...els.gpx.files], true);
     els.gpx.value = "";
   });
   window.addEventListener("hashchange", () => {

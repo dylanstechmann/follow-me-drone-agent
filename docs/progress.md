@@ -765,3 +765,24 @@ The three modes report the input path and the reason it could not be loaded on s
 - The offline `report` and `convert` CLI commands require explicit output paths. Conversion to `synthetic-aerial-handoffs/1` requires an explicit synthetic `--due-minute`, uses tested ceiling seconds-to-minutes conversion, and emits only consumer-schema fields. It omits prerequisites and evidence timestamps, keeps `evidence_recorded=false`, and rejects unsupported report fields, changed safety/privacy labels, follow traces, malformed times, and false physical interpretations.
 - The documented `soccer_land` example wrote a 980-byte report and 381-byte consumer document under ignored `_site/`; release at 15.3 s became minute 1 with deadline minute 1. No aerial repository file was edited, imported, or used as a runtime dependency.
 - Verification passed 28 focused export tests, 126 focused export/scenario/replay/website tests, the full 434-test Python suite, all 26 JavaScript tests, `follow_me.docs_sync --check`, and the deterministic export example. No commit, push, deployment, owner review, hardware, SITL, or flight action was performed.
+
+
+## Replay file privacy, 2026-11-27
+
+Plan: add a way to discard local trace and GPX imports while keeping the replay viewer open. Check the normal file picker and a pending or failed import with synthetic files.
+
+An agent-run Chromium check opened a synthetic JSON trace, discarded it, repeated the check on malformed JSON and interrupted a synthetic GPX import while its test worker was pending. Each reset returned to the built-in example, removed the imported filename and hid the reset button. The browser made only local GET requests during the check.
+
+To repeat the basic check, save a copy of the built site's data/replay-example.json with a distinctive synthetic filename. Open that copy in the viewer and choose **Forget opened files**. The log selector should show the built-in example, and reopening the picker should allow the same file to be selected again.
+
+## Local replay file selection, 2026-11-27
+
+Check that dragging several files gives a clear choice between a single JSON trace and up to two GPX recordings. Exercise mixed, empty and oversized selections with synthetic filenames.
+
+The viewer now reports mixed selections and oversized files before reading them. A local Chromium check rejected a mixed drop, opened one synthetic JSON trace, and restored the built-in examples after Forget. The server saw only GET requests and the synthetic filename stayed in the tab. Agent-run checks passed for the static build, 28 JavaScript tests and 443 Python tests.
+
+## Imported replay diagnostics, 2026-11-27
+
+The offline viewer checks each imported tick's time, readings, command, estimated position and attention-map shape before switching away from the current replay. Diagnostics identify the tick and, for a malformed reading, its position in that tick. The test fixtures use invented values.
+
+An agent-run Chromium check rejected a synthetic file with a malformed second tick, retained the selected replay, then opened and cleared a valid example. The static site build, 29 JavaScript tests and 443 Python tests passed.
