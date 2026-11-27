@@ -4,10 +4,8 @@
 // recording is simulated by that same Python, run in this tab by replay-worker.js.
 import { clear, fetchJSON, fixed, h, initPage, makeTooltip, MODES, modeInfo, niceMax, percent, signed, sourceInfo, svg } from "./common.js";
 
-import { replayFileKind } from "./replay-files.js";
+import { replayFileKind, traceProblem } from "./replay-files.js";
 
-const TRACE_FORMAT = "follow-me-trace/1";
-const MAKE_TRACE = "PYTHONPATH=src python3 -m follow_me.replay --json LOG.json > trace.json";
 const SIM_CMD = "PYTHONPATH=src python3 -m follow_me.recording --json RECORDING.gpx > recording.trace.json";
 const W = 640; // plot viewBox width
 
@@ -40,21 +38,6 @@ const traces = new Map(); // option value -> {trace, note}
 const state = { trace: null, index: 0, timer: null, frame: null, layer: null, playhead: null, follow: null, python: false };
 
 // ---- loading -------------------------------------------------------------
-
-function problemWith(data) {
-  if (!data || typeof data !== "object") return "This file is not a replay trace.";
-  if (data.format !== TRACE_FORMAT) {
-    if (Array.isArray(data.ticks)) return `This looks like a raw log, not a trace. Make a trace first: ${MAKE_TRACE}`;
-    return `This file is not a replay trace (expected format ${TRACE_FORMAT}).`;
-  }
-  if (!Array.isArray(data.ticks) || data.ticks.length === 0) return "This trace has no ticks.";
-  for (const tick of data.ticks) {
-    if (typeof tick.t !== "number" || !Array.isArray(tick.readings) || typeof tick.mode !== "string") {
-      return "This trace has a tick without t, readings or mode.";
-    }
-  }
-  return null;
-}
 
 function showMessage(text, isError = false) {
   els.note.textContent = text;
@@ -94,7 +77,7 @@ function openFile(file) {
       showMessage(`Could not read ${file.name}: ${error.message}`, true);
       return;
     }
-    const problem = problemWith(data);
+    const problem = traceProblem(data);
     if (problem) {
       showMessage(problem, true);
       return;
@@ -185,7 +168,7 @@ async function openRecording(files) {
       return;
     }
     const data = JSON.parse(msg.trace);
-    const problem = problemWith(data);
+    const problem = traceProblem(data);
     if (problem) {
       showMessage(problem, true);
       return;

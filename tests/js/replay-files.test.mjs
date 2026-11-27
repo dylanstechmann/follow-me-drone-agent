@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { replayFileKind } from "../../site/assets/replay-files.js";
+import { replayFileKind, traceProblem } from "../../site/assets/replay-files.js";
 
 const file = (name, size = 1) => ({ name, size });
 
@@ -20,4 +20,23 @@ test("reports ambiguous selections and oversized traces or recordings before par
     assert.throws(() => replayFileKind([file(name, 50_000_001)]), /50 MB/);
     assert.doesNotThrow(() => replayFileKind([file(name, 50_000_000)]));
   }
+});
+
+test("checks imported ticks before they replace the current offline replay", () => {
+  const tick = { t: 0, mode: "hold", readings: [], command: { yaw: 0, forward: 0, climb: 0 } };
+  const position = { x: 1, y: 2, variance: 0 };
+  const trace = (second) => ({ format: "follow-me-trace/1", ticks: [tick, second] });
+  assert.equal(traceProblem(trace({ ...tick, readings: [{ ...position, source: "fixture" }], estimate: position })), null);
+  for (const [second, expected] of [
+    [null, /Tick 2 needs a time/],
+    [{ ...tick, t: Infinity }, /Tick 2 needs a time/],
+    [{ ...tick, command: null }, /Tick 2 needs numeric/],
+    [{ ...tick, readings: [null] }, /Tick 2, reading 1/],
+    [{ ...tick, readings: [{ ...position, source: "fixture", variance: -1 }] }, /Tick 2, reading 1/],
+    [{ ...tick, estimate: {} }, /Tick 2 has an invalid estimate/],
+    [{ ...tick, attention: "wrong" }, /Tick 2 needs attention/],
+  ]) {
+    assert.match(traceProblem(trace(second)), expected);
+  }
+  assert.match(traceProblem({ ticks: [tick] }), /raw log/);
 });

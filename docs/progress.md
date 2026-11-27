@@ -780,3 +780,9 @@ To repeat the basic check, save a copy of the built site's data/replay-example.j
 Check that dragging several files gives a clear choice between a single JSON trace and up to two GPX recordings. Exercise mixed, empty and oversized selections with synthetic filenames.
 
 The viewer now reports mixed selections and oversized files before reading them. A local Chromium check rejected a mixed drop, opened one synthetic JSON trace, and restored the built-in examples after Forget. The server saw only GET requests and the synthetic filename stayed in the tab. Agent-run checks passed for the static build, 28 JavaScript tests and 443 Python tests.
+
+## Imported replay diagnostics, 2026-11-27
+
+The offline viewer checks each imported tick's time, readings, command, estimated position and attention-map shape before switching away from the current replay. Diagnostics identify the tick and, for a malformed reading, its position in that tick. The test fixtures use invented values.
+
+An agent-run Chromium check rejected a synthetic file with a malformed second tick, retained the selected replay, then opened and cleared a valid example. The static site build, 29 JavaScript tests and 443 Python tests passed.
