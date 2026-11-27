@@ -24,6 +24,7 @@ const els = {
   speed: $("speed"),
   select: $("log-select"),
   file: $("file-input"),
+  forget: $("forget-files"),
   gpx: $("gpx-input"),
   follow: $("follow"),
   kpis: $("follow-kpis"),
@@ -81,6 +82,7 @@ function addTrace(key, label, trace, note) {
 }
 
 function openFile(file) {
+  els.forget.hidden = false;
   const reader = new FileReader();
   reader.onload = () => {
     let data;
@@ -151,6 +153,7 @@ function readText(file) {
 }
 
 async function openRecording(files) {
+  els.forget.hidden = false;
   if (!state.python) {
     showMessage(`This build of the site has no Python runtime. The command line gives the same trace: ${SIM_CMD}`, true);
     return;
@@ -913,6 +916,13 @@ function wire() {
     if (e.key === " " && tag !== "BUTTON") { play(); e.preventDefault(); }
   });
 
+  // A fresh document drops imported traces, pending file readers and the GPX worker together.
+  els.forget.addEventListener("click", () => {
+    els.file.value = "";
+    els.gpx.value = "";
+    history.replaceState(null, "", location.pathname + location.search);
+    location.reload();
+  });
   els.file.addEventListener("change", () => {
     if (els.file.files && els.file.files.length) openAny([...els.file.files]);
     els.file.value = "";
